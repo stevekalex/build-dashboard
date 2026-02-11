@@ -5,7 +5,7 @@ export interface Brief {
   description: string // Job Description
   template: 'dashboard' | 'web_app' | 'unknown'
   buildable: boolean
-  brief: string // Full YAML brief
+  brief: string // Full YAML/JSON brief
   routes?: any[] // Parsed from brief
   uniqueInteractions?: string
   createdAt: string

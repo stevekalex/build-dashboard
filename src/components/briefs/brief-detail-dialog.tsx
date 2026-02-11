@@ -75,10 +75,10 @@ export function BriefDetailDialog({ brief, children }: BriefDetailDialogProps) {
           {brief.brief && (
             <div>
               <h3 className="text-sm font-semibold text-gray-700 mb-2 uppercase tracking-wide">
-                Full Brief (YAML)
+                Full Brief (JSON)
               </h3>
-              <pre className="bg-gray-900 text-gray-100 rounded-lg p-4 overflow-x-auto text-sm font-mono">
-                {brief.brief}
+              <pre className="bg-gray-900 text-gray-100 rounded-lg p-4 overflow-x-auto text-sm font-mono leading-relaxed">
+                {formatBriefJson(brief.brief)}
               </pre>
             </div>
           )}
@@ -106,4 +106,15 @@ function formatStatus(status: string): string {
     failed: '❌ Failed',
   }
   return statusMap[status] || status
+}
+
+function formatBriefJson(briefData: string): string {
+  try {
+    // Try to parse and pretty-print JSON
+    const parsed = JSON.parse(briefData)
+    return JSON.stringify(parsed, null, 2)
+  } catch {
+    // If it's not JSON, return as-is
+    return briefData
+  }
 }
