@@ -34,7 +34,7 @@ export function BriefDetailDialog({ brief, children }: BriefDetailDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="max-w-5xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="w-[50vw] max-w-none max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold pr-8">{brief.title}</DialogTitle>
           <DialogDescription className="flex gap-2 items-center pt-2 flex-wrap">
