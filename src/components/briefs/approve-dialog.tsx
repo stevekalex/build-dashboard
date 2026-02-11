@@ -12,17 +12,23 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { AlertCircle, CheckCircle } from 'lucide-react'
+import { AlertTriangle, CheckCircle, CheckCircle2 } from 'lucide-react'
 
 interface ApproveDialogProps {
   brief: Brief
   onApprove: (briefId: string) => Promise<void>
 }
 
+interface ParsedBrief {
+  done_criteria?: string[]
+  [key: string]: any
+}
+
 export function ApproveDialog({ brief, onApprove }: ApproveDialogProps) {
   const [open, setOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+
+  const parsedBrief = parseBriefData(brief.brief)
 
   async function handleConfirm() {
     setIsLoading(true)
@@ -44,81 +50,77 @@ export function ApproveDialog({ brief, onApprove }: ApproveDialogProps) {
           Start Build
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>Approve Build: {brief.title}</DialogTitle>
-          <DialogDescription>
-            Are you sure you want to start building this prototype?
+      <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
+        <DialogHeader className="flex-shrink-0">
+          <DialogTitle className="text-xl">Start Build</DialogTitle>
+          <DialogDescription className="text-base">
+            {brief.title}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto space-y-4 py-4">
+          {/* 1. Warning */}
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
             <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5" />
+              <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
               <div>
-                <p className="font-medium text-yellow-900">
+                <p className="font-semibold text-amber-900 text-sm">
                   This will start a ~45 minute build
                 </p>
-                <p className="text-sm text-yellow-700 mt-1">
+                <p className="text-sm text-amber-700 mt-1">
                   The build will consume resources and cannot be easily stopped once started.
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="space-y-3 border-t pt-4">
+          {/* 2. Description */}
+          {brief.description && (
             <div>
-              <p className="text-sm font-medium text-gray-500">Template</p>
-              <Badge variant="secondary" className="mt-1">
-                {formatTemplate(brief.template)}
-              </Badge>
-            </div>
-
-            <div>
-              <p className="text-sm font-medium text-gray-500">Routes</p>
-              <p className="text-sm text-gray-900">
-                {brief.routes?.length || 0} {brief.routes?.length === 1 ? 'route' : 'routes'}
+              <h3 className="text-sm font-semibold text-gray-700 mb-2">Description</h3>
+              <p className="text-sm text-gray-700 leading-relaxed bg-gray-50 rounded-lg p-3 border border-gray-200">
+                {brief.description}
               </p>
-              {brief.routes && brief.routes.length > 0 && (
-                <ul className="mt-2 space-y-1">
-                  {brief.routes.slice(0, 5).map((route: any, idx: number) => (
-                    <li key={idx} className="text-sm text-gray-600">
-                      • {route.path} - {route.name}
+            </div>
+          )}
+
+          {/* 3. Key Tasks (Done Criteria) */}
+          {parsedBrief.done_criteria && parsedBrief.done_criteria.length > 0 && (
+            <div>
+              <h3 className="text-sm font-semibold text-gray-700 mb-2">
+                Key Tasks ({parsedBrief.done_criteria.length})
+              </h3>
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                <ul className="space-y-2">
+                  {parsedBrief.done_criteria.map((criterion, index) => (
+                    <li key={index} className="flex items-start gap-2">
+                      <CheckCircle2 className="w-4 h-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      <span className="text-sm text-gray-900 leading-relaxed">{criterion}</span>
                     </li>
                   ))}
-                  {brief.routes.length > 5 && (
-                    <li className="text-sm text-gray-500 italic">
-                      ... and {brief.routes.length - 5} more
-                    </li>
-                  )}
                 </ul>
-              )}
-            </div>
-
-            {brief.description && (
-              <div>
-                <p className="text-sm font-medium text-gray-500">Description</p>
-                <p className="text-sm text-gray-700 mt-1">{brief.description}</p>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
-        <DialogFooter>
+        {/* 4. Confirm/Cancel Buttons */}
+        <DialogFooter className="flex-shrink-0 gap-2">
           <Button
             variant="outline"
             onClick={() => setOpen(false)}
             disabled={isLoading}
+            className="flex-1 md:flex-initial"
           >
             Cancel
           </Button>
           <Button
             onClick={handleConfirm}
             disabled={isLoading}
-            className="bg-green-600 hover:bg-green-700"
+            className="bg-green-600 hover:bg-green-700 flex-1 md:flex-initial"
           >
-            {isLoading ? 'Approving...' : 'Confirm'}
+            {isLoading ? 'Starting Build...' : 'Confirm Build'}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -126,11 +128,10 @@ export function ApproveDialog({ brief, onApprove }: ApproveDialogProps) {
   )
 }
 
-function formatTemplate(template: string): string {
-  const templateMap: Record<string, string> = {
-    dashboard: 'Dashboard',
-    web_app: 'Web App',
-    unknown: 'Unknown',
+function parseBriefData(briefString: string): ParsedBrief {
+  try {
+    return JSON.parse(briefString)
+  } catch {
+    return {}
   }
-  return templateMap[template] || template
 }

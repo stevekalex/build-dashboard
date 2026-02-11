@@ -74,7 +74,7 @@ export function RejectDialog({ brief, onReject }: RejectDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="destructive" size="sm" className="w-full md:w-auto min-h-[44px]">
+        <Button variant="outline" size="sm" className="w-full md:w-auto min-h-[44px]">
           Reject
         </Button>
       </DialogTrigger>
@@ -117,11 +117,10 @@ export function RejectDialog({ brief, onReject }: RejectDialogProps) {
             Cancel
           </Button>
           <Button
-            variant="destructive"
             onClick={handleConfirm}
             disabled={isConfirmDisabled() || isLoading}
           >
-            {isLoading ? 'Rejecting...' : 'Confirm'}
+            {isLoading ? 'Rejecting...' : 'Confirm Rejection'}
           </Button>
         </DialogFooter>
       </DialogContent>

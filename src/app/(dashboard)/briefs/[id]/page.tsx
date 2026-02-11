@@ -21,9 +21,9 @@ export default async function BriefDetailPage({ params }: BriefDetailPageProps) 
   const parsedBrief = parseBriefData(brief.brief)
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 overflow-y-auto">
       {/* Mobile Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
         <div className="px-4 py-3">
           <Link
             href="/"
@@ -51,7 +51,7 @@ export default async function BriefDetailPage({ params }: BriefDetailPageProps) 
       </div>
 
       {/* Content */}
-      <div className="p-4 space-y-4 pb-32">
+      <div className="p-4 space-y-4 pb-40 md:pb-24">
         {/* Description */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <h3 className="text-xs font-semibold text-blue-900 mb-2 uppercase tracking-wide">
@@ -131,12 +131,12 @@ export default async function BriefDetailPage({ params }: BriefDetailPageProps) 
       </div>
 
       {/* Fixed Bottom Action Bar - Mobile Only */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 md:hidden shadow-lg">
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 md:hidden shadow-lg z-20 safe-area-inset-bottom">
         <BriefActions brief={brief} />
       </div>
 
       {/* Desktop Action Buttons */}
-      <div className="hidden md:block fixed bottom-8 right-8">
+      <div className="hidden md:block fixed bottom-8 right-8 z-20">
         <BriefActions brief={brief} />
       </div>
     </div>
