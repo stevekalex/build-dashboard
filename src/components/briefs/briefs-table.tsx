@@ -11,18 +11,12 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Badge } from '@/components/ui/badge'
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from '@/components/ui/tooltip'
 import { formatDistanceToNow } from 'date-fns'
 import { ApproveDialog } from './approve-dialog'
 import { RejectDialog } from './reject-dialog'
 import { BriefDetailDialog } from './brief-detail-dialog'
 import { approveBrief, rejectBriefAction } from '@/app/actions'
 import { useRouter } from 'next/navigation'
-import { InfoIcon } from 'lucide-react'
 
 interface BriefsTableProps {
   briefs: Brief[]
@@ -97,23 +91,14 @@ export function BriefsTable({ briefs }: BriefsTableProps) {
 
               <TableCell className="max-w-md">
                 <BriefDetailDialog brief={brief}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button className="text-left hover:text-blue-700 transition-colors cursor-pointer group/desc w-full">
-                        <div className="line-clamp-2 group-hover/desc:text-blue-600 whitespace-normal break-words">
-                          {brief.description}
-                        </div>
-                        {brief.description.length > 100 && (
-                          <span className="text-blue-500 text-xs opacity-0 group-hover/desc:opacity-100 transition-opacity block mt-1">
-                            Click to expand
-                          </span>
-                        )}
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" className="max-w-md">
-                      <p className="text-sm whitespace-normal break-words">{brief.description}</p>
-                    </TooltipContent>
-                  </Tooltip>
+                  <button className="text-left hover:text-blue-700 transition-colors cursor-pointer group/desc w-full">
+                    <div className="line-clamp-2 group-hover/desc:text-blue-600 whitespace-normal break-words">
+                      {brief.description}
+                    </div>
+                    <span className="text-blue-500 text-xs opacity-0 group-hover/desc:opacity-100 transition-opacity block mt-1">
+                      Click to view full details
+                    </span>
+                  </button>
                 </BriefDetailDialog>
               </TableCell>
 
@@ -137,33 +122,14 @@ export function BriefsTable({ briefs }: BriefsTableProps) {
 
               <TableCell>
                 {brief.routes && brief.routes.length > 0 ? (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <button className="flex items-center gap-1.5 text-gray-700 hover:text-blue-600 transition-colors group/routes">
-                        <span className="font-mono text-sm font-semibold">
-                          {brief.routes.length}
-                        </span>
-                        <span className="text-xs text-gray-500 group-hover/routes:text-blue-500">
-                          {brief.routes.length === 1 ? 'route' : 'routes'}
-                        </span>
-                        <InfoIcon className="w-3.5 h-3.5 opacity-50 group-hover/routes:opacity-100" />
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent side="bottom" className="max-w-xs">
-                      <div className="space-y-1">
-                        {brief.routes.slice(0, 5).map((route, idx) => (
-                          <div key={idx} className="font-mono text-xs text-blue-600">
-                            {typeof route === 'string' ? route : JSON.stringify(route)}
-                          </div>
-                        ))}
-                        {brief.routes.length > 5 && (
-                          <div className="text-xs text-gray-500 pt-1 border-t border-gray-200">
-                            + {brief.routes.length - 5} more
-                          </div>
-                        )}
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
+                  <div className="flex items-center gap-1.5 text-gray-700">
+                    <span className="font-mono text-sm font-semibold text-purple-700">
+                      {brief.routes.length}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {brief.routes.length === 1 ? 'route' : 'routes'}
+                    </span>
+                  </div>
                 ) : (
                   <span className="text-gray-400 text-sm">No routes</span>
                 )}
