@@ -7,7 +7,9 @@
  * - Job Pulse acts as proxy: fetches brief from Airtable → calls Ralph
  */
 
-const JOB_PULSE_URL = process.env.NEXT_PUBLIC_JOB_PULSE_URL!
+// Ensure URL has protocol prefix
+const rawUrl = process.env.NEXT_PUBLIC_JOB_PULSE_URL!
+const JOB_PULSE_URL = rawUrl.startsWith('http') ? rawUrl : `https://${rawUrl}`
 
 export interface TriggerBuildResponse {
   success: boolean
