@@ -49,7 +49,8 @@ export async function getBriefsPendingApproval(): Promise<Brief[]> {
       const jobId = (record.get('Job ID') as string) || record.id
       const title = (record.get('Job Title') as string) || 'Untitled Job'
       const description = (record.get('Job Description') as string) || ''
-      const createdAt = new Date().toISOString() // TODO: Find correct Airtable field name
+      // Get actual creation time from Airtable (try Created field, fallback to _createdTime)
+      const createdAt = (record.get('Created') as string) || (record as any)._createdTime || new Date().toISOString()
 
       // Extract build details
       const buildable = buildData?.Buildable ?? false
@@ -82,6 +83,65 @@ export async function getBriefsPendingApproval(): Promise<Brief[]> {
   )
 
   return briefs
+}
+
+/**
+ * Fetch a single brief by ID from Airtable
+ */
+export async function getBriefById(id: string): Promise<Brief | null> {
+  const base = getBase()
+
+  try {
+    // Fetch the Jobs Pipeline record
+    const record = await base('Jobs Pipeline').find(id)
+
+    // Get linked Build Details record IDs
+    const buildDetailsIds = record.get('Build Details') as string[] | null
+    const buildDetailsId = buildDetailsIds && buildDetailsIds.length > 0 ? buildDetailsIds[0] : null
+
+    // Fetch the actual Build Details record if it exists
+    let buildData: any = null
+    if (buildDetailsId) {
+      try {
+        const buildDetailsRecord = await base('Build Details').find(buildDetailsId)
+        buildData = buildDetailsRecord.fields
+      } catch (error) {
+        console.error('Failed to fetch Build Details:', error)
+      }
+    }
+
+    // Extract data with fallbacks
+    const jobId = (record.get('Job ID') as string) || record.id
+    const title = (record.get('Job Title') as string) || 'Untitled Job'
+    const description = (record.get('Job Description') as string) || ''
+    // Get actual creation time from Airtable
+    const createdAt = (record.get('Created') as string) || (record as any)._createdTime || new Date().toISOString()
+
+    // Extract build details
+    const buildable = buildData?.Buildable ?? false
+    const brief = (buildData?.[`Brief YAML`] as string) || ''
+    const status = (buildData?.Status as string) || 'pending'
+
+    // Parse brief JSON/YAML for routes, template, and unique interactions
+    const parsedData = brief ? parseBriefData(brief) : {}
+
+    return {
+      id: record.id,
+      jobId,
+      title,
+      description,
+      buildable,
+      brief,
+      routes: parsedData.routes,
+      template: parsedData.template || 'unknown',
+      uniqueInteractions: parsedData.uniqueInteractions,
+      createdAt,
+      status: mapStatus(status),
+    }
+  } catch (error) {
+    console.error('Failed to fetch brief by ID:', error)
+    return null
+  }
 }
 
 /**

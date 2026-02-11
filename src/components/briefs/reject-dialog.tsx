@@ -74,7 +74,7 @@ export function RejectDialog({ brief, onReject }: RejectDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="destructive" size="sm">
+        <Button variant="destructive" size="sm" className="w-full md:w-auto min-h-[44px]">
           Reject
         </Button>
       </DialogTrigger>

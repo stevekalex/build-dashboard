@@ -17,6 +17,11 @@ const jetBrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "Ralph Control Panel",
   description: "Human-in-the-loop approval interface for Ralph prototype generation",
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 5,
+  },
 };
 
 export default function RootLayout({

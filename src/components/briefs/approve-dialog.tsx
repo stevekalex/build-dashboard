@@ -39,7 +39,7 @@ export function ApproveDialog({ brief, onApprove }: ApproveDialogProps) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" className="bg-green-600 hover:bg-green-700">
+        <Button size="sm" className="bg-green-600 hover:bg-green-700 w-full md:w-auto min-h-[44px]">
           <CheckCircle className="w-4 h-4 mr-2" />
           Start Build
         </Button>
