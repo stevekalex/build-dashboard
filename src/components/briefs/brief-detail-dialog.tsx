@@ -79,7 +79,7 @@ export function BriefDetailDialog({ brief, children }: BriefDetailDialogProps) {
                           {route.type || 'Page'}
                         </span>
                       </div>
-                      <div className="font-mono text-sm text-purple-700 font-semibold">
+                      <div className="font-mono text-sm text-purple-700 font-semibold break-all">
                         {route.path}
                       </div>
                       {route.title && (
