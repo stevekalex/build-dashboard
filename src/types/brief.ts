@@ -18,3 +18,19 @@ export interface BuildDetails {
   template: string
   status: string
 }
+
+export interface Build {
+  id: string
+  jobId: string
+  title: string
+  description: string
+  stage: 'approved' | 'deployed' | 'failed'
+  status: 'building' | 'completed' | 'failed' | 'evaluated'
+  template?: 'dashboard' | 'web_app' | 'unknown'
+  buildStarted?: string
+  buildCompleted?: string
+  buildDuration?: number // seconds
+  prototypeUrl?: string
+  buildError?: string
+  createdAt: string
+}
