@@ -1,4 +1,5 @@
 import Airtable from 'airtable'
+import yaml from 'js-yaml'
 import { Brief } from '@/types/brief'
 
 // Initialize Airtable client
@@ -36,6 +37,9 @@ export async function getBriefsPendingApproval(): Promise<Brief[]> {
     const template = (buildData?.Template as string) || 'unknown'
     const status = (buildData?.Status as string) || 'pending'
 
+    // Parse brief YAML for routes and unique interactions
+    const parsedData = brief ? parseBriefData(brief) : {}
+
     return {
       id: record.id,
       jobId,
@@ -44,6 +48,8 @@ export async function getBriefsPendingApproval(): Promise<Brief[]> {
       template: template === 'dashboard' || template === 'web_app' ? template : 'unknown',
       buildable,
       brief,
+      routes: parsedData.routes,
+      uniqueInteractions: parsedData.uniqueInteractions,
       createdAt,
       status: mapStatus(status),
     }
@@ -63,4 +69,20 @@ function mapStatus(airtableStatus: string): Brief['status'] {
   }
 
   return statusMap[airtableStatus] || 'pending'
+}
+
+/**
+ * Parse YAML brief and extract routes and unique interactions
+ */
+function parseBriefData(briefYaml: string): { routes?: any[]; uniqueInteractions?: string } {
+  try {
+    const parsed = yaml.load(briefYaml) as any
+    return {
+      routes: parsed?.routes || parsed?.pages || [],
+      uniqueInteractions: parsed?.unique_interactions || parsed?.uniqueInteractions || '',
+    }
+  } catch (error) {
+    console.error('Failed to parse brief YAML:', error)
+    return {}
+  }
 }
