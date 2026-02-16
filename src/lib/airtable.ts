@@ -1,9 +1,10 @@
 import Airtable from 'airtable'
 import yaml from 'js-yaml'
 import { Brief, Build } from '@/types/brief'
+import { TABLES, JOBS, BUILD, STAGES } from './airtable-fields'
 
 // Initialize Airtable client
-function getBase() {
+export function getBase() {
   return new Airtable({
     apiKey: process.env.AIRTABLE_API_KEY!,
   }).base(process.env.AIRTABLE_BASE_ID!)
@@ -14,56 +15,36 @@ function getBase() {
  */
 export async function getBriefsPendingApproval(): Promise<Brief[]> {
   const base = getBase()
-  const records = await base('Jobs Pipeline')
+  const records = await base(TABLES.JOBS_PIPELINE)
     .select({
-      filterByFormula: `{Stage} = "⏸️ Pending Approval"`,
+      filterByFormula: `{${JOBS.STAGE}} = "${STAGES.PENDING_APPROVAL}"`,
     })
     .all()
 
-  // Fetch all briefs with their Build Details
   const briefs = await Promise.all(
     records.map(async (record) => {
-      // Get linked Build Details record IDs
-      const buildDetailsIds = record.get('Build Details') as string[] | null
+      const buildDetailsIds = record.get(JOBS.BUILD_DETAILS) as string[] | null
       const buildDetailsId = buildDetailsIds && buildDetailsIds.length > 0 ? buildDetailsIds[0] : null
 
-      // Fetch the actual Build Details record if it exists
       let buildData: any = null
       if (buildDetailsId) {
         try {
-          const buildDetailsRecord = await base('Build Details').find(buildDetailsId)
+          const buildDetailsRecord = await base(TABLES.BUILD_DETAILS).find(buildDetailsId)
           buildData = buildDetailsRecord.fields
-
-          // DEBUG: Log the fetched build details
-          console.log('=== AIRTABLE DEBUG ===')
-          console.log('Record ID:', record.id)
-          console.log('Build Details ID:', buildDetailsId)
-          console.log('Build Data keys:', buildData ? Object.keys(buildData) : 'null')
-          console.log('Raw buildData:', buildData)
         } catch (error) {
           console.error('Failed to fetch Build Details:', error)
         }
       }
 
-      // Extract data with fallbacks
       const jobId = (record.get('Job ID') as string) || record.id
-      const title = (record.get('Job Title') as string) || 'Untitled Job'
-      const description = (record.get('Job Description') as string) || ''
-      // Get actual creation time from Airtable
-      const createdAt = (record.get('Scraped At') as string) || (record as any)._createdTime || new Date().toISOString()
+      const title = (record.get(JOBS.JOB_TITLE) as string) || 'Untitled Job'
+      const description = (record.get(JOBS.JOB_DESCRIPTION) as string) || ''
+      const createdAt = (record.get(JOBS.SCRAPED_AT) as string) || (record as any)._createdTime || new Date().toISOString()
 
-      // Extract build details
-      const buildable = buildData?.Buildable ?? false
-      const brief = (buildData?.[`Brief YAML`] as string) || '' // Note: field name is "Brief YAML"
-      const status = (buildData?.Status as string) || 'pending'
+      const buildable = buildData?.[BUILD.BUILDABLE] ?? false
+      const brief = (buildData?.[BUILD.BRIEF_YAML] as string) || ''
+      const status = (buildData?.[BUILD.STATUS] as string) || 'pending'
 
-      // DEBUG: Log extracted values
-      console.log('Extracted buildable:', buildable, '(type:', typeof buildable, ')')
-      console.log('Extracted brief length:', brief.length)
-      console.log('Extracted status:', status)
-      console.log('=== END DEBUG ===\n')
-
-      // Parse brief JSON/YAML for routes, template, and unique interactions
       const parsedData = brief ? parseBriefData(brief) : {}
 
       return {
@@ -92,37 +73,30 @@ export async function getBriefById(id: string): Promise<Brief | null> {
   const base = getBase()
 
   try {
-    // Fetch the Jobs Pipeline record
-    const record = await base('Jobs Pipeline').find(id)
+    const record = await base(TABLES.JOBS_PIPELINE).find(id)
 
-    // Get linked Build Details record IDs
-    const buildDetailsIds = record.get('Build Details') as string[] | null
+    const buildDetailsIds = record.get(JOBS.BUILD_DETAILS) as string[] | null
     const buildDetailsId = buildDetailsIds && buildDetailsIds.length > 0 ? buildDetailsIds[0] : null
 
-    // Fetch the actual Build Details record if it exists
     let buildData: any = null
     if (buildDetailsId) {
       try {
-        const buildDetailsRecord = await base('Build Details').find(buildDetailsId)
+        const buildDetailsRecord = await base(TABLES.BUILD_DETAILS).find(buildDetailsId)
         buildData = buildDetailsRecord.fields
       } catch (error) {
         console.error('Failed to fetch Build Details:', error)
       }
     }
 
-    // Extract data with fallbacks
     const jobId = (record.get('Job ID') as string) || record.id
-    const title = (record.get('Job Title') as string) || 'Untitled Job'
-    const description = (record.get('Job Description') as string) || ''
-    // Get actual creation time from Airtable
-    const createdAt = (record.get('Scraped At') as string) || (record as any)._createdTime || new Date().toISOString()
+    const title = (record.get(JOBS.JOB_TITLE) as string) || 'Untitled Job'
+    const description = (record.get(JOBS.JOB_DESCRIPTION) as string) || ''
+    const createdAt = (record.get(JOBS.SCRAPED_AT) as string) || (record as any)._createdTime || new Date().toISOString()
 
-    // Extract build details
-    const buildable = buildData?.Buildable ?? false
-    const brief = (buildData?.[`Brief YAML`] as string) || ''
-    const status = (buildData?.Status as string) || 'pending'
+    const buildable = buildData?.[BUILD.BUILDABLE] ?? false
+    const brief = (buildData?.[BUILD.BRIEF_YAML] as string) || ''
+    const status = (buildData?.[BUILD.STATUS] as string) || 'pending'
 
-    // Parse brief JSON/YAML for routes, template, and unique interactions
     const parsedData = brief ? parseBriefData(brief) : {}
 
     return {
@@ -168,12 +142,10 @@ function parseBriefData(briefData: string): {
   uniqueInteractions?: string
 } {
   try {
-    // Try parsing as JSON first (since Airtable stores it as JSON string)
     let parsed: any
     try {
       parsed = JSON.parse(briefData)
     } catch {
-      // Fallback to YAML parsing
       parsed = yaml.load(briefData) as any
     }
 
@@ -197,54 +169,47 @@ function parseBriefData(briefData: string): {
 export async function getAllBuilds(): Promise<Build[]> {
   const base = getBase()
 
-  // Fetch builds from Jobs Pipeline that are in relevant stages
-  const records = await base('Jobs Pipeline')
+  const records = await base(TABLES.JOBS_PIPELINE)
     .select({
       filterByFormula: `OR(
-        {Stage} = "✅ Approved",
-        {Stage} = "🏗️ Deployed",
-        {Stage} = "⚠️ Build Failed"
+        {${JOBS.STAGE}} = "${STAGES.APPROVED}",
+        {${JOBS.STAGE}} = "${STAGES.DEPLOYED}",
+        {${JOBS.STAGE}} = "${STAGES.BUILD_FAILED}"
       )`,
-      sort: [{ field: 'Scraped At', direction: 'desc' }],
+      sort: [{ field: JOBS.SCRAPED_AT, direction: 'desc' }],
       maxRecords: 37,
     })
     .all()
 
-  // Fetch all builds with their Build Details
   const builds = await Promise.all(
     records.map(async (record) => {
-      // Get linked Build Details record IDs
-      const buildDetailsIds = record.get('Build Details') as string[] | null
+      const buildDetailsIds = record.get(JOBS.BUILD_DETAILS) as string[] | null
       const buildDetailsId = buildDetailsIds && buildDetailsIds.length > 0 ? buildDetailsIds[0] : null
 
-      // Fetch the actual Build Details record if it exists
       let buildData: any = null
       if (buildDetailsId) {
         try {
-          const buildDetailsRecord = await base('Build Details').find(buildDetailsId)
+          const buildDetailsRecord = await base(TABLES.BUILD_DETAILS).find(buildDetailsId)
           buildData = buildDetailsRecord.fields
         } catch (error) {
           console.error('Failed to fetch Build Details:', error)
         }
       }
 
-      // Extract data with fallbacks
       const jobId = (record.get('Job ID') as string) || record.id
-      const title = (record.get('Job Title') as string) || 'Untitled Job'
-      const description = (record.get('Job Description') as string) || ''
-      const createdAt = (record.get('Scraped At') as string) || (record as any)._createdTime || new Date().toISOString()
-      const stageRaw = (record.get('Stage') as string) || ''
+      const title = (record.get(JOBS.JOB_TITLE) as string) || 'Untitled Job'
+      const description = (record.get(JOBS.JOB_DESCRIPTION) as string) || ''
+      const createdAt = (record.get(JOBS.SCRAPED_AT) as string) || (record as any)._createdTime || new Date().toISOString()
+      const stageRaw = (record.get(JOBS.STAGE) as string) || ''
 
-      // Extract build details
-      const status = (buildData?.Status as string) || 'building'
-      const buildStarted = buildData?.['Build Started'] as string | undefined
-      const buildCompleted = buildData?.['Build Completed'] as string | undefined
-      const buildDuration = buildData?.['Build Duration'] as number | undefined
-      const prototypeUrl = buildData?.['Prototype URL'] as string | undefined
-      const buildError = buildData?.['Build Error'] as string | undefined
-      const brief = (buildData?.['Brief YAML'] as string) || ''
+      const status = (buildData?.[BUILD.STATUS] as string) || 'building'
+      const buildStarted = buildData?.[BUILD.BUILD_STARTED] as string | undefined
+      const buildCompleted = buildData?.[BUILD.BUILD_COMPLETED] as string | undefined
+      const buildDuration = buildData?.[BUILD.BUILD_DURATION] as number | undefined
+      const prototypeUrl = buildData?.[BUILD.PROTOTYPE_URL] as string | undefined
+      const buildError = buildData?.[BUILD.BUILD_ERROR] as string | undefined
+      const brief = (buildData?.[BUILD.BRIEF_YAML] as string) || ''
 
-      // Parse brief for template
       const parsedData = brief ? parseBriefData(brief) : {}
 
       return {
@@ -275,7 +240,7 @@ function mapStage(stage: string): Build['stage'] {
   if (stage.includes('Approved')) return 'approved'
   if (stage.includes('Deployed')) return 'deployed'
   if (stage.includes('Failed')) return 'failed'
-  return 'approved' // fallback
+  return 'approved'
 }
 
 /**
