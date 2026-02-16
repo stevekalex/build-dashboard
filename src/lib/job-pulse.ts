@@ -32,13 +32,14 @@ export interface RejectBuildResponse {
  */
 export async function triggerBuild(
   jobId: string,
-  approvedBy: string
+  approvedBy: string,
+  notes?: string
 ): Promise<TriggerBuildResponse> {
   try {
     const response = await fetch(`${JOB_PULSE_URL}/api/builds/trigger/${jobId}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ approved_by: approvedBy }),
+      body: JSON.stringify({ approved_by: approvedBy, notes }),
     })
 
     if (!response.ok) {
@@ -64,13 +65,14 @@ export async function triggerBuild(
 export async function rejectBuild(
   jobId: string,
   reason: string,
-  rejectedBy: string
+  rejectedBy: string,
+  notes?: string
 ): Promise<RejectBuildResponse> {
   try {
     const response = await fetch(`${JOB_PULSE_URL}/api/builds/reject/${jobId}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ reason, rejected_by: rejectedBy }),
+      body: JSON.stringify({ reason, rejected_by: rejectedBy, notes }),
     })
 
     if (!response.ok) {

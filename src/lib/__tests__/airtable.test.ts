@@ -4,7 +4,8 @@ import { Brief } from '@/types/brief'
 // Create mock functions
 const mockAll = vi.fn()
 const mockSelect = vi.fn(() => ({ all: mockAll }))
-const mockBaseCall = vi.fn(() => ({ select: mockSelect }))
+const mockFind = vi.fn()
+const mockBaseCall = vi.fn(() => ({ select: mockSelect, find: mockFind }))
 
 // Mock Airtable module
 vi.mock('airtable', () => {
@@ -38,16 +39,7 @@ describe('Airtable Integration - Happy Path', () => {
             'Job Title': 'Build CRM Dashboard',
             'Job Description': 'Create a dashboard',
             Created: '2026-02-10T10:00:00Z',
-            'Build Details': [
-              {
-                fields: {
-                  Buildable: true,
-                  Brief: 'template: dashboard',
-                  Template: 'dashboard',
-                  Status: 'Evaluated',
-                },
-              },
-            ],
+            'Build Details': ['buildRec1'],
           }
           return data[field]
         },
@@ -55,6 +47,14 @@ describe('Airtable Integration - Happy Path', () => {
     ]
 
     mockAll.mockResolvedValue(mockRecords)
+    mockFind.mockResolvedValue({
+      id: 'buildRec1',
+      fields: {
+        Buildable: true,
+        'Brief YAML': 'template: dashboard',
+        Status: 'Evaluated',
+      },
+    })
 
     const { getBriefsPendingApproval } = await import('../airtable')
     const briefs = await getBriefsPendingApproval()
@@ -130,16 +130,7 @@ describe('Airtable Integration - Edge Cases', () => {
             'Job Title': 'Build CRM Dashboard',
             'Job Description': null,
             Created: '2026-02-10T10:00:00Z',
-            'Build Details': [
-              {
-                fields: {
-                  Buildable: true,
-                  Brief: 'test',
-                  Template: 'dashboard',
-                  Status: 'Evaluated',
-                },
-              },
-            ],
+            'Build Details': ['buildRec2'],
           }
           return data[field]
         },
@@ -147,6 +138,14 @@ describe('Airtable Integration - Edge Cases', () => {
     ]
 
     mockAll.mockResolvedValue(mockRecords)
+    mockFind.mockResolvedValue({
+      id: 'buildRec2',
+      fields: {
+        Buildable: true,
+        'Brief YAML': 'test',
+        Status: 'Evaluated',
+      },
+    })
 
     const { getBriefsPendingApproval } = await import('../airtable')
     const briefs = await getBriefsPendingApproval()

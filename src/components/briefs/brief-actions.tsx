@@ -13,8 +13,8 @@ interface BriefActionsProps {
 export function BriefActions({ brief }: BriefActionsProps) {
   const router = useRouter()
 
-  async function handleApprove(briefId: string) {
-    const result = await approveBrief(briefId)
+  async function handleApprove(briefId: string, notes: string) {
+    const result = await approveBrief(briefId, notes || undefined)
     if (result.success) {
       router.push('/')
       router.refresh()
@@ -23,8 +23,8 @@ export function BriefActions({ brief }: BriefActionsProps) {
     }
   }
 
-  async function handleReject(briefId: string, reason: string) {
-    const result = await rejectBriefAction(briefId, reason)
+  async function handleReject(briefId: string, reason: string, notes: string) {
+    const result = await rejectBriefAction(briefId, reason, notes || undefined)
     if (result.success) {
       router.push('/')
       router.refresh()

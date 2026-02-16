@@ -25,8 +25,8 @@ interface BriefsTableProps {
 export function BriefsTable({ briefs }: BriefsTableProps) {
   const router = useRouter()
 
-  async function handleApprove(briefId: string) {
-    const result = await approveBrief(briefId)
+  async function handleApprove(briefId: string, notes: string) {
+    const result = await approveBrief(briefId, notes || undefined)
     if (result.success) {
       router.refresh()
     } else {
@@ -34,8 +34,8 @@ export function BriefsTable({ briefs }: BriefsTableProps) {
     }
   }
 
-  async function handleReject(briefId: string, reason: string) {
-    const result = await rejectBriefAction(briefId, reason)
+  async function handleReject(briefId: string, reason: string, notes: string) {
+    const result = await rejectBriefAction(briefId, reason, notes || undefined)
     if (result.success) {
       router.refresh()
     } else {

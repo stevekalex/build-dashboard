@@ -12,11 +12,13 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
 import { AlertTriangle, CheckCircle, CheckCircle2 } from 'lucide-react'
 
 interface ApproveDialogProps {
   brief: Brief
-  onApprove: (briefId: string) => Promise<void>
+  onApprove: (briefId: string, notes: string) => Promise<void>
 }
 
 interface ParsedBrief {
@@ -27,14 +29,16 @@ interface ParsedBrief {
 export function ApproveDialog({ brief, onApprove }: ApproveDialogProps) {
   const [open, setOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [notes, setNotes] = useState('')
 
   const parsedBrief = parseBriefData(brief.brief)
 
   async function handleConfirm() {
     setIsLoading(true)
     try {
-      await onApprove(brief.id)
+      await onApprove(brief.id, notes)
       setOpen(false)
+      setNotes('')
     } catch (error) {
       console.error('Failed to approve brief:', error)
     } finally {
@@ -103,9 +107,23 @@ export function ApproveDialog({ brief, onApprove }: ApproveDialogProps) {
               </div>
             </div>
           )}
+
+          {/* 4. Notes (Optional) */}
+          <div className="space-y-2">
+            <Label htmlFor="approve-notes" className="text-sm font-semibold text-gray-700">
+              Notes (optional)
+            </Label>
+            <Textarea
+              id="approve-notes"
+              placeholder="Add any notes about this approval..."
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={3}
+            />
+          </div>
         </div>
 
-        {/* 4. Confirm/Cancel Buttons */}
+        {/* 5. Confirm/Cancel Buttons */}
         <DialogFooter className="flex-shrink-0 gap-2">
           <Button
             variant="outline"

@@ -11,6 +11,12 @@ vi.mock('next/navigation', () => ({
   }),
 }))
 
+// Mock server actions (which import job-pulse that requires NEXT_PUBLIC_JOB_PULSE_URL)
+vi.mock('@/app/actions', () => ({
+  approveBrief: vi.fn(),
+  rejectBriefAction: vi.fn(),
+}))
+
 const mockBriefs: Brief[] = [
   {
     id: 'rec123',
@@ -59,18 +65,20 @@ describe('BriefsTable - Happy Path', () => {
     expect(screen.getByText('Web App')).toBeInTheDocument()
   })
 
-  it('should truncate long descriptions', () => {
+  it('should render long descriptions with line clamping', () => {
     render(<BriefsTable briefs={mockBriefs} />)
 
-    // First description is over 100 chars, should be truncated
+    // Component uses CSS line-clamp-2 for truncation
     const description = screen.getByText(/Create a comprehensive dashboard/i)
-    expect(description.textContent).toContain('...')
+    expect(description.className).toContain('line-clamp-2')
   })
 
   it('should show route count', () => {
     render(<BriefsTable briefs={mockBriefs} />)
 
-    expect(screen.getByText('1 route')).toBeInTheDocument()
+    // Route count is split across two elements: number + label
+    expect(screen.getByText('1')).toBeInTheDocument()
+    expect(screen.getByText('route')).toBeInTheDocument()
   })
 
   it('should render approve and reject buttons', () => {
@@ -99,7 +107,7 @@ describe('BriefsTable - Edge Cases', () => {
 
     render(<BriefsTable briefs={[briefWithoutRoutes]} />)
 
-    expect(screen.getByText('0 routes')).toBeInTheDocument()
+    expect(screen.getByText('No routes')).toBeInTheDocument()
   })
 
   it('should handle short descriptions without truncation', () => {

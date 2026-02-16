@@ -70,7 +70,7 @@ describe('RejectDialog - Happy Path', () => {
     await user.click(screen.getByRole('button', { name: /confirm/i }))
 
     await waitFor(() => {
-      expect(mockOnReject).toHaveBeenCalledWith('rec123', 'Scope unclear - needs more detail')
+      expect(mockOnReject).toHaveBeenCalledWith('rec123', 'Scope unclear - needs more detail', '')
     })
   })
 
@@ -142,7 +142,7 @@ describe('RejectDialog - Edge Cases', () => {
     await user.click(screen.getByRole('button', { name: /confirm/i }))
 
     await waitFor(() => {
-      expect(mockOnReject).toHaveBeenCalledWith('rec123', 'Custom rejection reason')
+      expect(mockOnReject).toHaveBeenCalledWith('rec123', 'Custom rejection reason', '')
     })
   })
 

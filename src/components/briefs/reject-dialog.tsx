@@ -18,7 +18,7 @@ import { Textarea } from '@/components/ui/textarea'
 
 interface RejectDialogProps {
   brief: Brief
-  onReject: (briefId: string, reason: string) => Promise<void>
+  onReject: (briefId: string, reason: string, notes: string) => Promise<void>
 }
 
 const PREDEFINED_REASONS = [
@@ -33,6 +33,7 @@ export function RejectDialog({ brief, onReject }: RejectDialogProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [selectedReason, setSelectedReason] = useState<string>('')
   const [customReason, setCustomReason] = useState<string>('')
+  const [notes, setNotes] = useState<string>('')
 
   function getReason(): string {
     if (selectedReason === 'other') {
@@ -54,11 +55,12 @@ export function RejectDialog({ brief, onReject }: RejectDialogProps) {
 
     setIsLoading(true)
     try {
-      await onReject(brief.id, reason)
+      await onReject(brief.id, reason, notes)
       setOpen(false)
       // Reset form
       setSelectedReason('')
       setCustomReason('')
+      setNotes('')
     } finally {
       setIsLoading(false)
     }
@@ -69,6 +71,7 @@ export function RejectDialog({ brief, onReject }: RejectDialogProps) {
     // Reset form
     setSelectedReason('')
     setCustomReason('')
+    setNotes('')
   }
 
   return (
@@ -110,6 +113,17 @@ export function RejectDialog({ brief, onReject }: RejectDialogProps) {
               />
             </div>
           )}
+
+          <div className="space-y-2">
+            <Label htmlFor="reject-notes">Notes (optional)</Label>
+            <Textarea
+              id="reject-notes"
+              placeholder="Add any additional notes..."
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={3}
+            />
+          </div>
         </div>
 
         <DialogFooter>

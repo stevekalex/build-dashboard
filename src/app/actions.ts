@@ -31,10 +31,10 @@ async function getUserName(): Promise<string> {
  * 2. Calls Job Pulse API to trigger the build
  * 3. Revalidates the dashboard page to show updated status
  */
-export async function approveBrief(briefId: string): Promise<{ success: boolean; error?: string }> {
+export async function approveBrief(briefId: string, notes?: string): Promise<{ success: boolean; error?: string }> {
   try {
     const userName = await getUserName()
-    await triggerBuild(briefId, userName)
+    await triggerBuild(briefId, userName, notes)
 
     // Revalidate the dashboard to show updated status
     revalidatePath('/')
@@ -60,11 +60,12 @@ export async function approveBrief(briefId: string): Promise<{ success: boolean;
  */
 export async function rejectBriefAction(
   briefId: string,
-  reason: string
+  reason: string,
+  notes?: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const userName = await getUserName()
-    await rejectBuild(briefId, reason, userName)
+    await rejectBuild(briefId, reason, userName, notes)
 
     // Revalidate the dashboard to remove the brief
     revalidatePath('/')

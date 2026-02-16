@@ -11,7 +11,10 @@ const mockBrief: Brief = {
   description: 'Create a dashboard',
   template: 'dashboard',
   buildable: true,
-  brief: 'template: dashboard\nroutes:\n  - path: /dashboard\n    name: Overview',
+  brief: JSON.stringify({
+    done_criteria: ['Build the dashboard', 'Add charts'],
+    prototype: { name: 'CRM Dashboard' },
+  }),
   routes: [{ path: '/dashboard', name: 'Overview' }],
   createdAt: '2026-02-10T10:00:00Z',
   status: 'pending',
@@ -33,7 +36,8 @@ describe('ApproveDialog - Happy Path', () => {
     const button = screen.getByRole('button', { name: /start build/i })
     await user.click(button)
 
-    expect(screen.getByText(/are you sure/i)).toBeInTheDocument()
+    // Dialog title is "Start Build"
+    expect(screen.getByText('Build CRM Dashboard')).toBeInTheDocument()
   })
 
   it('should display brief details in dialog', async () => {
@@ -42,9 +46,10 @@ describe('ApproveDialog - Happy Path', () => {
 
     await user.click(screen.getByRole('button', { name: /start build/i }))
 
-    expect(screen.getByText(/approve build/i)).toBeInTheDocument()
-    expect(screen.getByText('Template')).toBeInTheDocument()
-    expect(screen.getByText(/1 route/i)).toBeInTheDocument()
+    // Shows description and done criteria
+    expect(screen.getByText('Create a dashboard')).toBeInTheDocument()
+    expect(screen.getByText('Build the dashboard')).toBeInTheDocument()
+    expect(screen.getByText('Add charts')).toBeInTheDocument()
   })
 
   it('should show warning about build duration', async () => {
@@ -64,7 +69,7 @@ describe('ApproveDialog - Happy Path', () => {
     await user.click(screen.getByRole('button', { name: /confirm/i }))
 
     await waitFor(() => {
-      expect(mockOnApprove).toHaveBeenCalledWith(mockBrief.id)
+      expect(mockOnApprove).toHaveBeenCalledWith(mockBrief.id, '')
     })
   })
 
@@ -73,12 +78,12 @@ describe('ApproveDialog - Happy Path', () => {
     render(<ApproveDialog brief={mockBrief} onApprove={mockOnApprove} />)
 
     await user.click(screen.getByRole('button', { name: /start build/i }))
-    expect(screen.getByText(/are you sure/i)).toBeInTheDocument()
+    expect(screen.getByText(/45 minute/i)).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: /cancel/i }))
 
     await waitFor(() => {
-      expect(screen.queryByText(/are you sure/i)).not.toBeInTheDocument()
+      expect(screen.queryByText(/45 minute/i)).not.toBeInTheDocument()
     })
   })
 })
@@ -105,16 +110,34 @@ describe('ApproveDialog - Edge Cases', () => {
     await user.click(screen.getByRole('button', { name: /start build/i }))
     await user.click(screen.getByRole('button', { name: /confirm/i }))
 
-    expect(screen.getByText(/approving/i)).toBeInTheDocument()
+    expect(screen.getByText(/starting build/i)).toBeInTheDocument()
   })
 
-  it('should handle briefs with no routes', async () => {
-    const briefWithoutRoutes = { ...mockBrief, routes: undefined }
+  it('should handle briefs with no done criteria', async () => {
+    const briefWithoutCriteria = { ...mockBrief, brief: '{}' }
     const user = userEvent.setup()
-    render(<ApproveDialog brief={briefWithoutRoutes} onApprove={mockOnApprove} />)
+    render(<ApproveDialog brief={briefWithoutCriteria} onApprove={mockOnApprove} />)
 
     await user.click(screen.getByRole('button', { name: /start build/i }))
 
-    expect(screen.getByText(/0 routes/i)).toBeInTheDocument()
+    // Should still show the dialog without the Key Tasks section
+    expect(screen.queryByText(/key tasks/i)).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /confirm/i })).toBeInTheDocument()
+  })
+
+  it('should pass notes to onApprove when provided', async () => {
+    const onApprove = vi.fn()
+    const user = userEvent.setup()
+    render(<ApproveDialog brief={mockBrief} onApprove={onApprove} />)
+
+    await user.click(screen.getByRole('button', { name: /start build/i }))
+
+    const notesTextarea = screen.getByPlaceholderText(/add any notes about this approval/i)
+    await user.type(notesTextarea, 'Looks good to build')
+    await user.click(screen.getByRole('button', { name: /confirm/i }))
+
+    await waitFor(() => {
+      expect(onApprove).toHaveBeenCalledWith(mockBrief.id, 'Looks good to build')
+    })
   })
 })
