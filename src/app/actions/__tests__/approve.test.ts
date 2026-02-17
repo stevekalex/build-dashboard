@@ -51,12 +51,13 @@ describe('approveBrief', () => {
     })
   })
 
-  it('should revalidate jobs-approve tag', async () => {
+  it('should revalidate cache tags', async () => {
     const { revalidateTag } = await import('next/cache')
     const { approveBrief } = await import('../approve')
     await approveBrief('job123')
 
     expect(revalidateTag).toHaveBeenCalledWith('jobs-approve', 'dashboard')
+    expect(revalidateTag).toHaveBeenCalledWith('jobs-building', 'dashboard')
   })
 
   it('should return success on successful approval', async () => {
@@ -111,12 +112,13 @@ describe('rejectBrief', () => {
     expect(mockRejectBuild).toHaveBeenCalledWith('job123', 'Scope unclear', 'Steve', 'some notes')
   })
 
-  it('should revalidate jobs-approve tag', async () => {
+  it('should revalidate cache tags', async () => {
     const { revalidateTag } = await import('next/cache')
     const { rejectBrief } = await import('../approve')
     await rejectBrief('job123', 'Too complex')
 
     expect(revalidateTag).toHaveBeenCalledWith('jobs-approve', 'dashboard')
+    expect(revalidateTag).toHaveBeenCalledWith('jobs-building', 'dashboard')
   })
 
   it('should return success on successful rejection', async () => {

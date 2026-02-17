@@ -45,6 +45,7 @@ export async function approveBrief(
     })
 
     revalidateTag('jobs-approve', 'dashboard')
+    revalidateTag('jobs-building', 'dashboard')
 
     return { success: true }
   } catch (error) {
@@ -73,6 +74,7 @@ export async function rejectBrief(
     await rejectBuild(jobId, reason, userName, notes)
 
     revalidateTag('jobs-approve', 'dashboard')
+    revalidateTag('jobs-building', 'dashboard')
 
     return { success: true }
   } catch (error) {

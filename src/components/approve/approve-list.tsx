@@ -87,13 +87,7 @@ export function ApproveList({ jobs }: ApproveListProps) {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between mb-2">
-        <h2 className="text-lg font-semibold text-gray-900">
-          Jobs to Approve ({optimisticJobs.length})
-        </h2>
-      </div>
-      <div className="space-y-3">
+    <div className="space-y-3">
         {optimisticJobs.map((job) => {
           const brief = jobToBrief(job)
           const skills = job.skills
@@ -149,7 +143,6 @@ export function ApproveList({ jobs }: ApproveListProps) {
             </Card>
           )
         })}
-      </div>
     </div>
   )
 }
