@@ -333,3 +333,104 @@ unique_interactions: drag and drop`
     expect(jobs[0].template).toBe('unknown')
   })
 })
+
+describe('getJobsToApprove - N+1 fallback', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    vi.stubEnv('AIRTABLE_API_KEY', 'test-key')
+    vi.stubEnv('AIRTABLE_BASE_ID', 'test-base')
+  })
+
+  afterEach(() => {
+    vi.unstubAllEnvs()
+  })
+
+  it('should fall back to N+1 Build Details lookups when Lookup fields do not exist', async () => {
+    // First call (Lookup path) fails — Airtable rejects the filter formula
+    // Second call (fallback path) succeeds with stage-only filter
+    let callCount = 0
+    mockAll.mockImplementation(() => {
+      callCount++
+      if (callCount === 1) {
+        // Lookup path: Airtable rejects the filter with unknown field
+        return Promise.reject(new Error('UNKNOWN_FIELD_NAME'))
+      }
+      // Fallback path: returns records without Buildable filter
+      return Promise.resolve([
+        {
+          id: 'rec1',
+          get: (field: string) => {
+            const data: Record<string, any> = {
+              'Job ID': 'job1',
+              'Job Title': 'Fallback Job',
+              'Job Description': 'Uses N+1 path',
+              'Scraped At': '2026-02-10T10:00:00Z',
+              'Budget Amount': 500,
+              'Budget Type': 'Fixed',
+              'Skills': 'React',
+              'Build Details': ['build1'],
+            }
+            return data[field]
+          },
+        },
+        {
+          id: 'rec2',
+          get: (field: string) => {
+            const data: Record<string, any> = {
+              'Job ID': 'job2',
+              'Job Title': 'Unbuildable Job',
+              'Job Description': 'Should be filtered out',
+              'Scraped At': '2026-02-10T11:00:00Z',
+              'Budget Amount': null,
+              'Budget Type': null,
+              'Skills': null,
+              'Build Details': ['build2'],
+            }
+            return data[field]
+          },
+        },
+      ])
+    })
+
+    // mockFind handles N+1 Build Details lookups
+    mockFind.mockImplementation((id: string) => {
+      if (id === 'build1') {
+        return Promise.resolve({
+          id: 'build1',
+          fields: {
+            Buildable: true,
+            'Buildable Reasoning': 'Clear scope',
+            'Brief YAML': 'template: dashboard',
+          },
+        })
+      }
+      if (id === 'build2') {
+        return Promise.resolve({
+          id: 'build2',
+          fields: {
+            Buildable: false,
+            'Buildable Reasoning': 'Too complex',
+            'Brief YAML': '',
+          },
+        })
+      }
+      return Promise.reject(new Error('Not found'))
+    })
+
+    const { getJobsToApprove } = await import('../approve')
+    const jobs = await getJobsToApprove()
+
+    // Should only return buildable job (rec1), filtering out rec2
+    expect(jobs).toHaveLength(1)
+    expect(jobs[0]).toMatchObject({
+      id: 'rec1',
+      jobId: 'job1',
+      title: 'Fallback Job',
+      buildable: true,
+      buildableReasoning: 'Clear scope',
+    })
+
+    // Fallback path DOES use mockFind (N+1)
+    expect(mockFind).toHaveBeenCalledTimes(2)
+  })
+})
