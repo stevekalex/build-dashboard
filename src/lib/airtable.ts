@@ -1,17 +1,23 @@
 import Airtable from 'airtable'
 import yaml from 'js-yaml'
 import { Brief, Build } from '@/types/brief'
-import { TABLES, JOBS, BUILD, STAGES } from './airtable-fields'
+import { TABLES, JOBS, STAGES } from './airtable-fields'
 
-// Initialize Airtable client
+// Initialize Airtable client (singleton)
+let _base: ReturnType<InstanceType<typeof Airtable>['base']> | null = null
+
 export function getBase() {
-  return new Airtable({
-    apiKey: process.env.AIRTABLE_API_KEY!,
-  }).base(process.env.AIRTABLE_BASE_ID!)
+  if (!_base) {
+    _base = new Airtable({
+      apiKey: process.env.AIRTABLE_API_KEY!,
+    }).base(process.env.AIRTABLE_BASE_ID!)
+  }
+  return _base
 }
 
 /**
- * Fetch briefs that are pending approval from Airtable
+ * Fetch briefs that are pending approval from Airtable.
+ * Uses Lookup fields — single API call, no N+1.
  */
 export async function getBriefsPendingApproval(): Promise<Brief[]> {
   const base = getBase()
@@ -21,53 +27,37 @@ export async function getBriefsPendingApproval(): Promise<Brief[]> {
     })
     .all()
 
-  const briefs = await Promise.all(
-    records.map(async (record) => {
-      const buildDetailsIds = record.get(JOBS.BUILD_DETAILS) as string[] | null
-      const buildDetailsId = buildDetailsIds && buildDetailsIds.length > 0 ? buildDetailsIds[0] : null
+  return records.map((record) => {
+    const jobId = (record.get('Job ID') as string) || record.id
+    const title = (record.get(JOBS.JOB_TITLE) as string) || 'Untitled Job'
+    const description = (record.get(JOBS.JOB_DESCRIPTION) as string) || ''
+    const createdAt = (record.get(JOBS.SCRAPED_AT) as string) || (record as any)._createdTime || new Date().toISOString()
 
-      let buildData: any = null
-      if (buildDetailsId) {
-        try {
-          const buildDetailsRecord = await base(TABLES.BUILD_DETAILS).find(buildDetailsId)
-          buildData = buildDetailsRecord.fields
-        } catch (error) {
-          console.error('Failed to fetch Build Details:', error)
-        }
-      }
+    const buildable = lookupBoolean(record, JOBS.BUILD_BUILDABLE)
+    const brief = lookupString(record, JOBS.BUILD_BRIEF_YAML) || ''
+    const status = lookupString(record, JOBS.BUILD_STATUS) || 'pending'
 
-      const jobId = (record.get('Job ID') as string) || record.id
-      const title = (record.get(JOBS.JOB_TITLE) as string) || 'Untitled Job'
-      const description = (record.get(JOBS.JOB_DESCRIPTION) as string) || ''
-      const createdAt = (record.get(JOBS.SCRAPED_AT) as string) || (record as any)._createdTime || new Date().toISOString()
+    const parsedData = brief ? parseBriefData(brief) : {}
 
-      const buildable = buildData?.[BUILD.BUILDABLE] ?? false
-      const brief = (buildData?.[BUILD.BRIEF_YAML] as string) || ''
-      const status = (buildData?.[BUILD.STATUS] as string) || 'pending'
-
-      const parsedData = brief ? parseBriefData(brief) : {}
-
-      return {
-        id: record.id,
-        jobId,
-        title,
-        description,
-        template: parsedData.template ?? ('unknown' as const),
-        buildable,
-        brief,
-        routes: parsedData.routes,
-        uniqueInteractions: parsedData.uniqueInteractions,
-        createdAt,
-        status: mapStatus(status),
-      }
-    })
-  )
-
-  return briefs
+    return {
+      id: record.id,
+      jobId,
+      title,
+      description,
+      template: parsedData.template ?? ('unknown' as const),
+      buildable,
+      brief,
+      routes: parsedData.routes,
+      uniqueInteractions: parsedData.uniqueInteractions,
+      createdAt,
+      status: mapStatus(status),
+    }
+  })
 }
 
 /**
- * Fetch a single brief by ID from Airtable
+ * Fetch a single brief by ID from Airtable.
+ * Uses Lookup fields — single API call, no secondary Build Details fetch.
  */
 export async function getBriefById(id: string): Promise<Brief | null> {
   const base = getBase()
@@ -75,27 +65,14 @@ export async function getBriefById(id: string): Promise<Brief | null> {
   try {
     const record = await base(TABLES.JOBS_PIPELINE).find(id)
 
-    const buildDetailsIds = record.get(JOBS.BUILD_DETAILS) as string[] | null
-    const buildDetailsId = buildDetailsIds && buildDetailsIds.length > 0 ? buildDetailsIds[0] : null
-
-    let buildData: any = null
-    if (buildDetailsId) {
-      try {
-        const buildDetailsRecord = await base(TABLES.BUILD_DETAILS).find(buildDetailsId)
-        buildData = buildDetailsRecord.fields
-      } catch (error) {
-        console.error('Failed to fetch Build Details:', error)
-      }
-    }
-
     const jobId = (record.get('Job ID') as string) || record.id
     const title = (record.get(JOBS.JOB_TITLE) as string) || 'Untitled Job'
     const description = (record.get(JOBS.JOB_DESCRIPTION) as string) || ''
     const createdAt = (record.get(JOBS.SCRAPED_AT) as string) || (record as any)._createdTime || new Date().toISOString()
 
-    const buildable = buildData?.[BUILD.BUILDABLE] ?? false
-    const brief = (buildData?.[BUILD.BRIEF_YAML] as string) || ''
-    const status = (buildData?.[BUILD.STATUS] as string) || 'pending'
+    const buildable = lookupBoolean(record, JOBS.BUILD_BUILDABLE)
+    const brief = lookupString(record, JOBS.BUILD_BRIEF_YAML) || ''
+    const status = lookupString(record, JOBS.BUILD_STATUS) || 'pending'
 
     const parsedData = brief ? parseBriefData(brief) : {}
 
@@ -116,6 +93,35 @@ export async function getBriefById(id: string): Promise<Brief | null> {
     console.error('Failed to fetch brief by ID:', error)
     return null
   }
+}
+
+/**
+ * Safely read a Lookup field string value (returns first element of the array).
+ * Lookup fields on 1-to-1 links return single-element arrays like ["value"].
+ */
+function lookupString(record: any, field: string): string | undefined {
+  const val = record.get(field)
+  if (Array.isArray(val)) return val[0] as string | undefined
+  if (typeof val === 'string') return val
+  return undefined
+}
+
+/**
+ * Safely read a Lookup field boolean value.
+ */
+function lookupBoolean(record: any, field: string): boolean {
+  const val = record.get(field)
+  if (Array.isArray(val)) return val[0] === true
+  return val === true
+}
+
+/**
+ * Safely read a Lookup field number value.
+ */
+function lookupNumber(record: any, field: string): number | undefined {
+  const val = record.get(field)
+  if (Array.isArray(val)) return typeof val[0] === 'number' ? val[0] : undefined
+  return typeof val === 'number' ? val : undefined
 }
 
 /**
@@ -163,8 +169,9 @@ function parseBriefData(briefData: string): {
 }
 
 /**
- * Fetch all builds (approved, deployed, failed) for the kanban view
- * Returns last 37 builds sorted by most recent first
+ * Fetch all builds (approved, deployed, failed) for the kanban view.
+ * Uses Lookup fields — single API call, no N+1.
+ * Returns last 37 builds sorted by most recent first.
  */
 export async function getAllBuilds(): Promise<Build[]> {
   const base = getBase()
@@ -181,56 +188,39 @@ export async function getAllBuilds(): Promise<Build[]> {
     })
     .all()
 
-  const builds = await Promise.all(
-    records.map(async (record) => {
-      const buildDetailsIds = record.get(JOBS.BUILD_DETAILS) as string[] | null
-      const buildDetailsId = buildDetailsIds && buildDetailsIds.length > 0 ? buildDetailsIds[0] : null
+  return records.map((record) => {
+    const jobId = (record.get('Job ID') as string) || record.id
+    const title = (record.get(JOBS.JOB_TITLE) as string) || 'Untitled Job'
+    const description = (record.get(JOBS.JOB_DESCRIPTION) as string) || ''
+    const createdAt = (record.get(JOBS.SCRAPED_AT) as string) || (record as any)._createdTime || new Date().toISOString()
+    const stageRaw = (record.get(JOBS.STAGE) as string) || ''
 
-      let buildData: any = null
-      if (buildDetailsId) {
-        try {
-          const buildDetailsRecord = await base(TABLES.BUILD_DETAILS).find(buildDetailsId)
-          buildData = buildDetailsRecord.fields
-        } catch (error) {
-          console.error('Failed to fetch Build Details:', error)
-        }
-      }
+    const status = lookupString(record, JOBS.BUILD_STATUS) || 'building'
+    const buildStarted = lookupString(record, JOBS.BUILD_STARTED)
+    const buildCompleted = lookupString(record, JOBS.BUILD_COMPLETED)
+    const buildDuration = lookupNumber(record, JOBS.BUILD_DURATION)
+    const prototypeUrl = lookupString(record, JOBS.BUILD_PROTOTYPE_URL)
+    const buildError = lookupString(record, JOBS.BUILD_ERROR)
+    const brief = lookupString(record, JOBS.BUILD_BRIEF_YAML) || ''
 
-      const jobId = (record.get('Job ID') as string) || record.id
-      const title = (record.get(JOBS.JOB_TITLE) as string) || 'Untitled Job'
-      const description = (record.get(JOBS.JOB_DESCRIPTION) as string) || ''
-      const createdAt = (record.get(JOBS.SCRAPED_AT) as string) || (record as any)._createdTime || new Date().toISOString()
-      const stageRaw = (record.get(JOBS.STAGE) as string) || ''
+    const parsedData = brief ? parseBriefData(brief) : {}
 
-      const status = (buildData?.[BUILD.STATUS] as string) || 'building'
-      const buildStarted = buildData?.[BUILD.BUILD_STARTED] as string | undefined
-      const buildCompleted = buildData?.[BUILD.BUILD_COMPLETED] as string | undefined
-      const buildDuration = buildData?.[BUILD.BUILD_DURATION] as number | undefined
-      const prototypeUrl = buildData?.[BUILD.PROTOTYPE_URL] as string | undefined
-      const buildError = buildData?.[BUILD.BUILD_ERROR] as string | undefined
-      const brief = (buildData?.[BUILD.BRIEF_YAML] as string) || ''
-
-      const parsedData = brief ? parseBriefData(brief) : {}
-
-      return {
-        id: record.id,
-        jobId,
-        title,
-        description,
-        stage: mapStage(stageRaw),
-        status: mapBuildStatus(status),
-        template: parsedData.template ?? ('unknown' as const),
-        buildStarted,
-        buildCompleted,
-        buildDuration,
-        prototypeUrl,
-        buildError,
-        createdAt,
-      }
-    })
-  )
-
-  return builds
+    return {
+      id: record.id,
+      jobId,
+      title,
+      description,
+      stage: mapStage(stageRaw),
+      status: mapBuildStatus(status),
+      template: parsedData.template ?? ('unknown' as const),
+      buildStarted,
+      buildCompleted,
+      buildDuration,
+      prototypeUrl,
+      buildError,
+      createdAt,
+    }
+  })
 }
 
 /**

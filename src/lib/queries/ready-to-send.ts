@@ -1,9 +1,13 @@
-import { TABLES, JOBS, BUILD, STAGES } from '@/lib/airtable-fields'
+import { TABLES, JOBS, STAGES } from '@/lib/airtable-fields'
 import { getBase } from '@/lib/airtable'
 import { Job } from '@/types/brief'
 
 /**
  * Fetch jobs that are ready to send as applications.
+ *
+ * Uses Lookup fields on Jobs Pipeline to read Build Details data
+ * in a single API call (no N+1 secondary lookups).
+ *
  * Filters for deployed/prototype built stages where Applied At is blank.
  * Sorted by Scraped At ascending (oldest first — speed advantage).
  */
@@ -20,67 +24,61 @@ export async function getReadyToSend(): Promise<Job[]> {
     })
     .all()
 
-  const jobs = await Promise.all(
-    records.map(async (record) => {
-      const buildDetailsIds = record.get(JOBS.BUILD_DETAILS) as string[] | null
-      const buildDetailsId = buildDetailsIds && buildDetailsIds.length > 0 ? buildDetailsIds[0] : null
+  return records.map((record) => {
+    const jobId = (record.get('Job ID') as string) || record.id
+    const title = (record.get(JOBS.JOB_TITLE) as string) || 'Untitled Job'
+    const description = (record.get(JOBS.JOB_DESCRIPTION) as string) || ''
+    const stage = (record.get(JOBS.STAGE) as string) || ''
+    const scrapedAt = (record.get(JOBS.SCRAPED_AT) as string) || new Date().toISOString()
 
-      let buildData: any = null
-      if (buildDetailsId) {
-        try {
-          const buildDetailsRecord = await base(TABLES.BUILD_DETAILS).find(buildDetailsId)
-          buildData = buildDetailsRecord.fields
-        } catch (error) {
-          console.error('Failed to fetch Build Details:', error)
-        }
-      }
+    // Application-related fields from Jobs Pipeline
+    const coverLetter = record.get(JOBS.AI_COVER_LETTER) as string | undefined
+    const aiLoomOutline = record.get(JOBS.AI_LOOM_OUTLINE) as string | undefined
+    const jobUrl = record.get(JOBS.JOB_URL) as string | undefined
+    const loomUrl = record.get(JOBS.LOOM_URL) as string | undefined
+    const budgetAmount = record.get(JOBS.BUDGET_AMOUNT) as number | undefined
+    const budgetType = record.get(JOBS.BUDGET_TYPE) as string | undefined
+    const skills = record.get(JOBS.SKILLS) as string | undefined
 
-      const jobId = (record.get('Job ID') as string) || record.id
-      const title = (record.get(JOBS.JOB_TITLE) as string) || 'Untitled Job'
-      const description = (record.get(JOBS.JOB_DESCRIPTION) as string) || ''
-      const stage = (record.get(JOBS.STAGE) as string) || ''
-      const scrapedAt = (record.get(JOBS.SCRAPED_AT) as string) || new Date().toISOString()
+    // Prototype URL: prefer Jobs Pipeline field, fall back to Build Details Lookup
+    const prototypeUrl =
+      (record.get(JOBS.PROTOTYPE_URL) as string | undefined) ||
+      lookupString(record, JOBS.BUILD_PROTOTYPE_URL)
 
-      // Application-related fields from Jobs Pipeline
-      const coverLetter = record.get(JOBS.AI_COVER_LETTER) as string | undefined
-      const aiLoomOutline = record.get(JOBS.AI_LOOM_OUTLINE) as string | undefined
-      const jobUrl = record.get(JOBS.JOB_URL) as string | undefined
-      const loomUrl = record.get(JOBS.LOOM_URL) as string | undefined
-      const budgetAmount = record.get(JOBS.BUDGET_AMOUNT) as number | undefined
-      const budgetType = record.get(JOBS.BUDGET_TYPE) as string | undefined
-      const skills = record.get(JOBS.SKILLS) as string | undefined
+    // Brief data from Lookup field
+    const brief = lookupString(record, JOBS.BUILD_BRIEF_YAML) || undefined
+    const template = parseTemplate(brief)
 
-      // Prototype URL: prefer Jobs Pipeline field, fall back to Build Details
-      const prototypeUrl =
-        (record.get(JOBS.PROTOTYPE_URL) as string | undefined) ||
-        (buildData?.[BUILD.PROTOTYPE_URL] as string | undefined)
+    return {
+      id: record.id,
+      jobId,
+      title,
+      description,
+      stage,
+      scrapedAt,
+      prototypeUrl,
+      brief,
+      template,
+      coverLetter,
+      aiLoomOutline,
+      jobUrl,
+      loomUrl,
+      budgetAmount,
+      budgetType,
+      skills,
+    } satisfies Job
+  })
+}
 
-      // Brief data from Build Details
-      const brief = (buildData?.[BUILD.BRIEF_YAML] as string) || undefined
-      const template = parseTemplate(brief)
-
-      return {
-        id: record.id,
-        jobId,
-        title,
-        description,
-        stage,
-        scrapedAt,
-        prototypeUrl,
-        brief,
-        template,
-        coverLetter,
-        aiLoomOutline,
-        jobUrl,
-        loomUrl,
-        budgetAmount,
-        budgetType,
-        skills,
-      } satisfies Job
-    })
-  )
-
-  return jobs
+/**
+ * Safely read a Lookup field value (returns first element of the array).
+ * Lookup fields on 1-to-1 links return single-element arrays like ["value"].
+ */
+function lookupString(record: any, field: string): string | undefined {
+  const val = record.get(field)
+  if (Array.isArray(val)) return val[0] as string | undefined
+  if (typeof val === 'string') return val
+  return undefined
 }
 
 /**

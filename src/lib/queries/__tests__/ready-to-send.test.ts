@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { Job } from '@/types/brief'
 
-// Create mock functions
+// Create mock functions — includes mockFind to verify N+1 is eliminated
 const mockAll = vi.fn()
 const mockSelect = vi.fn(() => ({ all: mockAll }))
 const mockFind = vi.fn()
@@ -70,7 +69,7 @@ describe('getReadyToSend - Happy Path', () => {
     )
   })
 
-  it('should fetch and map job records with build details', async () => {
+  it('should map job records using Lookup fields', async () => {
     const mockRecords = [
       {
         id: 'rec123',
@@ -81,7 +80,6 @@ describe('getReadyToSend - Happy Path', () => {
             'Job Description': 'Create a dashboard',
             'Stage': '🏗️ Deployed',
             'Scraped At': '2026-02-10T10:00:00Z',
-            'Build Details': ['buildRec1'],
             'AI Cover Letter': 'Dear hiring manager...',
             'AI Loom Outline': 'Walk through the prototype...',
             'Job URL': 'https://upwork.com/jobs/123',
@@ -89,8 +87,10 @@ describe('getReadyToSend - Happy Path', () => {
             'Budget Amount': 500,
             'Budget Type': 'Fixed',
             'Skills': 'React, TypeScript',
-            'Applied At': undefined,
             'Prototype URL': 'https://proto.example.com',
+            // Lookup fields from Build Details
+            'Build: Prototype URL': ['https://build-proto.example.com'],
+            'Build: Brief YAML': ['template: dashboard'],
           }
           return data[field]
         },
@@ -98,13 +98,6 @@ describe('getReadyToSend - Happy Path', () => {
     ]
 
     mockAll.mockResolvedValue(mockRecords)
-    mockFind.mockResolvedValue({
-      id: 'buildRec1',
-      fields: {
-        'Prototype URL': 'https://build-proto.example.com',
-        'Brief YAML': 'template: dashboard',
-      },
-    })
 
     const { getReadyToSend } = await import('../ready-to-send')
     const jobs = await getReadyToSend()
@@ -127,7 +120,7 @@ describe('getReadyToSend - Happy Path', () => {
     })
   })
 
-  it('should fetch prototype URL from Build Details', async () => {
+  it('should prefer Jobs Pipeline Prototype URL over Lookup field', async () => {
     const mockRecords = [
       {
         id: 'rec123',
@@ -138,8 +131,9 @@ describe('getReadyToSend - Happy Path', () => {
             'Job Description': 'Test desc',
             'Stage': '🎁 Prototype Built',
             'Scraped At': '2026-02-10T10:00:00Z',
-            'Build Details': ['buildRec1'],
             'Prototype URL': 'https://job-proto.example.com',
+            'Build: Prototype URL': ['https://build-proto.example.com'],
+            'Build: Brief YAML': ['template: web_app'],
           }
           return data[field]
         },
@@ -147,19 +141,40 @@ describe('getReadyToSend - Happy Path', () => {
     ]
 
     mockAll.mockResolvedValue(mockRecords)
-    mockFind.mockResolvedValue({
-      id: 'buildRec1',
-      fields: {
-        'Prototype URL': 'https://build-proto.example.com',
-        'Brief YAML': 'template: web_app',
-      },
-    })
 
     const { getReadyToSend } = await import('../ready-to-send')
     const jobs = await getReadyToSend()
 
-    // Should use Prototype URL from Jobs Pipeline first, or Build Details as fallback
-    expect(jobs[0].prototypeUrl).toBeDefined()
+    // Should prefer Jobs Pipeline field over Lookup field
+    expect(jobs[0].prototypeUrl).toBe('https://job-proto.example.com')
+  })
+
+  it('should fall back to Lookup Prototype URL when Jobs Pipeline field is empty', async () => {
+    const mockRecords = [
+      {
+        id: 'rec123',
+        get: (field: string) => {
+          const data: Record<string, any> = {
+            'Job ID': 'recABC',
+            'Job Title': 'Test Job',
+            'Job Description': 'Test desc',
+            'Stage': '🏗️ Deployed',
+            'Scraped At': '2026-02-10T10:00:00Z',
+            'Prototype URL': undefined,
+            'Build: Prototype URL': ['https://build-proto.example.com'],
+            'Build: Brief YAML': ['template: dashboard'],
+          }
+          return data[field]
+        },
+      },
+    ]
+
+    mockAll.mockResolvedValue(mockRecords)
+
+    const { getReadyToSend } = await import('../ready-to-send')
+    const jobs = await getReadyToSend()
+
+    expect(jobs[0].prototypeUrl).toBe('https://build-proto.example.com')
   })
 })
 
@@ -183,7 +198,7 @@ describe('getReadyToSend - Edge Cases', () => {
     expect(jobs).toEqual([])
   })
 
-  it('should handle records with no Build Details', async () => {
+  it('should handle records with no Lookup field values', async () => {
     const mockRecords = [
       {
         id: 'rec123',
@@ -194,8 +209,9 @@ describe('getReadyToSend - Edge Cases', () => {
             'Job Description': 'Test desc',
             'Stage': '🏗️ Deployed',
             'Scraped At': '2026-02-10T10:00:00Z',
-            'Build Details': null,
             'Prototype URL': 'https://proto.example.com',
+            'Build: Prototype URL': undefined,
+            'Build: Brief YAML': undefined,
           }
           return data[field]
         },
@@ -222,7 +238,6 @@ describe('getReadyToSend - Edge Cases', () => {
             'Job Description': '',
             'Stage': '🏗️ Deployed',
             'Scraped At': '2026-02-10T10:00:00Z',
-            'Build Details': null,
           }
           return data[field]
         },
@@ -238,5 +253,129 @@ describe('getReadyToSend - Edge Cases', () => {
     expect(jobs[0].loomUrl).toBeUndefined()
     expect(jobs[0].jobUrl).toBeUndefined()
     expect(jobs[0].budgetAmount).toBeUndefined()
+  })
+
+  it('should never call Build Details find (N+1 eliminated)', async () => {
+    const mockRecords = [
+      {
+        id: 'rec1',
+        get: (field: string) => {
+          const data: Record<string, any> = {
+            'Job ID': 'job1',
+            'Job Title': 'Job 1',
+            'Job Description': '',
+            'Stage': '🏗️ Deployed',
+            'Scraped At': '2026-02-10T10:00:00Z',
+            'Prototype URL': 'https://proto1.example.com',
+            'Build: Brief YAML': ['template: dashboard'],
+          }
+          return data[field]
+        },
+      },
+      {
+        id: 'rec2',
+        get: (field: string) => {
+          const data: Record<string, any> = {
+            'Job ID': 'job2',
+            'Job Title': 'Job 2',
+            'Job Description': '',
+            'Stage': '🎁 Prototype Built',
+            'Scraped At': '2026-02-11T10:00:00Z',
+            'Prototype URL': 'https://proto2.example.com',
+            'Build: Brief YAML': ['template: web_app'],
+          }
+          return data[field]
+        },
+      },
+    ]
+
+    mockAll.mockResolvedValue(mockRecords)
+
+    const { getReadyToSend } = await import('../ready-to-send')
+    const jobs = await getReadyToSend()
+
+    expect(jobs).toHaveLength(2)
+    // The critical assertion: mockFind should never be called.
+    expect(mockFind).not.toHaveBeenCalled()
+  })
+
+  it('should handle both prototype URLs being null', async () => {
+    const mockRecords = [
+      {
+        id: 'rec1',
+        get: (field: string) => {
+          const data: Record<string, any> = {
+            'Job ID': 'job1',
+            'Job Title': 'No Proto Job',
+            'Job Description': '',
+            'Stage': '🏗️ Deployed',
+            'Scraped At': '2026-02-10T10:00:00Z',
+            'Prototype URL': undefined,
+            'Build: Prototype URL': undefined,
+            'Build: Brief YAML': undefined,
+          }
+          return data[field]
+        },
+      },
+    ]
+
+    mockAll.mockResolvedValue(mockRecords)
+
+    const { getReadyToSend } = await import('../ready-to-send')
+    const jobs = await getReadyToSend()
+
+    expect(jobs[0].prototypeUrl).toBeUndefined()
+  })
+
+  it('should parse template from JSON brief', async () => {
+    const mockRecords = [
+      {
+        id: 'rec1',
+        get: (field: string) => {
+          const data: Record<string, any> = {
+            'Job ID': 'job1',
+            'Job Title': 'JSON Brief Job',
+            'Job Description': '',
+            'Stage': '🏗️ Deployed',
+            'Scraped At': '2026-02-10T10:00:00Z',
+            'Build: Brief YAML': ['{"template": "web_app"}'],
+          }
+          return data[field]
+        },
+      },
+    ]
+
+    mockAll.mockResolvedValue(mockRecords)
+
+    const { getReadyToSend } = await import('../ready-to-send')
+    const jobs = await getReadyToSend()
+
+    expect(jobs[0].template).toBe('web_app')
+  })
+
+  it('should return unknown template for unrecognized values', async () => {
+    const mockRecords = [
+      {
+        id: 'rec1',
+        get: (field: string) => {
+          const data: Record<string, any> = {
+            'Job ID': 'job1',
+            'Job Title': 'Unknown Template Job',
+            'Job Description': '',
+            'Stage': '🏗️ Deployed',
+            'Scraped At': '2026-02-10T10:00:00Z',
+            'Build: Brief YAML': ['{"template": "mobile_app"}'],
+          }
+          return data[field]
+        },
+      },
+    ]
+
+    mockAll.mockResolvedValue(mockRecords)
+
+    const { getReadyToSend } = await import('../ready-to-send')
+    const jobs = await getReadyToSend()
+
+    expect(jobs[0].template).toBe('unknown')
   })
 })

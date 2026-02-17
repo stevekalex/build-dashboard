@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
-// Create mock functions
+// Create mock functions — includes mockFind to verify N+1 is eliminated
 const mockAll = vi.fn()
 const mockSelect = vi.fn(() => ({ all: mockAll }))
 const mockFind = vi.fn()
@@ -28,7 +28,7 @@ describe('getJobsToApprove', () => {
     vi.unstubAllEnvs()
   })
 
-  it('should filter by pending approval stage', async () => {
+  it('should filter by pending approval stage and buildable', async () => {
     mockAll.mockResolvedValue([])
 
     const { getJobsToApprove } = await import('../approve')
@@ -37,6 +37,12 @@ describe('getJobsToApprove', () => {
     expect(mockSelect).toHaveBeenCalledWith(
       expect.objectContaining({
         filterByFormula: expect.stringContaining('Pending Approval'),
+      })
+    )
+    // Buildable filter is now in the formula (no in-memory filtering)
+    expect(mockSelect).toHaveBeenCalledWith(
+      expect.objectContaining({
+        filterByFormula: expect.stringContaining('Build: Buildable'),
       })
     )
   })
@@ -54,98 +60,7 @@ describe('getJobsToApprove', () => {
     )
   })
 
-  it('should only return buildable jobs', async () => {
-    const mockRecords = [
-      {
-        id: 'rec1',
-        get: (field: string) => {
-          const data: Record<string, any> = {
-            'Job ID': 'job1',
-            'Job Title': 'Buildable Job',
-            'Job Description': 'A buildable job',
-            'Scraped At': '2026-02-10T10:00:00Z',
-            'Build Details': ['build1'],
-            'Budget Amount': 500,
-            'Budget Type': 'Fixed',
-            'Skills': 'React, TypeScript',
-          }
-          return data[field]
-        },
-      },
-      {
-        id: 'rec2',
-        get: (field: string) => {
-          const data: Record<string, any> = {
-            'Job ID': 'job2',
-            'Job Title': 'Unbuildable Job',
-            'Job Description': 'An unbuildable job',
-            'Scraped At': '2026-02-10T11:00:00Z',
-            'Build Details': ['build2'],
-            'Budget Amount': 300,
-            'Budget Type': 'Hourly',
-            'Skills': 'Python',
-          }
-          return data[field]
-        },
-      },
-      {
-        id: 'rec3',
-        get: (field: string) => {
-          const data: Record<string, any> = {
-            'Job ID': 'job3',
-            'Job Title': 'No Build Details Job',
-            'Job Description': 'No build details',
-            'Scraped At': '2026-02-10T12:00:00Z',
-            'Build Details': null,
-            'Budget Amount': null,
-            'Budget Type': null,
-            'Skills': null,
-          }
-          return data[field]
-        },
-      },
-    ]
-
-    mockAll.mockResolvedValue(mockRecords)
-
-    // build1 is buildable, build2 is not
-    mockFind.mockImplementation((id: string) => {
-      if (id === 'build1') {
-        return Promise.resolve({
-          id: 'build1',
-          fields: {
-            Buildable: true,
-            'Buildable Reasoning': 'Clear scope',
-            'Brief YAML': 'template: dashboard',
-            Status: 'Evaluated',
-          },
-        })
-      }
-      if (id === 'build2') {
-        return Promise.resolve({
-          id: 'build2',
-          fields: {
-            Buildable: false,
-            'Buildable Reasoning': 'Too complex',
-            'Brief YAML': '',
-            Status: 'Unbuildable',
-          },
-        })
-      }
-      return Promise.reject(new Error('Not found'))
-    })
-
-    const { getJobsToApprove } = await import('../approve')
-    const jobs = await getJobsToApprove()
-
-    // Should only return the buildable job (rec1)
-    expect(jobs).toHaveLength(1)
-    expect(jobs[0].id).toBe('rec1')
-    expect(jobs[0].title).toBe('Buildable Job')
-    expect(jobs[0].buildable).toBe(true)
-  })
-
-  it('should return correct job fields', async () => {
+  it('should map records using Lookup fields', async () => {
     const mockRecords = [
       {
         id: 'rec1',
@@ -155,10 +70,13 @@ describe('getJobsToApprove', () => {
             'Job Title': 'Build CRM Dashboard',
             'Job Description': 'Create a CRM dashboard',
             'Scraped At': '2026-02-10T10:00:00Z',
-            'Build Details': ['build1'],
             'Budget Amount': 500,
             'Budget Type': 'Fixed',
             'Skills': 'React, TypeScript, Next.js',
+            // Lookup fields return single-element arrays for 1-to-1 links
+            'Build: Buildable': [true],
+            'Build: Buildable Reasoning': ['Clear scope and well-defined requirements'],
+            'Build: Brief YAML': ['{"template": "dashboard", "routes": [{"path": "/dashboard"}], "unique_interactions": "drag and drop"}'],
           }
           return data[field]
         },
@@ -166,15 +84,6 @@ describe('getJobsToApprove', () => {
     ]
 
     mockAll.mockResolvedValue(mockRecords)
-    mockFind.mockResolvedValue({
-      id: 'build1',
-      fields: {
-        Buildable: true,
-        'Buildable Reasoning': 'Clear scope and well-defined requirements',
-        'Brief YAML': '{"template": "dashboard", "routes": [{"path": "/dashboard"}], "unique_interactions": "drag and drop"}',
-        Status: 'Evaluated',
-      },
-    })
 
     const { getJobsToApprove } = await import('../approve')
     const jobs = await getJobsToApprove()
@@ -206,20 +115,23 @@ describe('getJobsToApprove', () => {
     expect(jobs).toEqual([])
   })
 
-  it('should handle records with missing build details gracefully', async () => {
+  it('should handle records with missing Lookup field values gracefully', async () => {
     const mockRecords = [
       {
         id: 'rec1',
         get: (field: string) => {
           const data: Record<string, any> = {
             'Job ID': 'job1',
-            'Job Title': 'Job Without Build Details',
-            'Job Description': 'No build details',
+            'Job Title': 'Minimal Job',
+            'Job Description': '',
             'Scraped At': '2026-02-10T10:00:00Z',
-            'Build Details': null,
             'Budget Amount': null,
             'Budget Type': null,
             'Skills': null,
+            // Lookup fields may be empty arrays or undefined
+            'Build: Buildable': [true],
+            'Build: Buildable Reasoning': [],
+            'Build: Brief YAML': [],
           }
           return data[field]
         },
@@ -231,24 +143,29 @@ describe('getJobsToApprove', () => {
     const { getJobsToApprove } = await import('../approve')
     const jobs = await getJobsToApprove()
 
-    // Jobs without build details are not buildable, so filtered out
-    expect(jobs).toHaveLength(0)
+    expect(jobs).toHaveLength(1)
+    expect(jobs[0].buildable).toBe(true)
+    expect(jobs[0].buildableReasoning).toBe('')
+    expect(jobs[0].brief).toBe('')
   })
 
-  it('should handle build details fetch errors gracefully', async () => {
+  it('should handle Lookup fields returned as plain values (not arrays)', async () => {
+    // Some Airtable configurations may return plain values instead of arrays
     const mockRecords = [
       {
         id: 'rec1',
         get: (field: string) => {
           const data: Record<string, any> = {
             'Job ID': 'job1',
-            'Job Title': 'Job With Error',
-            'Job Description': 'Fetch error',
+            'Job Title': 'Test Job',
+            'Job Description': 'Test',
             'Scraped At': '2026-02-10T10:00:00Z',
-            'Build Details': ['build-error'],
             'Budget Amount': null,
             'Budget Type': null,
             'Skills': null,
+            'Build: Buildable': [true],
+            'Build: Buildable Reasoning': 'Good scope',
+            'Build: Brief YAML': 'template: web_app',
           }
           return data[field]
         },
@@ -256,12 +173,163 @@ describe('getJobsToApprove', () => {
     ]
 
     mockAll.mockResolvedValue(mockRecords)
-    mockFind.mockRejectedValue(new Error('Airtable error'))
 
     const { getJobsToApprove } = await import('../approve')
     const jobs = await getJobsToApprove()
 
-    // Error fetching build details means not buildable, so filtered out
-    expect(jobs).toHaveLength(0)
+    expect(jobs).toHaveLength(1)
+    expect(jobs[0].buildableReasoning).toBe('Good scope')
+    expect(jobs[0].template).toBe('web_app')
+  })
+
+  it('should never call Build Details find (N+1 eliminated)', async () => {
+    const mockRecords = [
+      {
+        id: 'rec1',
+        get: (field: string) => {
+          const data: Record<string, any> = {
+            'Job ID': 'job1',
+            'Job Title': 'Test Job',
+            'Job Description': 'Test',
+            'Scraped At': '2026-02-10T10:00:00Z',
+            'Budget Amount': null,
+            'Budget Type': null,
+            'Skills': null,
+            'Build: Buildable': [true],
+            'Build: Buildable Reasoning': ['Looks good'],
+            'Build: Brief YAML': ['template: dashboard'],
+          }
+          return data[field]
+        },
+      },
+      {
+        id: 'rec2',
+        get: (field: string) => {
+          const data: Record<string, any> = {
+            'Job ID': 'job2',
+            'Job Title': 'Another Job',
+            'Job Description': 'Another test',
+            'Scraped At': '2026-02-11T10:00:00Z',
+            'Budget Amount': 300,
+            'Budget Type': 'Hourly',
+            'Skills': 'Python',
+            'Build: Buildable': [true],
+            'Build: Buildable Reasoning': ['Clear scope'],
+            'Build: Brief YAML': ['template: web_app'],
+          }
+          return data[field]
+        },
+      },
+    ]
+
+    mockAll.mockResolvedValue(mockRecords)
+
+    const { getJobsToApprove } = await import('../approve')
+    const jobs = await getJobsToApprove()
+
+    expect(jobs).toHaveLength(2)
+    // The critical assertion: mockFind should never be called.
+    // Previously, each record triggered a separate Build Details .find() call.
+    expect(mockFind).not.toHaveBeenCalled()
+  })
+
+  it('should fall back to record.id when Job ID is missing', async () => {
+    const mockRecords = [
+      {
+        id: 'recFallback',
+        get: (field: string) => {
+          const data: Record<string, any> = {
+            'Job ID': null,
+            'Job Title': 'No Job ID',
+            'Job Description': '',
+            'Scraped At': '2026-02-10T10:00:00Z',
+            'Budget Amount': null,
+            'Budget Type': null,
+            'Skills': null,
+            'Build: Buildable': [true],
+            'Build: Buildable Reasoning': [],
+            'Build: Brief YAML': [],
+          }
+          return data[field]
+        },
+      },
+    ]
+
+    mockAll.mockResolvedValue(mockRecords)
+
+    const { getJobsToApprove } = await import('../approve')
+    const jobs = await getJobsToApprove()
+
+    expect(jobs[0].jobId).toBe('recFallback')
+  })
+
+  it('should parse YAML brief data correctly', async () => {
+    const yamlBrief = `template: web_app
+routes:
+  - path: /home
+  - path: /about
+unique_interactions: drag and drop`
+
+    const mockRecords = [
+      {
+        id: 'rec1',
+        get: (field: string) => {
+          const data: Record<string, any> = {
+            'Job ID': 'job1',
+            'Job Title': 'YAML Brief Job',
+            'Job Description': '',
+            'Scraped At': '2026-02-10T10:00:00Z',
+            'Budget Amount': null,
+            'Budget Type': null,
+            'Skills': null,
+            'Build: Buildable': [true],
+            'Build: Buildable Reasoning': ['Good'],
+            'Build: Brief YAML': [yamlBrief],
+          }
+          return data[field]
+        },
+      },
+    ]
+
+    mockAll.mockResolvedValue(mockRecords)
+
+    const { getJobsToApprove } = await import('../approve')
+    const jobs = await getJobsToApprove()
+
+    expect(jobs[0].template).toBe('web_app')
+    expect(jobs[0].routes).toHaveLength(2)
+    expect(jobs[0].uniqueInteractions).toBe('drag and drop')
+  })
+
+  it('should handle malformed brief YAML gracefully', async () => {
+    const mockRecords = [
+      {
+        id: 'rec1',
+        get: (field: string) => {
+          const data: Record<string, any> = {
+            'Job ID': 'job1',
+            'Job Title': 'Bad Brief Job',
+            'Job Description': '',
+            'Scraped At': '2026-02-10T10:00:00Z',
+            'Budget Amount': null,
+            'Budget Type': null,
+            'Skills': null,
+            'Build: Buildable': [true],
+            'Build: Buildable Reasoning': ['Good'],
+            'Build: Brief YAML': ['{{{invalid json and yaml:::'],
+          }
+          return data[field]
+        },
+      },
+    ]
+
+    mockAll.mockResolvedValue(mockRecords)
+
+    const { getJobsToApprove } = await import('../approve')
+    const jobs = await getJobsToApprove()
+
+    // Should not throw — returns defaults
+    expect(jobs).toHaveLength(1)
+    expect(jobs[0].template).toBe('unknown')
   })
 })
