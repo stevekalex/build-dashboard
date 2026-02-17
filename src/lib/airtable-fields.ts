@@ -49,15 +49,14 @@ export const JOBS = {
   LAST_FOLLOW_UP_DATE: 'Last Follow Up Date',
   // Lookup fields from Build Details (created as Lookup type in Airtable UI)
   // These return single-element arrays for 1-to-1 links — access as record.get(field)?.[0]
-  BUILD_BUILDABLE: 'Build: Buildable',
-  BUILD_BUILDABLE_REASONING: 'Build: Buildable Reasoning',
-  BUILD_BRIEF_YAML: 'Build: Brief YAML',
-  BUILD_STATUS: 'Build: Status',
-  BUILD_PROTOTYPE_URL: 'Build: Prototype URL',
-  BUILD_STARTED: 'Build: Build Started',
-  BUILD_COMPLETED: 'Build: Build Completed',
-  BUILD_DURATION: 'Build: Build Duration',
-  BUILD_ERROR: 'Build: Build Error',
+  BUILD_BUILDABLE: 'Buildable (from Build Details)',
+  BUILD_BUILDABLE_REASONING: 'Buildable Reasoning (from Build Details)',
+  BUILD_BRIEF_YAML: 'Brief YAML (from Build Details)',
+  BUILD_PROTOTYPE_URL: 'Prototype URL (from Build Details)',
+  BUILD_STARTED: 'Build Started (from Build Details)',
+  BUILD_COMPLETED: 'Build Completed (from Build Details)',
+  BUILD_DURATION: 'Build Duration (from Build Details)',
+  BUILD_ERROR: 'Build Error (from Build Details)',
 } as const
 
 // ─── Build Details Fields ───

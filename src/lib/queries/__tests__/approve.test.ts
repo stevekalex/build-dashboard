@@ -42,7 +42,7 @@ describe('getJobsToApprove', () => {
     // Buildable filter is now in the formula (no in-memory filtering)
     expect(mockSelect).toHaveBeenCalledWith(
       expect.objectContaining({
-        filterByFormula: expect.stringContaining('Build: Buildable'),
+        filterByFormula: expect.stringContaining('Buildable (from Build Details)'),
       })
     )
   })
@@ -74,9 +74,9 @@ describe('getJobsToApprove', () => {
             'Budget Type': 'Fixed',
             'Skills': 'React, TypeScript, Next.js',
             // Lookup fields return single-element arrays for 1-to-1 links
-            'Build: Buildable': [true],
-            'Build: Buildable Reasoning': ['Clear scope and well-defined requirements'],
-            'Build: Brief YAML': ['{"template": "dashboard", "routes": [{"path": "/dashboard"}], "unique_interactions": "drag and drop"}'],
+            'Buildable (from Build Details)': [true],
+            'Buildable Reasoning (from Build Details)': ['Clear scope and well-defined requirements'],
+            'Brief YAML (from Build Details)': ['{"template": "dashboard", "routes": [{"path": "/dashboard"}], "unique_interactions": "drag and drop"}'],
           }
           return data[field]
         },
@@ -129,9 +129,9 @@ describe('getJobsToApprove', () => {
             'Budget Type': null,
             'Skills': null,
             // Lookup fields may be empty arrays or undefined
-            'Build: Buildable': [true],
-            'Build: Buildable Reasoning': [],
-            'Build: Brief YAML': [],
+            'Buildable (from Build Details)': [true],
+            'Buildable Reasoning (from Build Details)': [],
+            'Brief YAML (from Build Details)': [],
           }
           return data[field]
         },
@@ -163,9 +163,9 @@ describe('getJobsToApprove', () => {
             'Budget Amount': null,
             'Budget Type': null,
             'Skills': null,
-            'Build: Buildable': [true],
-            'Build: Buildable Reasoning': 'Good scope',
-            'Build: Brief YAML': 'template: web_app',
+            'Buildable (from Build Details)': [true],
+            'Buildable Reasoning (from Build Details)': 'Good scope',
+            'Brief YAML (from Build Details)': 'template: web_app',
           }
           return data[field]
         },
@@ -195,9 +195,9 @@ describe('getJobsToApprove', () => {
             'Budget Amount': null,
             'Budget Type': null,
             'Skills': null,
-            'Build: Buildable': [true],
-            'Build: Buildable Reasoning': ['Looks good'],
-            'Build: Brief YAML': ['template: dashboard'],
+            'Buildable (from Build Details)': [true],
+            'Buildable Reasoning (from Build Details)': ['Looks good'],
+            'Brief YAML (from Build Details)': ['template: dashboard'],
           }
           return data[field]
         },
@@ -213,9 +213,9 @@ describe('getJobsToApprove', () => {
             'Budget Amount': 300,
             'Budget Type': 'Hourly',
             'Skills': 'Python',
-            'Build: Buildable': [true],
-            'Build: Buildable Reasoning': ['Clear scope'],
-            'Build: Brief YAML': ['template: web_app'],
+            'Buildable (from Build Details)': [true],
+            'Buildable Reasoning (from Build Details)': ['Clear scope'],
+            'Brief YAML (from Build Details)': ['template: web_app'],
           }
           return data[field]
         },
@@ -246,9 +246,9 @@ describe('getJobsToApprove', () => {
             'Budget Amount': null,
             'Budget Type': null,
             'Skills': null,
-            'Build: Buildable': [true],
-            'Build: Buildable Reasoning': [],
-            'Build: Brief YAML': [],
+            'Buildable (from Build Details)': [true],
+            'Buildable Reasoning (from Build Details)': [],
+            'Brief YAML (from Build Details)': [],
           }
           return data[field]
         },
@@ -282,9 +282,9 @@ unique_interactions: drag and drop`
             'Budget Amount': null,
             'Budget Type': null,
             'Skills': null,
-            'Build: Buildable': [true],
-            'Build: Buildable Reasoning': ['Good'],
-            'Build: Brief YAML': [yamlBrief],
+            'Buildable (from Build Details)': [true],
+            'Buildable Reasoning (from Build Details)': ['Good'],
+            'Brief YAML (from Build Details)': [yamlBrief],
           }
           return data[field]
         },
@@ -314,9 +314,9 @@ unique_interactions: drag and drop`
             'Budget Amount': null,
             'Budget Type': null,
             'Skills': null,
-            'Build: Buildable': [true],
-            'Build: Buildable Reasoning': ['Good'],
-            'Build: Brief YAML': ['{{{invalid json and yaml:::'],
+            'Buildable (from Build Details)': [true],
+            'Buildable Reasoning (from Build Details)': ['Good'],
+            'Brief YAML (from Build Details)': ['{{{invalid json and yaml:::'],
           }
           return data[field]
         },

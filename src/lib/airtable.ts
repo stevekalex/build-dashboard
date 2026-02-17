@@ -39,7 +39,6 @@ export async function getBriefsPendingApproval(): Promise<Brief[]> {
 
     const buildable = lookupBoolean(record, JOBS.BUILD_BUILDABLE)
     const brief = lookupString(record, JOBS.BUILD_BRIEF_YAML) || ''
-    const status = lookupString(record, JOBS.BUILD_STATUS) || 'pending'
 
     const parsedData = brief ? parseBriefData(brief) : {}
 
@@ -54,7 +53,7 @@ export async function getBriefsPendingApproval(): Promise<Brief[]> {
       routes: parsedData.routes,
       uniqueInteractions: parsedData.uniqueInteractions,
       createdAt,
-      status: mapStatus(status),
+      status: 'pending' as Brief['status'],
     }
   })
 }
@@ -79,7 +78,6 @@ export async function getBriefById(id: string): Promise<Brief | null> {
 
     const buildable = lookupBoolean(record, JOBS.BUILD_BUILDABLE)
     const brief = lookupString(record, JOBS.BUILD_BRIEF_YAML) || ''
-    const status = lookupString(record, JOBS.BUILD_STATUS) || 'pending'
 
     const parsedData = brief ? parseBriefData(brief) : {}
 
@@ -94,7 +92,7 @@ export async function getBriefById(id: string): Promise<Brief | null> {
       template: parsedData.template ?? ('unknown' as const),
       uniqueInteractions: parsedData.uniqueInteractions,
       createdAt,
-      status: mapStatus(status),
+      status: 'pending' as Brief['status'],
     }
   } catch (error) {
     console.error('Failed to fetch brief by ID:', error)
@@ -129,21 +127,6 @@ function lookupNumber(record: any, field: string): number | undefined {
   const val = record.get(field)
   if (Array.isArray(val)) return typeof val[0] === 'number' ? val[0] : undefined
   return typeof val === 'number' ? val : undefined
-}
-
-/**
- * Map Airtable status to our internal status
- */
-function mapStatus(airtableStatus: string): Brief['status'] {
-  const statusMap: Record<string, Brief['status']> = {
-    Evaluated: 'pending',
-    Building: 'building',
-    Completed: 'complete',
-    Failed: 'failed',
-    Approved: 'approved',
-  }
-
-  return statusMap[airtableStatus] || 'pending'
 }
 
 /**
@@ -205,7 +188,6 @@ export async function getAllBuilds(): Promise<Build[]> {
     const createdAt = (record.get(JOBS.SCRAPED_AT) as string) || (record as any)._createdTime || new Date().toISOString()
     const stageRaw = (record.get(JOBS.STAGE) as string) || ''
 
-    const status = lookupString(record, JOBS.BUILD_STATUS) || 'building'
     const buildStarted = lookupString(record, JOBS.BUILD_STARTED)
     const buildCompleted = lookupString(record, JOBS.BUILD_COMPLETED)
     const buildDuration = lookupNumber(record, JOBS.BUILD_DURATION)
@@ -221,7 +203,7 @@ export async function getAllBuilds(): Promise<Build[]> {
       title,
       description,
       stage: mapStage(stageRaw),
-      status: mapBuildStatus(status),
+      status: mapBuildStatusFromStage(stageRaw),
       template: parsedData.template ?? ('unknown' as const),
       buildStarted,
       buildCompleted,
@@ -244,14 +226,11 @@ function mapStage(stage: string): Build['stage'] {
 }
 
 /**
- * Map Build Details status to our internal status type
+ * Derive build status from the Jobs Pipeline stage.
+ * (Status Lookup field not available — infer from stage.)
  */
-function mapBuildStatus(status: string): Build['status'] {
-  const statusMap: Record<string, Build['status']> = {
-    Building: 'building',
-    Evaluated: 'evaluated',
-    Completed: 'completed',
-    Failed: 'failed',
-  }
-  return statusMap[status] || 'building'
+function mapBuildStatusFromStage(stage: string): Build['status'] {
+  if (stage.includes('Deployed')) return 'completed'
+  if (stage.includes('Failed')) return 'failed'
+  return 'building'
 }

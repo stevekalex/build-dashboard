@@ -39,9 +39,8 @@ describe('Airtable Integration - Happy Path', () => {
             'Job Description': 'Create a dashboard',
             'Scraped At': '2026-02-10T10:00:00Z',
             // Lookup fields from Build Details
-            'Build: Buildable': [true],
-            'Build: Brief YAML': ['template: dashboard'],
-            'Build: Status': ['Evaluated'],
+            'Buildable (from Build Details)': [true],
+            'Brief YAML (from Build Details)': ['template: dashboard'],
           }
           return data[field]
         },
@@ -84,9 +83,8 @@ describe('Airtable Integration - Happy Path', () => {
           'Job Title': 'Build CRM Dashboard',
           'Job Description': 'Create a dashboard',
           'Scraped At': '2026-02-10T10:00:00Z',
-          'Build: Buildable': [true],
-          'Build: Brief YAML': ['{"template": "dashboard"}'],
-          'Build: Status': ['Evaluated'],
+          'Buildable (from Build Details)': [true],
+          'Brief YAML (from Build Details)': ['{"template": "dashboard"}'],
         }
         return data[field]
       },
@@ -126,9 +124,8 @@ describe('Airtable Integration - Edge Cases', () => {
             'Job Description': 'Create a dashboard',
             'Scraped At': '2026-02-10T10:00:00Z',
             // Lookup fields are empty (no linked Build Details)
-            'Build: Buildable': undefined,
-            'Build: Brief YAML': undefined,
-            'Build: Status': undefined,
+            'Buildable (from Build Details)': undefined,
+            'Brief YAML (from Build Details)': undefined,
           }
           return data[field]
         },
@@ -155,9 +152,8 @@ describe('Airtable Integration - Edge Cases', () => {
             'Job Title': 'Build CRM Dashboard',
             'Job Description': null,
             'Scraped At': '2026-02-10T10:00:00Z',
-            'Build: Buildable': [true],
-            'Build: Brief YAML': ['test'],
-            'Build: Status': ['Evaluated'],
+            'Buildable (from Build Details)': [true],
+            'Brief YAML (from Build Details)': ['test'],
           }
           return data[field]
         },
@@ -259,13 +255,12 @@ describe('getAllBuilds', () => {
             'Scraped At': '2026-02-10T10:00:00Z',
             'Stage': '🏗️ Deployed',
             // Lookup fields
-            'Build: Status': ['Completed'],
-            'Build: Build Started': ['2026-02-10T10:05:00Z'],
-            'Build: Build Completed': ['2026-02-10T10:50:00Z'],
-            'Build: Build Duration': [45],
-            'Build: Prototype URL': ['https://proto.example.com'],
-            'Build: Build Error': undefined,
-            'Build: Brief YAML': ['{"template": "dashboard"}'],
+            'Build Started (from Build Details)': ['2026-02-10T10:05:00Z'],
+            'Build Completed (from Build Details)': ['2026-02-10T10:50:00Z'],
+            'Build Duration (from Build Details)': [45],
+            'Prototype URL (from Build Details)': ['https://proto.example.com'],
+            'Build Error (from Build Details)': undefined,
+            'Brief YAML (from Build Details)': ['{"template": "dashboard"}'],
           }
           return data[field]
         },
@@ -279,13 +274,12 @@ describe('getAllBuilds', () => {
             'Job Description': 'A failed build',
             'Scraped At': '2026-02-09T10:00:00Z',
             'Stage': '⚠️ Build Failed',
-            'Build: Status': ['Failed'],
-            'Build: Build Started': ['2026-02-09T10:05:00Z'],
-            'Build: Build Completed': undefined,
-            'Build: Build Duration': undefined,
-            'Build: Prototype URL': undefined,
-            'Build: Build Error': ['Timeout after 60 minutes'],
-            'Build: Brief YAML': ['template: web_app'],
+            'Build Started (from Build Details)': ['2026-02-09T10:05:00Z'],
+            'Build Completed (from Build Details)': undefined,
+            'Build Duration (from Build Details)': undefined,
+            'Prototype URL (from Build Details)': undefined,
+            'Build Error (from Build Details)': ['Timeout after 60 minutes'],
+            'Brief YAML (from Build Details)': ['template: web_app'],
           }
           return data[field]
         },
@@ -299,7 +293,7 @@ describe('getAllBuilds', () => {
 
     expect(builds).toHaveLength(2)
 
-    // First build — completed
+    // First build — deployed stage → completed status
     expect(builds[0]).toMatchObject({
       id: 'rec1',
       jobId: 'job1',
@@ -380,9 +374,8 @@ describe('Lookup field helpers (via getBriefsPendingApproval)', () => {
             'Job Title': 'Test',
             'Job Description': '',
             'Scraped At': '2026-02-10T10:00:00Z',
-            'Build: Buildable': undefined,
-            'Build: Brief YAML': undefined,
-            'Build: Status': undefined,
+            'Buildable (from Build Details)': undefined,
+            'Brief YAML (from Build Details)': undefined,
           }
           return data[field]
         },
@@ -407,9 +400,8 @@ describe('Lookup field helpers (via getBriefsPendingApproval)', () => {
             'Job Title': 'Test',
             'Job Description': '',
             'Scraped At': '2026-02-10T10:00:00Z',
-            'Build: Buildable': [false],
-            'Build: Brief YAML': [],
-            'Build: Status': [],
+            'Buildable (from Build Details)': [false],
+            'Brief YAML (from Build Details)': [],
           }
           return data[field]
         },
@@ -434,9 +426,8 @@ describe('Lookup field helpers (via getBriefsPendingApproval)', () => {
             'Job Title': 'Test',
             'Job Description': '',
             'Scraped At': '2026-02-10T10:00:00Z',
-            'Build: Buildable': [true],
-            'Build: Brief YAML': [],
-            'Build: Status': [],
+            'Buildable (from Build Details)': [true],
+            'Brief YAML (from Build Details)': [],
           }
           return data[field]
         },
@@ -451,7 +442,7 @@ describe('Lookup field helpers (via getBriefsPendingApproval)', () => {
     expect(briefs[0].buildable).toBe(true)
   })
 
-  it('lookupString: should return undefined for empty array', async () => {
+  it('lookupString: should return empty string for empty array', async () => {
     const mockRecords = [
       {
         id: 'rec1',
@@ -461,9 +452,8 @@ describe('Lookup field helpers (via getBriefsPendingApproval)', () => {
             'Job Title': 'Test',
             'Job Description': '',
             'Scraped At': '2026-02-10T10:00:00Z',
-            'Build: Buildable': [true],
-            'Build: Brief YAML': [],
-            'Build: Status': [],
+            'Buildable (from Build Details)': [true],
+            'Brief YAML (from Build Details)': [],
           }
           return data[field]
         },
@@ -476,11 +466,11 @@ describe('Lookup field helpers (via getBriefsPendingApproval)', () => {
     const briefs = await getBriefsPendingApproval()
 
     expect(briefs[0].brief).toBe('')
-    expect(briefs[0].status).toBe('pending') // mapStatus fallback for undefined
+    expect(briefs[0].status).toBe('pending')
   })
 })
 
-describe('Status mapping (via getBriefsPendingApproval)', () => {
+describe('Status for briefs (via getBriefsPendingApproval)', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.stubEnv('AIRTABLE_API_KEY', 'test-key')
@@ -491,35 +481,29 @@ describe('Status mapping (via getBriefsPendingApproval)', () => {
     vi.unstubAllEnvs()
   })
 
-  const makeRecord = (status: string) => ({
-    id: 'rec1',
-    get: (field: string) => {
-      const data: Record<string, any> = {
-        'Job ID': 'job1',
-        'Job Title': 'Test',
-        'Job Description': '',
-        'Scraped At': '2026-02-10T10:00:00Z',
-        'Build: Buildable': [true],
-        'Build: Brief YAML': [],
-        'Build: Status': [status],
-      }
-      return data[field]
-    },
-  })
+  it('should always return pending status for briefs (no Status lookup field)', async () => {
+    const mockRecords = [
+      {
+        id: 'rec1',
+        get: (field: string) => {
+          const data: Record<string, any> = {
+            'Job ID': 'job1',
+            'Job Title': 'Test',
+            'Job Description': '',
+            'Scraped At': '2026-02-10T10:00:00Z',
+            'Buildable (from Build Details)': [true],
+            'Brief YAML (from Build Details)': [],
+          }
+          return data[field]
+        },
+      },
+    ]
 
-  it.each([
-    ['Evaluated', 'pending'],
-    ['Building', 'building'],
-    ['Completed', 'complete'],
-    ['Failed', 'failed'],
-    ['Approved', 'approved'],
-    ['SomethingUnknown', 'pending'], // unmapped defaults to pending
-  ])('should map Airtable status "%s" to "%s"', async (airtableStatus, expectedStatus) => {
-    mockAll.mockResolvedValue([makeRecord(airtableStatus)])
+    mockAll.mockResolvedValue(mockRecords)
 
     const { getBriefsPendingApproval } = await import('../airtable')
     const briefs = await getBriefsPendingApproval()
 
-    expect(briefs[0].status).toBe(expectedStatus)
+    expect(briefs[0].status).toBe('pending')
   })
 })

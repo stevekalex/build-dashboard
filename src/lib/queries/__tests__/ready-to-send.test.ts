@@ -89,8 +89,8 @@ describe('getReadyToSend - Happy Path', () => {
             'Skills': 'React, TypeScript',
             'Prototype URL': 'https://proto.example.com',
             // Lookup fields from Build Details
-            'Build: Prototype URL': ['https://build-proto.example.com'],
-            'Build: Brief YAML': ['template: dashboard'],
+            'Prototype URL (from Build Details)': ['https://build-proto.example.com'],
+            'Brief YAML (from Build Details)': ['template: dashboard'],
           }
           return data[field]
         },
@@ -132,8 +132,8 @@ describe('getReadyToSend - Happy Path', () => {
             'Stage': '🎁 Prototype Built',
             'Scraped At': '2026-02-10T10:00:00Z',
             'Prototype URL': 'https://job-proto.example.com',
-            'Build: Prototype URL': ['https://build-proto.example.com'],
-            'Build: Brief YAML': ['template: web_app'],
+            'Prototype URL (from Build Details)': ['https://build-proto.example.com'],
+            'Brief YAML (from Build Details)': ['template: web_app'],
           }
           return data[field]
         },
@@ -161,8 +161,8 @@ describe('getReadyToSend - Happy Path', () => {
             'Stage': '🏗️ Deployed',
             'Scraped At': '2026-02-10T10:00:00Z',
             'Prototype URL': undefined,
-            'Build: Prototype URL': ['https://build-proto.example.com'],
-            'Build: Brief YAML': ['template: dashboard'],
+            'Prototype URL (from Build Details)': ['https://build-proto.example.com'],
+            'Brief YAML (from Build Details)': ['template: dashboard'],
           }
           return data[field]
         },
@@ -210,8 +210,8 @@ describe('getReadyToSend - Edge Cases', () => {
             'Stage': '🏗️ Deployed',
             'Scraped At': '2026-02-10T10:00:00Z',
             'Prototype URL': 'https://proto.example.com',
-            'Build: Prototype URL': undefined,
-            'Build: Brief YAML': undefined,
+            'Prototype URL (from Build Details)': undefined,
+            'Brief YAML (from Build Details)': undefined,
           }
           return data[field]
         },
@@ -267,7 +267,7 @@ describe('getReadyToSend - Edge Cases', () => {
             'Stage': '🏗️ Deployed',
             'Scraped At': '2026-02-10T10:00:00Z',
             'Prototype URL': 'https://proto1.example.com',
-            'Build: Brief YAML': ['template: dashboard'],
+            'Brief YAML (from Build Details)': ['template: dashboard'],
           }
           return data[field]
         },
@@ -282,7 +282,7 @@ describe('getReadyToSend - Edge Cases', () => {
             'Stage': '🎁 Prototype Built',
             'Scraped At': '2026-02-11T10:00:00Z',
             'Prototype URL': 'https://proto2.example.com',
-            'Build: Brief YAML': ['template: web_app'],
+            'Brief YAML (from Build Details)': ['template: web_app'],
           }
           return data[field]
         },
@@ -311,8 +311,8 @@ describe('getReadyToSend - Edge Cases', () => {
             'Stage': '🏗️ Deployed',
             'Scraped At': '2026-02-10T10:00:00Z',
             'Prototype URL': undefined,
-            'Build: Prototype URL': undefined,
-            'Build: Brief YAML': undefined,
+            'Prototype URL (from Build Details)': undefined,
+            'Brief YAML (from Build Details)': undefined,
           }
           return data[field]
         },
@@ -338,7 +338,7 @@ describe('getReadyToSend - Edge Cases', () => {
             'Job Description': '',
             'Stage': '🏗️ Deployed',
             'Scraped At': '2026-02-10T10:00:00Z',
-            'Build: Brief YAML': ['{"template": "web_app"}'],
+            'Brief YAML (from Build Details)': ['{"template": "web_app"}'],
           }
           return data[field]
         },
@@ -364,7 +364,7 @@ describe('getReadyToSend - Edge Cases', () => {
             'Job Description': '',
             'Stage': '🏗️ Deployed',
             'Scraped At': '2026-02-10T10:00:00Z',
-            'Build: Brief YAML': ['{"template": "mobile_app"}'],
+            'Brief YAML (from Build Details)': ['{"template": "mobile_app"}'],
           }
           return data[field]
         },
