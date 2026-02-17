@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 import { IBM_Plex_Sans, JetBrains_Mono } from "next/font/google";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
@@ -35,9 +36,11 @@ export default function RootLayout({
       <body
         className={`${ibmPlexSans.variable} ${jetBrainsMono.variable} antialiased`}
       >
-        <TooltipProvider>
-          {children}
-        </TooltipProvider>
+        <Suspense>
+          <TooltipProvider>
+            {children}
+          </TooltipProvider>
+        </Suspense>
       </body>
     </html>
   );

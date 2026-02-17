@@ -30,7 +30,9 @@ export default function DashboardLayout({
     <div className="flex min-h-screen">
       {/* Hide sidebar on mobile, show on desktop */}
       <div className="hidden md:block">
-        <Sidebar />
+        <Suspense>
+          <Sidebar />
+        </Suspense>
       </div>
       <div className="flex-1 flex flex-col">
         <Suspense fallback={<Header userName="Guest" />}>
