@@ -37,7 +37,6 @@ export const JOBS = {
   CLOSE_DATE: 'Close Date',
   // New fields (to be created in Airtable)
   DEPLOYED_DATE: 'Deployed Date',
-  LOOM_RECORDED_DATE: 'Loom Recorded Date',
   RESPONSE_DATE: 'Response Date',
   RESPONSE_TYPE: 'Response Type',
   CALL_COMPLETED_DATE: 'Call Completed Date',

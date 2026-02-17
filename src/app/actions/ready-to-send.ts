@@ -39,7 +39,6 @@ export async function saveLoomUrl(
 
     await updateJobField(jobId, {
       [JOBS.LOOM_URL]: url.trim(),
-      [JOBS.LOOM_RECORDED_DATE]: new Date().toISOString(),
     })
 
     revalidateTag('jobs-ready-to-send', 'dashboard')
