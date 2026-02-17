@@ -236,7 +236,7 @@ describe('markFollowedUp', () => {
     expect(additionalFields).not.toHaveProperty('Next Action Date')
   })
 
-  it('should set Next Action Date to 3 days from now for non-closing progressions', async () => {
+  it('should set Next Action Date to 24 hours from now for non-closing progressions', async () => {
     mockFind.mockResolvedValue({
       id: 'job123',
       get: (field: string) => {
@@ -252,9 +252,9 @@ describe('markFollowedUp', () => {
     const additionalFields = updateCall[2]
     const nextActionDate = new Date(additionalFields['Next Action Date'])
     const now = new Date()
-    const diffDays = Math.round((nextActionDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
-    expect(diffDays).toBeGreaterThanOrEqual(2)
-    expect(diffDays).toBeLessThanOrEqual(3)
+    const diffHours = Math.round((nextActionDate.getTime() - now.getTime()) / (1000 * 60 * 60))
+    expect(diffHours).toBeGreaterThanOrEqual(23)
+    expect(diffHours).toBeLessThanOrEqual(24)
   })
 
   it('should revalidate jobs-inbox tag', async () => {
