@@ -132,16 +132,16 @@ describe('InboxSectionPage', () => {
     render(
       <InboxSectionPage
         jobs={[mockFollowUp]}
-        section="follow-ups-due"
+        section="follow-ups"
         emoji="📆"
-        title="Follow-ups Due"
-        description="Due today or overdue"
-        filter="Next Action Date is today or earlier"
-        emptyMessage="No follow-ups due today"
+        title="Follow Ups"
+        description="All jobs needing follow-up"
+        filter="Stage is a follow-up stage"
+        emptyMessage="No follow-ups right now"
       />
     )
 
-    expect(screen.getByText(/Follow-ups Due/)).toBeInTheDocument()
+    expect(screen.getByText(/Follow Ups/)).toBeInTheDocument()
     expect(screen.getByText('Follow Up: Analytics Tool')).toBeInTheDocument()
   })
 })

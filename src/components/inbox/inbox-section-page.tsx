@@ -5,7 +5,7 @@ import { Job } from '@/types/brief'
 import { InboxSection } from './inbox-section'
 import { InboxCard } from './inbox-card'
 
-type SectionType = 'hot-leads' | 'awaiting-response' | 'follow-ups-due'
+type SectionType = 'hot-leads' | 'awaiting-response' | 'follow-ups'
 
 interface InboxSectionPageProps {
   jobs: Job[]

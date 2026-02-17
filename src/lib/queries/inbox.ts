@@ -176,16 +176,13 @@ export async function getAwaitingResponse(): Promise<Job[]> {
 }
 
 /**
- * Fetch follow-ups due: jobs needing follow-up messages today or overdue.
- * Filter: Stage IN follow-up stages AND Response Date = BLANK()
- *   AND (Next Action Date <= NOW() OR Next Action Date is today).
+ * Fetch all jobs that need follow-up: in follow-up stages with no response yet.
+ * Filter: Stage IN follow-up stages AND Response Date = BLANK().
+ * Sort by Next Action Date ASC (soonest due first).
  *
- * Uses NOW() + IS_SAME for date-level matching because Next Action Date
- * includes a time component — TODAY() (midnight) would miss items due later today.
- *
- * Falls back to simpler filter if new fields don't exist.
+ * Falls back to stage-only filter if Response Date field doesn't exist.
  */
-export async function getFollowUpsDue(): Promise<Job[]> {
+export async function getFollowUps(): Promise<Job[]> {
   'use cache'
   cacheTag('jobs-inbox')
   cacheLife('dashboard')
@@ -196,38 +193,34 @@ export async function getFollowUpsDue(): Promise<Job[]> {
       .map((stage) => `{${JOBS.STAGE}} = "${stage}"`)
       .join(', ')
 
-    const dueTodayOrOverdue = `OR({${JOBS.NEXT_ACTION_DATE}} <= NOW(), IS_SAME({${JOBS.NEXT_ACTION_DATE}}, TODAY(), 'day'))`
-
-    // Only show jobs in follow-up stages (Initial Message Sent, Touchpoint 1/2/3)
-    // with a Next Action Date that's today or overdue
-    let filterByFormula = `AND(OR(${stageFilter}), {${JOBS.RESPONSE_DATE}} = BLANK(), ${dueTodayOrOverdue})`
+    let filterByFormula = `AND(OR(${stageFilter}), {${JOBS.RESPONSE_DATE}} = BLANK())`
 
     try {
       const records = await base(TABLES.JOBS_PIPELINE)
         .select({
           filterByFormula,
           sort: [{ field: JOBS.NEXT_ACTION_DATE, direction: 'asc' }],
-          maxRecords: 50,
+          maxRecords: 100,
         })
         .all()
 
-      return sortByNextActionDate(records.map(mapRecordToJob), 'Follow-ups Due')
+      return sortByNextActionDate(records.map(mapRecordToJob), 'Follow Ups')
     } catch {
-      // Response Date field doesn't exist yet — drop that condition
-      filterByFormula = `AND(OR(${stageFilter}), ${dueTodayOrOverdue})`
+      // Response Date field doesn't exist yet — fall back to stage-only filter
+      filterByFormula = `OR(${stageFilter})`
 
       const records = await base(TABLES.JOBS_PIPELINE)
         .select({
           filterByFormula,
           sort: [{ field: JOBS.NEXT_ACTION_DATE, direction: 'asc' }],
-          maxRecords: 50,
+          maxRecords: 100,
         })
         .all()
 
-      return sortByNextActionDate(records.map(mapRecordToJob), 'Follow-ups Due')
+      return sortByNextActionDate(records.map(mapRecordToJob), 'Follow Ups')
     }
   } catch (error) {
-    console.error('getFollowUpsDue failed:', error instanceof Error ? error.message : error)
+    console.error('getFollowUps failed:', error instanceof Error ? error.message : error)
     return []
   }
 }

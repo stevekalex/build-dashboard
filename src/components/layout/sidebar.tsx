@@ -26,7 +26,7 @@ const NAV_ITEMS = [
     group: 'Outreach',
     items: [
       { href: '/hot-leads', label: 'Hot Leads', icon: Flame },
-      { href: '/follow-ups', label: 'Follow Ups Due', icon: CalendarClock },
+      { href: '/follow-ups', label: 'Follow Ups', icon: CalendarClock },
       { href: '/awaiting', label: 'Awaiting Response', icon: MailQuestion },
     ],
   },

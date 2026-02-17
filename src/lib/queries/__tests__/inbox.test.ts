@@ -246,7 +246,7 @@ describe('getAwaitingResponse', () => {
   })
 })
 
-describe('getFollowUpsDue', () => {
+describe('getFollowUps', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.stubEnv('AIRTABLE_API_KEY', 'test-key')
@@ -257,35 +257,21 @@ describe('getFollowUpsDue', () => {
     vi.unstubAllEnvs()
   })
 
-  it('should filter by applied + no response + next action date <= today + not closed', async () => {
+  it('should filter by follow-up stages and no response date', async () => {
     mockAll.mockResolvedValue([])
 
-    const { getFollowUpsDue } = await import('../inbox')
-    await getFollowUpsDue()
+    const { getFollowUps } = await import('../inbox')
+    await getFollowUps()
 
-    expect(mockSelect).toHaveBeenCalledWith(
-      expect.objectContaining({
-        filterByFormula: expect.stringContaining('Applied At'),
-      })
-    )
     expect(mockSelect).toHaveBeenCalledWith(
       expect.objectContaining({
         filterByFormula: expect.stringContaining('Response Date'),
       })
     )
-    expect(mockSelect).toHaveBeenCalledWith(
-      expect.objectContaining({
-        filterByFormula: expect.stringContaining('Next Action Date'),
-      })
-    )
-    expect(mockSelect).toHaveBeenCalledWith(
+    // Should NOT filter by date — shows all follow-ups, not just due today
+    expect(mockSelect).not.toHaveBeenCalledWith(
       expect.objectContaining({
         filterByFormula: expect.stringContaining('TODAY()'),
-      })
-    )
-    expect(mockSelect).toHaveBeenCalledWith(
-      expect.objectContaining({
-        filterByFormula: expect.stringContaining('Closed Won'),
       })
     )
   })
@@ -293,8 +279,8 @@ describe('getFollowUpsDue', () => {
   it('should sort by Next Action Date ascending', async () => {
     mockAll.mockResolvedValue([])
 
-    const { getFollowUpsDue } = await import('../inbox')
-    await getFollowUpsDue()
+    const { getFollowUps } = await import('../inbox')
+    await getFollowUps()
 
     expect(mockSelect).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -306,8 +292,8 @@ describe('getFollowUpsDue', () => {
   it('should return empty array when no matches', async () => {
     mockAll.mockResolvedValue([])
 
-    const { getFollowUpsDue } = await import('../inbox')
-    const jobs = await getFollowUpsDue()
+    const { getFollowUps } = await import('../inbox')
+    const jobs = await getFollowUps()
 
     expect(jobs).toEqual([])
   })
@@ -344,8 +330,8 @@ describe('getFollowUpsDue', () => {
 
     mockAll.mockResolvedValue(mockRecords)
 
-    const { getFollowUpsDue } = await import('../inbox')
-    const jobs = await getFollowUpsDue()
+    const { getFollowUps } = await import('../inbox')
+    const jobs = await getFollowUps()
 
     expect(jobs).toHaveLength(1)
     expect(jobs[0]).toMatchObject({

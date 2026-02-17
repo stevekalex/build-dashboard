@@ -12,7 +12,7 @@ import { DueTimeBadge } from './due-time-badge'
 import { markFollowedUp, closeNoResponse, markCallDone } from '@/app/actions/inbox'
 import { getAirtableRecordUrl } from '@/lib/utils'
 
-type SectionType = 'hot-leads' | 'awaiting-response' | 'follow-ups-due'
+type SectionType = 'hot-leads' | 'awaiting-response' | 'follow-ups'
 
 interface InboxCardProps {
   job: Job
@@ -132,7 +132,7 @@ export function InboxCard({ job, section, onAction }: InboxCardProps) {
               <LogResponseDialog jobId={job.id} jobTitle={job.title} onAction={() => onAction?.(job.id)} />
             )}
 
-            {section === 'follow-ups-due' && (
+            {section === 'follow-ups' && (
               <>
                 <Button
                   variant="outline"
