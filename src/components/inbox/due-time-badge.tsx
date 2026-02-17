@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 
@@ -68,10 +69,26 @@ function formatDueTime(nextActionDate: string): { label: string; urgency: Urgenc
 }
 
 export function DueTimeBadge({ nextActionDate }: DueTimeBadgeProps) {
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   if (!nextActionDate) {
     return (
       <Badge variant="outline" className={cn('text-[10px] leading-tight', urgencyStyles.none)}>
         No date set
+      </Badge>
+    )
+  }
+
+  // Render placeholder on server / first client render to avoid hydration mismatch
+  // (server time !== client time produces different labels)
+  if (!mounted) {
+    return (
+      <Badge variant="outline" className={cn('text-[10px] leading-tight', urgencyStyles.later)}>
+        &nbsp;
       </Badge>
     )
   }
