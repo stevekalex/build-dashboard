@@ -1,6 +1,6 @@
 'use client'
 
-import { useOptimistic } from 'react'
+import { useState, useCallback } from 'react'
 import { Job, Brief } from '@/types/brief'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -59,13 +59,15 @@ function formatBudget(amount: number): string {
 }
 
 export function ApproveList({ jobs }: ApproveListProps) {
-  const [optimisticJobs, removeJob] = useOptimistic(
-    jobs,
-    (currentJobs: Job[], jobIdToRemove: string) =>
-      currentJobs.filter((j) => j.id !== jobIdToRemove)
-  )
+  const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set())
 
-  if (optimisticJobs.length === 0) {
+  const dismissJob = useCallback((jobId: string) => {
+    setDismissedIds((prev) => new Set(prev).add(jobId))
+  }, [])
+
+  const visibleJobs = jobs.filter((j) => !dismissedIds.has(j.id))
+
+  if (visibleJobs.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
         <CheckCircle className="w-12 h-12 text-green-500 mb-4" />
@@ -78,18 +80,18 @@ export function ApproveList({ jobs }: ApproveListProps) {
   }
 
   async function handleApprove(briefId: string, notes: string) {
-    removeJob(briefId)
+    dismissJob(briefId)
     await approveBrief(briefId, notes)
   }
 
   async function handleReject(briefId: string, reason: string, notes: string) {
-    removeJob(briefId)
+    dismissJob(briefId)
     await rejectBrief(briefId, reason, notes)
   }
 
   return (
     <div className="space-y-3">
-        {optimisticJobs.map((job) => {
+        {visibleJobs.map((job) => {
           const brief = jobToBrief(job)
           const skills = job.skills
             ? job.skills.split(',').map((s) => s.trim()).filter(Boolean)
