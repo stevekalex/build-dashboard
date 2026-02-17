@@ -2,6 +2,7 @@ import { Job } from '@/types/brief'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Clock, AlertTriangle } from 'lucide-react'
+import { getAirtableRecordUrl } from '@/lib/utils'
 
 interface BuildingListProps {
   jobs: Job[]
@@ -41,10 +42,13 @@ export function BuildingList({ jobs }: BuildingListProps) {
           ? job.skills.split(',').map((s) => s.trim()).filter(Boolean)
           : []
 
+        const airtableUrl = getAirtableRecordUrl(job.id)
+
         return (
           <Card
             key={job.id}
-            className={`p-4 space-y-3 ${isStuck ? 'border-red-400 border-2' : ''}`}
+            className={`p-4 space-y-3 cursor-pointer hover:bg-gray-50/50 transition-colors ${isStuck ? 'border-red-400 border-2' : ''}`}
+            onClick={() => airtableUrl && window.open(airtableUrl, '_blank')}
           >
             {/* Title and Timer */}
             <div className="flex items-start justify-between gap-2">

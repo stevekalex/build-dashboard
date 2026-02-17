@@ -10,6 +10,7 @@ import { LogResponseDialog } from './log-response-dialog'
 import { CloseDealDialog } from './close-deal-dialog'
 import { DueTimeBadge } from './due-time-badge'
 import { markFollowedUp, closeNoResponse, markCallDone } from '@/app/actions/inbox'
+import { getAirtableRecordUrl } from '@/lib/utils'
 
 type SectionType = 'hot-leads' | 'awaiting-response' | 'follow-ups-due'
 
@@ -72,9 +73,10 @@ export function InboxCard({ job, section, onAction }: InboxCardProps) {
 
   const budget = formatBudget(job.budgetAmount, job.budgetType)
   const age = formatAge(job.appliedAt || job.scrapedAt)
+  const airtableUrl = getAirtableRecordUrl(job.id)
 
   return (
-    <Card className="py-3">
+    <Card className="py-3 cursor-pointer hover:bg-gray-50/50 transition-colors" onClick={() => airtableUrl && window.open(airtableUrl, '_blank')}>
       <CardContent className="px-4 py-0">
         <div className="flex flex-col gap-2">
           {/* Top row: Title + metadata */}
@@ -102,6 +104,7 @@ export function InboxCard({ job, section, onAction }: InboxCardProps) {
                 rel="noopener noreferrer"
                 className="text-gray-400 hover:text-gray-600 shrink-0"
                 title="Open on Upwork"
+                onClick={(e) => e.stopPropagation()}
               >
                 <ExternalLink className="w-4 h-4" />
               </a>
@@ -109,7 +112,8 @@ export function InboxCard({ job, section, onAction }: InboxCardProps) {
           </div>
 
           {/* Action buttons - contextual by section */}
-          <div className="flex items-center gap-2 flex-wrap">
+          {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
+          <div className="flex items-center gap-2 flex-wrap" onClick={(e) => e.stopPropagation()}>
             {section === 'hot-leads' && (
               <>
                 <Button

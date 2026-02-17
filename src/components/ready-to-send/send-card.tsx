@@ -20,6 +20,7 @@ import {
   DollarSign,
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
+import { getAirtableRecordUrl } from '@/lib/utils'
 
 interface SendCardProps {
   job: Job
@@ -59,9 +60,10 @@ export function SendCard({ job }: SendCardProps) {
   const skills = job.skills
     ? job.skills.split(',').map((s) => s.trim()).filter(Boolean)
     : []
+  const airtableUrl = getAirtableRecordUrl(job.id)
 
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden cursor-pointer hover:bg-gray-50/50 transition-colors" onClick={() => airtableUrl && window.open(airtableUrl, '_blank')}>
       <CardHeader className="pb-2">
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2">
           <div className="space-y-1 min-w-0 flex-1">
@@ -99,7 +101,8 @@ export function SendCard({ job }: SendCardProps) {
         )}
       </CardHeader>
 
-      <CardContent className="pt-0">
+      {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
+      <CardContent className="pt-0" onClick={(e) => e.stopPropagation()}>
         <div className="space-y-3">
           {/* Step 1: Open Prototype */}
           <StepRow step={1} label="Open Prototype" icon={<Globe className="w-4 h-4" />}>

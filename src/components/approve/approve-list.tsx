@@ -8,6 +8,7 @@ import { ApproveDialog } from '@/components/briefs/approve-dialog'
 import { RejectDialog } from '@/components/briefs/reject-dialog'
 import { approveBrief, rejectBrief } from '@/app/actions/approve'
 import { CheckCircle, Clock } from 'lucide-react'
+import { getAirtableRecordUrl } from '@/lib/utils'
 
 interface ApproveListProps {
   jobs: Job[]
@@ -94,8 +95,10 @@ export function ApproveList({ jobs }: ApproveListProps) {
             ? job.skills.split(',').map((s) => s.trim()).filter(Boolean)
             : []
 
+          const airtableUrl = getAirtableRecordUrl(job.id)
+
           return (
-            <Card key={job.id} className="p-4 space-y-3">
+            <Card key={job.id} className="p-4 space-y-3 cursor-pointer hover:bg-gray-50/50 transition-colors" onClick={() => airtableUrl && window.open(airtableUrl, '_blank')}>
               {/* Title and Age */}
               <div className="flex items-start justify-between gap-2">
                 <h3 className="font-semibold text-gray-900 text-base leading-tight">
@@ -136,7 +139,8 @@ export function ApproveList({ jobs }: ApproveListProps) {
               )}
 
               {/* Actions */}
-              <div className="flex gap-2 pt-1">
+              {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
+              <div className="flex gap-2 pt-1" onClick={(e) => e.stopPropagation()}>
                 <ApproveDialog brief={brief} onApprove={handleApprove} />
                 <RejectDialog brief={brief} onReject={handleReject} />
               </div>
