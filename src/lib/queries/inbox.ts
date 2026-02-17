@@ -81,7 +81,7 @@ function safeGet(record: any, field: string): unknown {
 /**
  * Fetch hot leads: clients who have shown strong interest.
  * Filter: Response Type IN (Shortlist, Interview, Hire) AND Stage NOT IN closed stages.
- * Sort by Response Date DESC.
+ * Sort by Next Action Date DESC.
  *
  * Returns empty array if Response Type field doesn't exist yet in Airtable.
  */
@@ -103,15 +103,21 @@ export async function getHotLeads(): Promise<Job[]> {
 
     const filterByFormula = `AND(OR(${responseTypeFilter}), NOT(OR(${closedFilter})))`
 
-    const records = await base(TABLES.JOBS_PIPELINE)
-      .select({
-        filterByFormula,
-        sort: [{ field: JOBS.SCRAPED_AT, direction: 'desc' }],
-        maxRecords: 50,
-      })
-      .all()
+    try {
+      const records = await base(TABLES.JOBS_PIPELINE)
+        .select({
+          filterByFormula,
+          sort: [{ field: JOBS.SCRAPED_AT, direction: 'desc' }],
+          maxRecords: 50,
+        })
+        .all()
 
-    return sortByNextActionDate(records.map(mapRecordToJob), 'Hot Leads')
+      return sortByNextActionDate(records.map(mapRecordToJob), 'Hot Leads')
+    } catch {
+      // Response Type field doesn't exist yet in Airtable — no hot leads to show
+      console.warn('getHotLeads: Response Type field not found in Airtable — returning empty. Create this field to enable hot leads.')
+      return []
+    }
   } catch (error) {
     console.error('getHotLeads failed:', error instanceof Error ? error.message : error)
     return []

@@ -40,9 +40,15 @@ export async function approveBrief(
   try {
     const userName = await getUserName()
     await triggerBuild(jobId, userName, notes)
-    await updateJobField(jobId, {
-      [JOBS.APPROVED_DATE]: new Date().toISOString(),
-    })
+
+    // Stamp Decision Date — non-fatal if field doesn't exist yet in Airtable
+    try {
+      await updateJobField(jobId, {
+        [JOBS.APPROVED_DATE]: new Date().toISOString(),
+      })
+    } catch (error) {
+      console.warn('Could not stamp Decision Date (field may not exist yet):', error instanceof Error ? error.message : error)
+    }
 
     revalidateTag('jobs-approve', 'dashboard')
     revalidateTag('jobs-building', 'dashboard')
