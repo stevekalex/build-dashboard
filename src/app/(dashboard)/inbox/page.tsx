@@ -1,10 +1,13 @@
 import { Suspense } from 'react'
+import { cacheTag, cacheLife } from 'next/cache'
 import { getHotLeads, getAwaitingResponse, getFollowUpsDue } from '@/lib/queries/inbox'
 import { InboxView } from '@/components/inbox/inbox-view'
 import { PageInfoTooltip } from '@/components/ui/page-info-tooltip'
 
 async function InboxContent() {
   'use cache'
+  cacheTag('jobs-inbox')
+  cacheLife('dashboard')
   const [hotLeads, awaitingResponse, followUpsDue] = await Promise.all([
     getHotLeads(),
     getAwaitingResponse(),

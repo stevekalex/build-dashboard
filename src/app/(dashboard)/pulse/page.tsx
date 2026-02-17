@@ -1,4 +1,5 @@
 import { Suspense } from 'react'
+import { cacheTag, cacheLife } from 'next/cache'
 import { getDailyMetrics } from '@/lib/queries/metrics'
 import { DailyMetricsView } from '@/components/pulse/daily-metrics'
 import { PageInfoTooltip } from '@/components/ui/page-info-tooltip'
@@ -6,6 +7,8 @@ import { TodayDate } from '@/components/pulse/today-date'
 
 async function PulseContent() {
   'use cache'
+  cacheTag('jobs-metrics')
+  cacheLife('analytics')
   const metrics = await getDailyMetrics()
   return <DailyMetricsView metrics={metrics} />
 }

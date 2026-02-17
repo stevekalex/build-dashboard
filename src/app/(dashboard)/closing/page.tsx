@@ -1,10 +1,13 @@
 import { Suspense } from 'react'
+import { cacheTag, cacheLife } from 'next/cache'
 import { getActiveDeals, groupDealsByStatus } from '@/lib/queries/closing'
 import { ClosingBoard } from '@/components/closing/closing-board'
 import { PageInfoTooltip } from '@/components/ui/page-info-tooltip'
 
 async function ClosingContent() {
   'use cache'
+  cacheTag('jobs-closing')
+  cacheLife('dashboard')
   const deals = await getActiveDeals()
   const grouped = groupDealsByStatus(deals)
   return <ClosingBoard {...grouped} />

@@ -1,10 +1,13 @@
 import { Suspense } from 'react'
+import { cacheTag, cacheLife } from 'next/cache'
 import { getJobsToApprove, getJobsBuilding } from '@/lib/queries/approve'
 import { ApproveBoard } from '@/components/approve/approve-board'
 import { PageInfoTooltip } from '@/components/ui/page-info-tooltip'
 
 async function ApproveContent() {
   'use cache'
+  cacheTag('jobs-approve', 'jobs-building')
+  cacheLife('dashboard')
   const [pendingJobs, buildingJobs] = await Promise.all([
     getJobsToApprove(),
     getJobsBuilding(),

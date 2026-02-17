@@ -1,10 +1,13 @@
 import { Suspense } from 'react'
+import { cacheTag, cacheLife } from 'next/cache'
 import { getReadyToSend } from '@/lib/queries/ready-to-send'
 import { SendQueue } from '@/components/ready-to-send/send-queue'
 import { PageInfoTooltip } from '@/components/ui/page-info-tooltip'
 
 async function ReadyToSendContent() {
   'use cache'
+  cacheTag('jobs-ready-to-send')
+  cacheLife('dashboard')
   const jobs = await getReadyToSend()
   return <SendQueue jobs={jobs} />
 }

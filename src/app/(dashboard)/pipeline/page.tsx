@@ -1,10 +1,13 @@
 import { Suspense } from 'react'
+import { cacheTag, cacheLife } from 'next/cache'
 import { getPipelineCounts } from '@/lib/queries/pipeline'
 import { PipelineFunnel } from '@/components/pipeline/pipeline-funnel'
 import { PageInfoTooltip } from '@/components/ui/page-info-tooltip'
 
 async function PipelineContent() {
   'use cache'
+  cacheTag('jobs-pipeline')
+  cacheLife('analytics')
   const counts = await getPipelineCounts()
   return <PipelineFunnel counts={counts} />
 }
