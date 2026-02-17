@@ -1,6 +1,7 @@
 import { TABLES, JOBS } from '@/lib/airtable-fields'
 import { getBase } from '@/lib/airtable'
 import { DailyMetrics } from '@/types/brief'
+import { cacheTag, cacheLife } from 'next/cache'
 
 async function countByDateToday(field: string): Promise<number> {
   try {
@@ -18,6 +19,9 @@ async function countByDateToday(field: string): Promise<number> {
 }
 
 export async function getDailyMetrics(): Promise<DailyMetrics> {
+  'use cache'
+  cacheTag('jobs-metrics')
+  cacheLife('analytics')
   const [
     jobsDetected,
     jobsApproved,

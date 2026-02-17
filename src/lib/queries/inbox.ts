@@ -1,6 +1,7 @@
 import { TABLES, JOBS, STAGES, CLOSED_STAGES, FOLLOW_UP_STAGES } from '@/lib/airtable-fields'
 import { getBase } from '@/lib/airtable'
 import { Job } from '@/types/brief'
+import { cacheTag, cacheLife } from 'next/cache'
 
 /**
  * Map an Airtable record to a Job object.
@@ -51,6 +52,9 @@ function safeGet(record: any, field: string): unknown {
  * Returns empty array if Response Type field doesn't exist yet in Airtable.
  */
 export async function getHotLeads(): Promise<Job[]> {
+  'use cache'
+  cacheTag('jobs-inbox')
+  cacheLife('dashboard')
   try {
     const base = getBase()
 
@@ -87,6 +91,9 @@ export async function getHotLeads(): Promise<Job[]> {
  * Falls back to stage-only filter if Response Date field doesn't exist.
  */
 export async function getAwaitingResponse(): Promise<Job[]> {
+  'use cache'
+  cacheTag('jobs-inbox')
+  cacheLife('dashboard')
   try {
     const base = getBase()
 
@@ -134,6 +141,9 @@ export async function getAwaitingResponse(): Promise<Job[]> {
  * Falls back to simpler filter if new fields don't exist.
  */
 export async function getFollowUpsDue(): Promise<Job[]> {
+  'use cache'
+  cacheTag('jobs-inbox')
+  cacheLife('dashboard')
   try {
     const base = getBase()
 

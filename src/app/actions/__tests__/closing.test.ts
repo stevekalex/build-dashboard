@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // Mock next/cache
 vi.mock('next/cache', () => ({
-  revalidatePath: vi.fn(),
+  revalidateTag: vi.fn(),
 }))
 
 // Mock airtable-mutations
@@ -30,12 +30,12 @@ describe('markContractSent', () => {
     expect(result.success).toBe(true)
   })
 
-  it('should revalidate /closing path', async () => {
-    const { revalidatePath } = await import('next/cache')
+  it('should revalidate jobs-closing tag', async () => {
+    const { revalidateTag } = await import('next/cache')
     const { markContractSent } = await import('../closing')
     await markContractSent('job123')
 
-    expect(revalidatePath).toHaveBeenCalledWith('/closing')
+    expect(revalidateTag).toHaveBeenCalledWith('jobs-closing', 'dashboard')
   })
 
   it('should return error on failure', async () => {
@@ -70,12 +70,12 @@ describe('markLost', () => {
     expect(result.success).toBe(true)
   })
 
-  it('should revalidate /closing path', async () => {
-    const { revalidatePath } = await import('next/cache')
+  it('should revalidate jobs-closing tag', async () => {
+    const { revalidateTag } = await import('next/cache')
     const { markLost } = await import('../closing')
     await markLost('job123', 'Not a fit')
 
-    expect(revalidatePath).toHaveBeenCalledWith('/closing')
+    expect(revalidateTag).toHaveBeenCalledWith('jobs-closing', 'dashboard')
   })
 
   it('should return error on failure', async () => {

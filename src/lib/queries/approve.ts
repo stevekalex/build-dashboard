@@ -1,6 +1,7 @@
 import { TABLES, JOBS, BUILD, STAGES } from '@/lib/airtable-fields'
 import { getBase } from '@/lib/airtable'
 import { Job } from '@/types/brief'
+import { cacheTag, cacheLife } from 'next/cache'
 import yaml from 'js-yaml'
 
 /**
@@ -15,6 +16,9 @@ import yaml from 'js-yaml'
  * Sorted by Scraped At ASC (oldest first)
  */
 export async function getJobsToApprove(): Promise<Job[]> {
+  'use cache'
+  cacheTag('jobs-approve')
+  cacheLife('dashboard')
   try {
     return await getJobsToApproveLookup()
   } catch {

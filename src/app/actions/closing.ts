@@ -1,6 +1,6 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { revalidateTag } from 'next/cache'
 import { updateJobField, updateJobStage } from '@/lib/airtable-mutations'
 import { JOBS, STAGES } from '@/lib/airtable-fields'
 
@@ -17,7 +17,7 @@ export async function markContractSent(
       [JOBS.CONTRACT_SENT_DATE]: now,
     })
 
-    revalidatePath('/closing')
+    revalidateTag('jobs-closing', 'dashboard')
     return { success: true }
   } catch (error) {
     console.error('markContractSent failed:', error)
@@ -38,7 +38,7 @@ export async function markLost(
       [JOBS.LOST_REASON]: reason,
     })
 
-    revalidatePath('/closing')
+    revalidateTag('jobs-closing', 'dashboard')
     return { success: true }
   } catch (error) {
     console.error('markLost failed:', error)

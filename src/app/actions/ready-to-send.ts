@@ -1,6 +1,6 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { revalidateTag } from 'next/cache'
 import { cookies } from 'next/headers'
 import { updateJobField, updateJobStage } from '@/lib/airtable-mutations'
 import { JOBS, STAGES } from '@/lib/airtable-fields'
@@ -42,7 +42,7 @@ export async function saveLoomUrl(
       [JOBS.LOOM_RECORDED_DATE]: new Date().toISOString(),
     })
 
-    revalidatePath('/ready-to-send')
+    revalidateTag('jobs-ready-to-send', 'dashboard')
 
     return { success: true }
   } catch (error) {
@@ -75,7 +75,7 @@ export async function markApplied(
       [JOBS.APPLIED_AT]: new Date().toISOString(),
     })
 
-    revalidatePath('/ready-to-send')
+    revalidateTag('jobs-ready-to-send', 'dashboard')
 
     return { success: true }
   } catch (error) {

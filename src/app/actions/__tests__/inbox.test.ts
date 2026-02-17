@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // Mock next/cache
 vi.mock('next/cache', () => ({
-  revalidatePath: vi.fn(),
+  revalidateTag: vi.fn(),
 }))
 
 // Mock next/headers
@@ -102,12 +102,12 @@ describe('logResponse', () => {
     }))
   })
 
-  it('should revalidate /inbox path', async () => {
-    const { revalidatePath } = await import('next/cache')
+  it('should revalidate jobs-inbox tag', async () => {
+    const { revalidateTag } = await import('next/cache')
     const { logResponse } = await import('../inbox')
     await logResponse('job123', 'Message')
 
-    expect(revalidatePath).toHaveBeenCalledWith('/inbox')
+    expect(revalidateTag).toHaveBeenCalledWith('jobs-inbox', 'dashboard')
   })
 })
 
@@ -243,7 +243,7 @@ describe('markFollowedUp', () => {
     expect(diffDays).toBeLessThanOrEqual(3)
   })
 
-  it('should revalidate /inbox path', async () => {
+  it('should revalidate jobs-inbox tag', async () => {
     mockFind.mockResolvedValue({
       id: 'job123',
       get: (field: string) => {
@@ -252,11 +252,11 @@ describe('markFollowedUp', () => {
       },
     })
 
-    const { revalidatePath } = await import('next/cache')
+    const { revalidateTag } = await import('next/cache')
     const { markFollowedUp } = await import('../inbox')
     await markFollowedUp('job123')
 
-    expect(revalidatePath).toHaveBeenCalledWith('/inbox')
+    expect(revalidateTag).toHaveBeenCalledWith('jobs-inbox', 'dashboard')
   })
 })
 
@@ -277,12 +277,12 @@ describe('closeNoResponse', () => {
     )
   })
 
-  it('should revalidate /inbox path', async () => {
-    const { revalidatePath } = await import('next/cache')
+  it('should revalidate jobs-inbox tag', async () => {
+    const { revalidateTag } = await import('next/cache')
     const { closeNoResponse } = await import('../inbox')
     await closeNoResponse('job123')
 
-    expect(revalidatePath).toHaveBeenCalledWith('/inbox')
+    expect(revalidateTag).toHaveBeenCalledWith('jobs-inbox', 'dashboard')
   })
 })
 
@@ -301,12 +301,12 @@ describe('markCallDone', () => {
     }))
   })
 
-  it('should revalidate /inbox path', async () => {
-    const { revalidatePath } = await import('next/cache')
+  it('should revalidate jobs-inbox tag', async () => {
+    const { revalidateTag } = await import('next/cache')
     const { markCallDone } = await import('../inbox')
     await markCallDone('job123')
 
-    expect(revalidatePath).toHaveBeenCalledWith('/inbox')
+    expect(revalidateTag).toHaveBeenCalledWith('jobs-inbox', 'dashboard')
   })
 })
 
@@ -330,11 +330,11 @@ describe('markContractSigned', () => {
     )
   })
 
-  it('should revalidate /inbox path', async () => {
-    const { revalidatePath } = await import('next/cache')
+  it('should revalidate jobs-inbox tag', async () => {
+    const { revalidateTag } = await import('next/cache')
     const { markContractSigned } = await import('../inbox')
     await markContractSigned('job123', 5000)
 
-    expect(revalidatePath).toHaveBeenCalledWith('/inbox')
+    expect(revalidateTag).toHaveBeenCalledWith('jobs-inbox', 'dashboard')
   })
 })

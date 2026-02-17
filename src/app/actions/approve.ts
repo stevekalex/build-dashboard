@@ -1,6 +1,6 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { revalidateTag } from 'next/cache'
 import { cookies } from 'next/headers'
 import { triggerBuild, rejectBuild } from '@/lib/job-pulse'
 import { updateJobField } from '@/lib/airtable-mutations'
@@ -44,7 +44,7 @@ export async function approveBrief(
       [JOBS.APPROVED_DATE]: new Date().toISOString(),
     })
 
-    revalidatePath('/approve')
+    revalidateTag('jobs-approve', 'dashboard')
 
     return { success: true }
   } catch (error) {
@@ -72,7 +72,7 @@ export async function rejectBrief(
     const userName = await getUserName()
     await rejectBuild(jobId, reason, userName, notes)
 
-    revalidatePath('/approve')
+    revalidateTag('jobs-approve', 'dashboard')
 
     return { success: true }
   } catch (error) {

@@ -10,7 +10,7 @@ vi.mock('@/lib/airtable-mutations', () => ({
 
 // Mock next/cache
 vi.mock('next/cache', () => ({
-  revalidatePath: vi.fn(),
+  revalidateTag: vi.fn(),
 }))
 
 // Mock next/headers
@@ -48,12 +48,12 @@ describe('saveLoomUrl - Happy Path', () => {
     expect(new Date(loomRecordedDate).toISOString()).toBe(loomRecordedDate)
   })
 
-  it('should revalidate /ready-to-send path', async () => {
-    const { revalidatePath } = await import('next/cache')
+  it('should revalidate jobs-ready-to-send tag', async () => {
+    const { revalidateTag } = await import('next/cache')
     const { saveLoomUrl } = await import('../ready-to-send')
     await saveLoomUrl('rec123', 'https://loom.com/share/abc')
 
-    expect(revalidatePath).toHaveBeenCalledWith('/ready-to-send')
+    expect(revalidateTag).toHaveBeenCalledWith('jobs-ready-to-send', 'dashboard')
   })
 })
 
@@ -128,12 +128,12 @@ describe('markApplied - Happy Path', () => {
     )
   })
 
-  it('should revalidate /ready-to-send path', async () => {
-    const { revalidatePath } = await import('next/cache')
+  it('should revalidate jobs-ready-to-send tag', async () => {
+    const { revalidateTag } = await import('next/cache')
     const { markApplied } = await import('../ready-to-send')
     await markApplied('rec123')
 
-    expect(revalidatePath).toHaveBeenCalledWith('/ready-to-send')
+    expect(revalidateTag).toHaveBeenCalledWith('jobs-ready-to-send', 'dashboard')
   })
 })
 

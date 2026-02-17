@@ -2,6 +2,7 @@ import Airtable from 'airtable'
 import yaml from 'js-yaml'
 import { Brief, Build } from '@/types/brief'
 import { TABLES, JOBS, STAGES } from './airtable-fields'
+import { cacheTag, cacheLife } from 'next/cache'
 
 // Initialize Airtable client (singleton)
 let _base: ReturnType<InstanceType<typeof Airtable>['base']> | null = null
@@ -20,6 +21,9 @@ export function getBase() {
  * Uses Lookup fields — single API call, no N+1.
  */
 export async function getBriefsPendingApproval(): Promise<Brief[]> {
+  'use cache'
+  cacheTag('jobs-approve')
+  cacheLife('dashboard')
   const base = getBase()
   const records = await base(TABLES.JOBS_PIPELINE)
     .select({
@@ -60,6 +64,9 @@ export async function getBriefsPendingApproval(): Promise<Brief[]> {
  * Uses Lookup fields — single API call, no secondary Build Details fetch.
  */
 export async function getBriefById(id: string): Promise<Brief | null> {
+  'use cache'
+  cacheTag(`brief-${id}`)
+  cacheLife('analytics')
   const base = getBase()
 
   try {
@@ -174,6 +181,9 @@ function parseBriefData(briefData: string): {
  * Returns last 37 builds sorted by most recent first.
  */
 export async function getAllBuilds(): Promise<Build[]> {
+  'use cache'
+  cacheTag('builds-all')
+  cacheLife('dashboard')
   const base = getBase()
 
   const records = await base(TABLES.JOBS_PIPELINE)

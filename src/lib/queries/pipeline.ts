@@ -1,12 +1,16 @@
 import { TABLES, JOBS, STAGES } from '@/lib/airtable-fields'
 import { getBase } from '@/lib/airtable'
 import { PipelineCounts } from '@/types/brief'
+import { cacheTag, cacheLife } from 'next/cache'
 
 /**
  * Fetch all jobs and count them by stage group.
  * More efficient than running 12 separate filtered queries.
  */
 export async function getPipelineCounts(): Promise<PipelineCounts> {
+  'use cache'
+  cacheTag('jobs-pipeline')
+  cacheLife('analytics')
   const base = getBase()
   const records = await base(TABLES.JOBS_PIPELINE)
     .select({

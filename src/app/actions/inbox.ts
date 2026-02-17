@@ -1,6 +1,6 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { revalidateTag } from 'next/cache'
 import { cookies } from 'next/headers'
 import { updateJobField, updateJobStage } from '@/lib/airtable-mutations'
 import { getBase } from '@/lib/airtable'
@@ -35,7 +35,7 @@ export async function logResponse(
     await updateJobField(jobId, fields)
   }
 
-  revalidatePath('/inbox')
+  revalidateTag('jobs-inbox', 'dashboard')
 }
 
 /**
@@ -67,7 +67,7 @@ export async function markFollowedUp(jobId: string): Promise<void> {
 
   await updateJobStage(jobId, nextStage, additionalFields)
 
-  revalidatePath('/inbox')
+  revalidateTag('jobs-inbox', 'dashboard')
 }
 
 /**
@@ -78,7 +78,7 @@ export async function closeNoResponse(jobId: string): Promise<void> {
     [JOBS.LOST_REASON]: 'No response',
   })
 
-  revalidatePath('/inbox')
+  revalidateTag('jobs-inbox', 'dashboard')
 }
 
 /**
@@ -90,7 +90,7 @@ export async function markCallDone(jobId: string, notes?: string): Promise<void>
     [JOBS.CALL_COMPLETED_DATE]: now,
   })
 
-  revalidatePath('/inbox')
+  revalidateTag('jobs-inbox', 'dashboard')
 }
 
 /**
@@ -107,5 +107,5 @@ export async function markContractSigned(
     [JOBS.DEAL_VALUE]: dealValue,
   })
 
-  revalidatePath('/inbox')
+  revalidateTag('jobs-inbox', 'dashboard')
 }

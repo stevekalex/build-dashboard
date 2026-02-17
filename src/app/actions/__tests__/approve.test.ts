@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // Mock next/cache
 vi.mock('next/cache', () => ({
-  revalidatePath: vi.fn(),
+  revalidateTag: vi.fn(),
 }))
 
 // Mock next/headers
@@ -51,12 +51,12 @@ describe('approveBrief', () => {
     })
   })
 
-  it('should revalidate /approve path', async () => {
-    const { revalidatePath } = await import('next/cache')
+  it('should revalidate jobs-approve tag', async () => {
+    const { revalidateTag } = await import('next/cache')
     const { approveBrief } = await import('../approve')
     await approveBrief('job123')
 
-    expect(revalidatePath).toHaveBeenCalledWith('/approve')
+    expect(revalidateTag).toHaveBeenCalledWith('jobs-approve', 'dashboard')
   })
 
   it('should return success on successful approval', async () => {
@@ -111,12 +111,12 @@ describe('rejectBrief', () => {
     expect(mockRejectBuild).toHaveBeenCalledWith('job123', 'Scope unclear', 'Steve', 'some notes')
   })
 
-  it('should revalidate /approve path', async () => {
-    const { revalidatePath } = await import('next/cache')
+  it('should revalidate jobs-approve tag', async () => {
+    const { revalidateTag } = await import('next/cache')
     const { rejectBrief } = await import('../approve')
     await rejectBrief('job123', 'Too complex')
 
-    expect(revalidatePath).toHaveBeenCalledWith('/approve')
+    expect(revalidateTag).toHaveBeenCalledWith('jobs-approve', 'dashboard')
   })
 
   it('should return success on successful rejection', async () => {

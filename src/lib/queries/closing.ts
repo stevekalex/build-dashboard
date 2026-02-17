@@ -1,6 +1,7 @@
 import { TABLES, JOBS, STAGES, ENGAGEMENT_STAGES } from '@/lib/airtable-fields'
 import { getBase } from '@/lib/airtable'
 import { Job } from '@/types/brief'
+import { cacheTag, cacheLife } from 'next/cache'
 
 /**
  * Safely get a field value -- returns undefined if the field doesn't exist.
@@ -52,6 +53,9 @@ function mapRecordToJob(record: any): Job {
  * Returns empty array on failure.
  */
 export async function getActiveDeals(): Promise<Job[]> {
+  'use cache'
+  cacheTag('jobs-closing')
+  cacheLife('dashboard')
   try {
     const base = getBase()
 

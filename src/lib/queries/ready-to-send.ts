@@ -1,6 +1,7 @@
 import { TABLES, JOBS, STAGES } from '@/lib/airtable-fields'
 import { getBase } from '@/lib/airtable'
 import { Job } from '@/types/brief'
+import { cacheTag, cacheLife } from 'next/cache'
 
 /**
  * Fetch jobs that are ready to send as applications.
@@ -12,6 +13,9 @@ import { Job } from '@/types/brief'
  * Sorted by Scraped At ascending (oldest first — speed advantage).
  */
 export async function getReadyToSend(): Promise<Job[]> {
+  'use cache'
+  cacheTag('jobs-ready-to-send')
+  cacheLife('dashboard')
   const base = getBase()
 
   const records = await base(TABLES.JOBS_PIPELINE)
