@@ -3,9 +3,11 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
-  Inbox,
   Send,
   CheckCircle,
+  Flame,
+  CalendarClock,
+  MailQuestion,
   Handshake,
   Activity,
   BarChart3,
@@ -14,11 +16,18 @@ import { cn } from '@/lib/utils'
 
 const NAV_ITEMS = [
   {
-    group: 'Daily Workflow',
+    group: 'Inbox',
     items: [
-      { href: '/inbox', label: 'Inbox', icon: Inbox },
-      { href: '/ready-to-send', label: 'Ready to Send', icon: Send },
       { href: '/approve', label: 'Approve', icon: CheckCircle },
+      { href: '/ready-to-send', label: 'Ready to Send', icon: Send },
+    ],
+  },
+  {
+    group: 'Outreach',
+    items: [
+      { href: '/hot-leads', label: 'Hot Leads', icon: Flame },
+      { href: '/follow-ups', label: 'Follow Ups Due', icon: CalendarClock },
+      { href: '/awaiting', label: 'Awaiting Response', icon: MailQuestion },
     ],
   },
   {

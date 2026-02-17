@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
-import { InboxView } from '../inbox-view'
+import { InboxSectionPage } from '../inbox-section-page'
 import { Job } from '@/types/brief'
 
 // Mock server actions
@@ -57,116 +57,91 @@ const mockFollowUp: Job = {
   client: 'Follow Up Client',
 }
 
-describe('InboxView', () => {
-  it('should render all 3 sections', () => {
+describe('InboxSectionPage', () => {
+  it('should render section with jobs', () => {
     render(
-      <InboxView
-        hotLeads={[mockHotLead]}
-        awaitingResponse={[mockAwaitingResponse]}
-        followUpsDue={[mockFollowUp]}
+      <InboxSectionPage
+        jobs={[mockHotLead]}
+        section="hot-leads"
+        emoji="🔥"
+        title="Hot Leads"
+        description="Warm leads"
+        filter="Response Type is Shortlist, Interview, or Hire"
+        emptyMessage="No hot leads right now"
       />
     )
 
     expect(screen.getByText(/Hot Leads/)).toBeInTheDocument()
-    expect(screen.getByText(/Awaiting Response/)).toBeInTheDocument()
-    expect(screen.getByText(/Follow-ups Due/)).toBeInTheDocument()
-  })
-
-  it('should show counts for each section', () => {
-    render(
-      <InboxView
-        hotLeads={[mockHotLead]}
-        awaitingResponse={[mockAwaitingResponse, { ...mockAwaitingResponse, id: 'rec4', title: 'Another' }]}
-        followUpsDue={[mockFollowUp]}
-      />
-    )
-
-    // Check count badges exist
-    const badges = screen.getAllByText(/^[0-9]+$/)
-    expect(badges.length).toBeGreaterThanOrEqual(3)
-  })
-
-  it('should render job titles from all sections', () => {
-    render(
-      <InboxView
-        hotLeads={[mockHotLead]}
-        awaitingResponse={[mockAwaitingResponse]}
-        followUpsDue={[mockFollowUp]}
-      />
-    )
-
     expect(screen.getByText('Hot Lead: CRM Dashboard')).toBeInTheDocument()
-    expect(screen.getByText('Awaiting: Inventory App')).toBeInTheDocument()
-    expect(screen.getByText('Follow Up: Analytics Tool')).toBeInTheDocument()
   })
 
-  it('should toggle section visibility when clicking section header', () => {
+  it('should show count badge', () => {
     render(
-      <InboxView
-        hotLeads={[mockHotLead]}
-        awaitingResponse={[mockAwaitingResponse]}
-        followUpsDue={[mockFollowUp]}
+      <InboxSectionPage
+        jobs={[mockAwaitingResponse, { ...mockAwaitingResponse, id: 'rec4', title: 'Another' }]}
+        section="awaiting-response"
+        emoji="📬"
+        title="Awaiting Response"
+        description="Monitoring"
+        filter="Applied At is set"
+        emptyMessage="No jobs awaiting response"
       />
     )
 
-    // Sections start open - job titles are visible
+    expect(screen.getByText('2')).toBeInTheDocument()
+  })
+
+  it('should toggle section visibility when clicking header', () => {
+    render(
+      <InboxSectionPage
+        jobs={[mockHotLead]}
+        section="hot-leads"
+        emoji="🔥"
+        title="Hot Leads"
+        description="Warm leads"
+        filter="Response Type is Shortlist, Interview, or Hire"
+        emptyMessage="No hot leads right now"
+      />
+    )
+
     expect(screen.getByText('Hot Lead: CRM Dashboard')).toBeVisible()
 
-    // Click the Hot Leads section header to collapse
-    const hotLeadsHeader = screen.getByText(/Hot Leads/)
-    fireEvent.click(hotLeadsHeader)
+    const header = screen.getByText(/Hot Leads/)
+    fireEvent.click(header)
 
-    // Job title should be hidden
     expect(screen.queryByText('Hot Lead: CRM Dashboard')).not.toBeInTheDocument()
   })
 
-  it('should show empty state when Hot Leads section is empty', () => {
+  it('should show empty state when no jobs', () => {
     render(
-      <InboxView
-        hotLeads={[]}
-        awaitingResponse={[mockAwaitingResponse]}
-        followUpsDue={[mockFollowUp]}
+      <InboxSectionPage
+        jobs={[]}
+        section="hot-leads"
+        emoji="🔥"
+        title="Hot Leads"
+        description="Warm leads"
+        filter="Response Type is Shortlist, Interview, or Hire"
+        emptyMessage="No hot leads right now"
       />
     )
 
     expect(screen.getByText(/No hot leads/i)).toBeInTheDocument()
   })
 
-  it('should show empty state when Awaiting Response section is empty', () => {
+  it('should render follow-ups section', () => {
     render(
-      <InboxView
-        hotLeads={[mockHotLead]}
-        awaitingResponse={[]}
-        followUpsDue={[mockFollowUp]}
+      <InboxSectionPage
+        jobs={[mockFollowUp]}
+        section="follow-ups-due"
+        emoji="📆"
+        title="Follow-ups Due"
+        description="Due today or overdue"
+        filter="Next Action Date is today or earlier"
+        emptyMessage="No follow-ups due today"
       />
     )
 
-    expect(screen.getByText(/No jobs awaiting response/i)).toBeInTheDocument()
-  })
-
-  it('should show empty state when Follow-ups Due section is empty', () => {
-    render(
-      <InboxView
-        hotLeads={[mockHotLead]}
-        awaitingResponse={[mockAwaitingResponse]}
-        followUpsDue={[]}
-      />
-    )
-
-    expect(screen.getByText(/No follow-ups due/i)).toBeInTheDocument()
-  })
-
-  it('should show empty state for all sections when all are empty', () => {
-    render(
-      <InboxView
-        hotLeads={[]}
-        awaitingResponse={[]}
-        followUpsDue={[]}
-      />
-    )
-
-    expect(screen.getByText(/No hot leads/i)).toBeInTheDocument()
-    expect(screen.getByText(/No jobs awaiting response/i)).toBeInTheDocument()
-    expect(screen.getByText(/No follow-ups due/i)).toBeInTheDocument()
+    expect(screen.getByText(/Follow-ups Due/)).toBeInTheDocument()
+    expect(screen.getByText('Follow Up: Analytics Tool')).toBeInTheDocument()
   })
 })
