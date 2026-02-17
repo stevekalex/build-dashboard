@@ -26,11 +26,11 @@ export default async function BriefDetailPage({ params }: BriefDetailPageProps) 
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
         <div className="px-4 py-3">
           <Link
-            href="/"
+            href="/approve"
             className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-3"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span className="text-sm font-medium">Back to Briefs</span>
+            <span className="text-sm font-medium">Back to Approve</span>
           </Link>
           <h1 className="text-lg md:text-xl font-bold text-gray-900 mb-3 leading-tight">{brief.title}</h1>
           <div className="flex flex-wrap gap-2">

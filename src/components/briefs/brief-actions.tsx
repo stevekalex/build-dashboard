@@ -3,7 +3,7 @@
 import { Brief } from '@/types/brief'
 import { ApproveDialog } from './approve-dialog'
 import { RejectDialog } from './reject-dialog'
-import { approveBrief, rejectBriefAction } from '@/app/actions'
+import { approveBrief, rejectBrief } from '@/app/actions/approve'
 import { useRouter } from 'next/navigation'
 
 interface BriefActionsProps {
@@ -16,7 +16,7 @@ export function BriefActions({ brief }: BriefActionsProps) {
   async function handleApprove(briefId: string, notes: string) {
     const result = await approveBrief(briefId, notes || undefined)
     if (result.success) {
-      router.push('/')
+      router.push('/approve')
       router.refresh()
     } else {
       alert(`Failed to approve: ${result.error}`)
@@ -24,9 +24,9 @@ export function BriefActions({ brief }: BriefActionsProps) {
   }
 
   async function handleReject(briefId: string, reason: string, notes: string) {
-    const result = await rejectBriefAction(briefId, reason, notes || undefined)
+    const result = await rejectBrief(briefId, reason, notes || undefined)
     if (result.success) {
-      router.push('/')
+      router.push('/approve')
       router.refresh()
     } else {
       alert(`Failed to reject: ${result.error}`)
