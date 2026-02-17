@@ -177,9 +177,11 @@ export async function getAwaitingResponse(): Promise<Job[]> {
 
 /**
  * Fetch follow-ups due: jobs needing follow-up messages today or overdue.
- * Filter: Applied At NOT BLANK() AND Response Date = BLANK()
- *   AND Next Action Date <= TODAY() AND Stage NOT IN closed stages.
- * Sort by Next Action Date ASC.
+ * Filter: Stage IN follow-up stages AND Response Date = BLANK()
+ *   AND (Next Action Date <= NOW() OR Next Action Date is today).
+ *
+ * Uses NOW() + IS_SAME for date-level matching because Next Action Date
+ * includes a time component — TODAY() (midnight) would miss items due later today.
  *
  * Falls back to simpler filter if new fields don't exist.
  */
@@ -194,9 +196,11 @@ export async function getFollowUpsDue(): Promise<Job[]> {
       .map((stage) => `{${JOBS.STAGE}} = "${stage}"`)
       .join(', ')
 
+    const dueTodayOrOverdue = `OR({${JOBS.NEXT_ACTION_DATE}} <= NOW(), IS_SAME({${JOBS.NEXT_ACTION_DATE}}, TODAY(), 'day'))`
+
     // Only show jobs in follow-up stages (Initial Message Sent, Touchpoint 1/2/3)
     // with a Next Action Date that's today or overdue
-    let filterByFormula = `AND(OR(${stageFilter}), {${JOBS.RESPONSE_DATE}} = BLANK(), {${JOBS.NEXT_ACTION_DATE}} <= TODAY())`
+    let filterByFormula = `AND(OR(${stageFilter}), {${JOBS.RESPONSE_DATE}} = BLANK(), ${dueTodayOrOverdue})`
 
     try {
       const records = await base(TABLES.JOBS_PIPELINE)
@@ -210,7 +214,7 @@ export async function getFollowUpsDue(): Promise<Job[]> {
       return sortByNextActionDate(records.map(mapRecordToJob), 'Follow-ups Due')
     } catch {
       // Response Date field doesn't exist yet — drop that condition
-      filterByFormula = `AND(OR(${stageFilter}), {${JOBS.NEXT_ACTION_DATE}} <= TODAY())`
+      filterByFormula = `AND(OR(${stageFilter}), ${dueTodayOrOverdue})`
 
       const records = await base(TABLES.JOBS_PIPELINE)
         .select({

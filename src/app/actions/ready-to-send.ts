@@ -71,8 +71,12 @@ export async function markApplied(
       timestamp: new Date().toISOString(),
     })
 
+    const now = new Date()
+    const nextActionDate = new Date(now.getTime() + 24 * 60 * 60 * 1000)
+
     await updateJobStage(jobId, STAGES.INITIAL_MESSAGE_SENT, {
-      [JOBS.APPLIED_AT]: new Date().toISOString(),
+      [JOBS.APPLIED_AT]: now.toISOString(),
+      [JOBS.NEXT_ACTION_DATE]: nextActionDate.toISOString(),
     })
 
     revalidateTag('jobs-ready-to-send', 'dashboard')
