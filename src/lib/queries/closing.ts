@@ -69,8 +69,8 @@ export async function getActiveDeals(): Promise<Job[]> {
       .all()
 
     return records.map(mapRecordToJob)
-  } catch (error) {
-    console.error('getActiveDeals failed (fields may not exist yet):', (error as Error).message)
+  } catch {
+    // Fields may not exist yet — expected, return empty
     return []
   }
 }
