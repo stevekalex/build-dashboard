@@ -69,6 +69,7 @@ export async function getActiveDeals(): Promise<Job[]> {
       .select({
         filterByFormula,
         sort: [{ field: JOBS.SCRAPED_AT, direction: 'asc' }],
+        maxRecords: 50,
       })
       .all()
 

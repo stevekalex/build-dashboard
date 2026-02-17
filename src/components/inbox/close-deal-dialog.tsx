@@ -18,9 +18,10 @@ import { markContractSigned } from '@/app/actions/inbox'
 interface CloseDealDialogProps {
   jobId: string
   jobTitle: string
+  onAction?: () => void
 }
 
-export function CloseDealDialog({ jobId, jobTitle }: CloseDealDialogProps) {
+export function CloseDealDialog({ jobId, jobTitle, onAction }: CloseDealDialogProps) {
   const [open, setOpen] = useState(false)
   const [dealValue, setDealValue] = useState('')
   const [loading, setLoading] = useState(false)
@@ -29,6 +30,7 @@ export function CloseDealDialog({ jobId, jobTitle }: CloseDealDialogProps) {
     const value = parseFloat(dealValue)
     if (isNaN(value) || value <= 0) return
     setLoading(true)
+    onAction?.()
     try {
       await markContractSigned(jobId, value)
       setOpen(false)

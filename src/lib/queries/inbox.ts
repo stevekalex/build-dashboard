@@ -73,6 +73,7 @@ export async function getHotLeads(): Promise<Job[]> {
       .select({
         filterByFormula,
         sort: [{ field: JOBS.SCRAPED_AT, direction: 'desc' }],
+        maxRecords: 50,
       })
       .all()
 
@@ -109,6 +110,7 @@ export async function getAwaitingResponse(): Promise<Job[]> {
         .select({
           filterByFormula,
           sort: [{ field: JOBS.APPLIED_AT, direction: 'asc' }],
+          maxRecords: 100,
         })
         .all()
 
@@ -121,6 +123,7 @@ export async function getAwaitingResponse(): Promise<Job[]> {
         .select({
           filterByFormula,
           sort: [{ field: JOBS.APPLIED_AT, direction: 'asc' }],
+          maxRecords: 100,
         })
         .all()
 
@@ -159,6 +162,7 @@ export async function getFollowUpsDue(): Promise<Job[]> {
         .select({
           filterByFormula,
           sort: [{ field: JOBS.NEXT_ACTION_DATE, direction: 'asc' }],
+          maxRecords: 50,
         })
         .all()
 
@@ -171,6 +175,7 @@ export async function getFollowUpsDue(): Promise<Job[]> {
         .select({
           filterByFormula,
           sort: [{ field: JOBS.NEXT_ACTION_DATE, direction: 'asc' }],
+          maxRecords: 50,
         })
         .all()
 

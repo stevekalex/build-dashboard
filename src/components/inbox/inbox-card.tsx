@@ -15,6 +15,7 @@ type SectionType = 'hot-leads' | 'awaiting-response' | 'follow-ups-due'
 interface InboxCardProps {
   job: Job
   section: SectionType
+  onAction?: (jobId: string) => void
 }
 
 function formatAge(dateStr: string | undefined): string {
@@ -35,11 +36,12 @@ function formatBudget(amount?: number, type?: string): string {
   return formatted
 }
 
-export function InboxCard({ job, section }: InboxCardProps) {
+export function InboxCard({ job, section, onAction }: InboxCardProps) {
   const [loadingAction, setLoadingAction] = useState<string | null>(null)
 
   async function handleMarkFollowedUp() {
     setLoadingAction('followup')
+    onAction?.(job.id)
     try {
       await markFollowedUp(job.id)
     } catch (error) {
@@ -51,6 +53,7 @@ export function InboxCard({ job, section }: InboxCardProps) {
 
   async function handleCloseNoResponse() {
     setLoadingAction('close')
+    onAction?.(job.id)
     try {
       await closeNoResponse(job.id)
     } catch (error) {
@@ -62,6 +65,7 @@ export function InboxCard({ job, section }: InboxCardProps) {
 
   async function handleMarkCallDone() {
     setLoadingAction('call')
+    onAction?.(job.id)
     try {
       await markCallDone(job.id)
     } catch (error) {
@@ -120,12 +124,12 @@ export function InboxCard({ job, section }: InboxCardProps) {
                 >
                   {loadingAction === 'call' ? 'Saving...' : 'Mark Call Done'}
                 </Button>
-                <CloseDealDialog jobId={job.id} jobTitle={job.title} />
+                <CloseDealDialog jobId={job.id} jobTitle={job.title} onAction={() => onAction?.(job.id)} />
               </>
             )}
 
             {section === 'awaiting-response' && (
-              <LogResponseDialog jobId={job.id} jobTitle={job.title} />
+              <LogResponseDialog jobId={job.id} jobTitle={job.title} onAction={() => onAction?.(job.id)} />
             )}
 
             {section === 'follow-ups-due' && (

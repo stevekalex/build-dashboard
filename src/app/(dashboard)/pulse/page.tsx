@@ -1,21 +1,28 @@
+import { Suspense } from 'react'
 import { getDailyMetrics } from '@/lib/queries/metrics'
 import { DailyMetricsView } from '@/components/pulse/daily-metrics'
+import { PageInfoTooltip } from '@/components/ui/page-info-tooltip'
+import { TodayDate } from '@/components/pulse/today-date'
 
-export const revalidate = 60 // refresh every 60 seconds
 
 export default async function PulsePage() {
+  'use cache'
   const metrics = await getDailyMetrics()
   return (
     <div className="space-y-4">
       <div>
-        <h1 className="text-lg md:text-3xl font-bold text-gray-900">Daily Pulse</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-lg md:text-3xl font-bold text-gray-900">Daily Pulse</h1>
+          <PageInfoTooltip
+            content="A snapshot of today's activity across the entire pipeline."
+            filter="Each metric counts jobs where a date field matches today: Scraped At, Approved Date, Deployed Date, Applied At, Response Date, Call Completed Date, or Close Date."
+          />
+        </div>
         <p className="text-xs md:text-base text-gray-600 mt-1">
           Today&apos;s activity at a glance &mdash;{' '}
-          {new Date().toLocaleDateString('en-US', {
-            weekday: 'long',
-            month: 'long',
-            day: 'numeric',
-          })}
+          <Suspense>
+            <TodayDate />
+          </Suspense>
         </p>
       </div>
       <DailyMetricsView metrics={metrics} />

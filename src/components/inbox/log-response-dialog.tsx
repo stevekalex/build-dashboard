@@ -20,9 +20,10 @@ import { RESPONSE_TYPES } from '@/lib/airtable-fields'
 interface LogResponseDialogProps {
   jobId: string
   jobTitle: string
+  onAction?: () => void
 }
 
-export function LogResponseDialog({ jobId, jobTitle }: LogResponseDialogProps) {
+export function LogResponseDialog({ jobId, jobTitle, onAction }: LogResponseDialogProps) {
   const [open, setOpen] = useState(false)
   const [responseType, setResponseType] = useState<string>('')
   const [notes, setNotes] = useState('')
@@ -31,6 +32,7 @@ export function LogResponseDialog({ jobId, jobTitle }: LogResponseDialogProps) {
   async function handleSubmit() {
     if (!responseType) return
     setLoading(true)
+    onAction?.()
     try {
       await logResponse(jobId, responseType, notes || undefined)
       setOpen(false)

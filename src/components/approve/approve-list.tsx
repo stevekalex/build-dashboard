@@ -1,5 +1,6 @@
 'use client'
 
+import { useOptimistic } from 'react'
 import { Job, Brief } from '@/types/brief'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -57,7 +58,13 @@ function formatBudget(amount: number): string {
 }
 
 export function ApproveList({ jobs }: ApproveListProps) {
-  if (jobs.length === 0) {
+  const [optimisticJobs, removeJob] = useOptimistic(
+    jobs,
+    (currentJobs: Job[], jobIdToRemove: string) =>
+      currentJobs.filter((j) => j.id !== jobIdToRemove)
+  )
+
+  if (optimisticJobs.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
         <CheckCircle className="w-12 h-12 text-green-500 mb-4" />
@@ -70,10 +77,12 @@ export function ApproveList({ jobs }: ApproveListProps) {
   }
 
   async function handleApprove(briefId: string, notes: string) {
+    removeJob(briefId)
     await approveBrief(briefId, notes)
   }
 
   async function handleReject(briefId: string, reason: string, notes: string) {
+    removeJob(briefId)
     await rejectBrief(briefId, reason, notes)
   }
 
@@ -81,11 +90,11 @@ export function ApproveList({ jobs }: ApproveListProps) {
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-2">
         <h2 className="text-lg font-semibold text-gray-900">
-          Jobs to Approve ({jobs.length})
+          Jobs to Approve ({optimisticJobs.length})
         </h2>
       </div>
       <div className="space-y-3">
-        {jobs.map((job) => {
+        {optimisticJobs.map((job) => {
           const brief = jobToBrief(job)
           const skills = job.skills
             ? job.skills.split(',').map((s) => s.trim()).filter(Boolean)
