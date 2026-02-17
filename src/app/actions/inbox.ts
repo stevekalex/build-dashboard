@@ -75,9 +75,9 @@ export async function markFollowedUp(
 
     // Only set Next Action Date if not closing as lost
     if (nextStage !== STAGES.CLOSED_LOST) {
-      const threeDaysFromNow = new Date()
-      threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3)
-      additionalFields[JOBS.NEXT_ACTION_DATE] = threeDaysFromNow.toISOString()
+      const tomorrow = new Date()
+      tomorrow.setDate(tomorrow.getDate() + 1)
+      additionalFields[JOBS.NEXT_ACTION_DATE] = tomorrow.toISOString()
     }
 
     await updateJobStage(jobId, nextStage, additionalFields)
