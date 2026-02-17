@@ -46,13 +46,11 @@ describe('approveBrief', () => {
     expect(mockTriggerBuild).toHaveBeenCalledWith('job123', 'Steve', 'some notes')
   })
 
-  it('should stamp approved date on Airtable', async () => {
+  it('should not write to Airtable directly (Job Pulse handles state)', async () => {
     const { approveBrief } = await import('../approve')
     await approveBrief('job123')
 
-    expect(mockUpdateJobField).toHaveBeenCalledWith('job123', {
-      'Decision Date': expect.any(String),
-    })
+    expect(mockUpdateJobField).not.toHaveBeenCalled()
   })
 
   it('should revalidate cache tags', async () => {

@@ -3,8 +3,6 @@
 import { revalidateTag } from 'next/cache'
 import { cookies } from 'next/headers'
 import { triggerBuild, rejectBuild, JobPulseError } from '@/lib/job-pulse'
-import { updateJobField } from '@/lib/airtable-mutations'
-import { JOBS } from '@/lib/airtable-fields'
 
 /**
  * Get the current user's name from session cookie
@@ -29,9 +27,8 @@ async function getUserName(): Promise<string> {
  * Server Action: Approve a brief and trigger build
  *
  * 1. Gets user from session cookie
- * 2. Calls Job Pulse API to trigger the build
- * 3. Stamps Approved Date on Airtable
- * 4. Revalidates /approve path
+ * 2. Calls Job Pulse API to trigger the build (Job Pulse stamps Build Started)
+ * 3. Revalidates /approve path
  */
 export async function approveBrief(
   jobId: string,
@@ -40,15 +37,6 @@ export async function approveBrief(
   try {
     const userName = await getUserName()
     await triggerBuild(jobId, userName, notes)
-
-    // Stamp Decision Date — non-fatal if field doesn't exist yet in Airtable
-    try {
-      await updateJobField(jobId, {
-        [JOBS.APPROVED_DATE]: new Date().toISOString(),
-      })
-    } catch (error) {
-      console.warn('Could not stamp Decision Date (field may not exist yet):', error instanceof Error ? error.message : error)
-    }
 
     revalidateTag('jobs-approve', 'dashboard')
     revalidateTag('jobs-building', 'dashboard')

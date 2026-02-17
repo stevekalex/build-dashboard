@@ -32,7 +32,7 @@ export async function getDailyMetrics(): Promise<DailyMetrics> {
     contractsSigned,
   ] = await Promise.all([
     countByDateToday(JOBS.SCRAPED_AT),
-    countByDateToday(JOBS.APPROVED_DATE),
+    countByDateToday(JOBS.BUILD_STARTED),
     countByDateToday(JOBS.DEPLOYED_DATE),
     countByDateToday(JOBS.APPLIED_AT),
     countByDateToday(JOBS.RESPONSE_DATE),
