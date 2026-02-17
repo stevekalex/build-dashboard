@@ -1,11 +1,15 @@
+import { Suspense } from 'react'
 import { getReadyToSend } from '@/lib/queries/ready-to-send'
 import { SendQueue } from '@/components/ready-to-send/send-queue'
 import { PageInfoTooltip } from '@/components/ui/page-info-tooltip'
 
-
-export default async function ReadyToSendPage() {
+async function ReadyToSendContent() {
   'use cache'
   const jobs = await getReadyToSend()
+  return <SendQueue jobs={jobs} />
+}
+
+export default function ReadyToSendPage() {
   return (
     <div className="space-y-4">
       <div>
@@ -20,7 +24,9 @@ export default async function ReadyToSendPage() {
           Record Loom and send applications
         </p>
       </div>
-      <SendQueue jobs={jobs} />
+      <Suspense>
+        <ReadyToSendContent />
+      </Suspense>
     </div>
   )
 }

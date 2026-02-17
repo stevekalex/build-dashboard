@@ -3,10 +3,13 @@ import { getJobsToApprove } from '@/lib/queries/approve'
 import { ApproveList } from '@/components/approve/approve-list'
 import { PageInfoTooltip } from '@/components/ui/page-info-tooltip'
 
-
-export default async function ApprovePage() {
+async function ApproveContent() {
   'use cache'
   const jobs = await getJobsToApprove()
+  return <ApproveList jobs={jobs} />
+}
+
+export default function ApprovePage() {
   return (
     <div className="space-y-4">
       <div>
@@ -22,7 +25,7 @@ export default async function ApprovePage() {
         </p>
       </div>
       <Suspense>
-        <ApproveList jobs={jobs} />
+        <ApproveContent />
       </Suspense>
     </div>
   )

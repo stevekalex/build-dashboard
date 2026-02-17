@@ -3,11 +3,14 @@ import { getActiveDeals, groupDealsByStatus } from '@/lib/queries/closing'
 import { ClosingBoard } from '@/components/closing/closing-board'
 import { PageInfoTooltip } from '@/components/ui/page-info-tooltip'
 
-
-export default async function ClosingPage() {
+async function ClosingContent() {
   'use cache'
   const deals = await getActiveDeals()
   const grouped = groupDealsByStatus(deals)
+  return <ClosingBoard {...grouped} />
+}
+
+export default function ClosingPage() {
   return (
     <div className="space-y-4">
       <div>
@@ -21,7 +24,7 @@ export default async function ClosingPage() {
         <p className="text-xs md:text-base text-gray-600 mt-1">Active deals in progress</p>
       </div>
       <Suspense>
-        <ClosingBoard {...grouped} />
+        <ClosingContent />
       </Suspense>
     </div>
   )

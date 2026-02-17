@@ -150,12 +150,13 @@ export async function getFollowUpsDue(): Promise<Job[]> {
   try {
     const base = getBase()
 
-    const closedFilter = CLOSED_STAGES
+    const stageFilter = FOLLOW_UP_STAGES
       .map((stage) => `{${JOBS.STAGE}} = "${stage}"`)
       .join(', ')
 
-    // Try full filter first
-    let filterByFormula = `AND({${JOBS.APPLIED_AT}} != BLANK(), {${JOBS.RESPONSE_DATE}} = BLANK(), {${JOBS.NEXT_ACTION_DATE}} <= TODAY(), NOT(OR(${closedFilter})))`
+    // Only show jobs in follow-up stages (Initial Message Sent, Touchpoint 1/2/3)
+    // with a Next Action Date that's today or overdue
+    let filterByFormula = `AND(OR(${stageFilter}), {${JOBS.RESPONSE_DATE}} = BLANK(), {${JOBS.NEXT_ACTION_DATE}} <= TODAY())`
 
     try {
       const records = await base(TABLES.JOBS_PIPELINE)
@@ -168,8 +169,8 @@ export async function getFollowUpsDue(): Promise<Job[]> {
 
       return records.map(mapRecordToJob)
     } catch {
-      // Response Date field doesn't exist yet — simplified filter
-      filterByFormula = `AND({${JOBS.APPLIED_AT}} != BLANK(), {${JOBS.NEXT_ACTION_DATE}} <= TODAY(), NOT(OR(${closedFilter})))`
+      // Response Date field doesn't exist yet — drop that condition
+      filterByFormula = `AND(OR(${stageFilter}), {${JOBS.NEXT_ACTION_DATE}} <= TODAY())`
 
       const records = await base(TABLES.JOBS_PIPELINE)
         .select({

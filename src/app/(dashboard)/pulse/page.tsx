@@ -4,10 +4,13 @@ import { DailyMetricsView } from '@/components/pulse/daily-metrics'
 import { PageInfoTooltip } from '@/components/ui/page-info-tooltip'
 import { TodayDate } from '@/components/pulse/today-date'
 
-
-export default async function PulsePage() {
+async function PulseContent() {
   'use cache'
   const metrics = await getDailyMetrics()
+  return <DailyMetricsView metrics={metrics} />
+}
+
+export default function PulsePage() {
   return (
     <div className="space-y-4">
       <div>
@@ -25,7 +28,9 @@ export default async function PulsePage() {
           </Suspense>
         </p>
       </div>
-      <DailyMetricsView metrics={metrics} />
+      <Suspense>
+        <PulseContent />
+      </Suspense>
     </div>
   )
 }

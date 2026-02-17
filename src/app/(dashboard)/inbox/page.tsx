@@ -3,8 +3,7 @@ import { getHotLeads, getAwaitingResponse, getFollowUpsDue } from '@/lib/queries
 import { InboxView } from '@/components/inbox/inbox-view'
 import { PageInfoTooltip } from '@/components/ui/page-info-tooltip'
 
-
-export default async function InboxPage() {
+async function InboxContent() {
   'use cache'
   const [hotLeads, awaitingResponse, followUpsDue] = await Promise.all([
     getHotLeads(),
@@ -12,6 +11,16 @@ export default async function InboxPage() {
     getFollowUpsDue(),
   ])
 
+  return (
+    <InboxView
+      hotLeads={hotLeads}
+      awaitingResponse={awaitingResponse}
+      followUpsDue={followUpsDue}
+    />
+  )
+}
+
+export default function InboxPage() {
   return (
     <div className="space-y-4">
       <div>
@@ -27,11 +36,7 @@ export default async function InboxPage() {
         </p>
       </div>
       <Suspense>
-        <InboxView
-          hotLeads={hotLeads}
-          awaitingResponse={awaitingResponse}
-          followUpsDue={followUpsDue}
-        />
+        <InboxContent />
       </Suspense>
     </div>
   )

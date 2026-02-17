@@ -1,11 +1,15 @@
+import { Suspense } from 'react'
 import { getPipelineCounts } from '@/lib/queries/pipeline'
 import { PipelineFunnel } from '@/components/pipeline/pipeline-funnel'
 import { PageInfoTooltip } from '@/components/ui/page-info-tooltip'
 
-
-export default async function PipelinePage() {
+async function PipelineContent() {
   'use cache'
   const counts = await getPipelineCounts()
+  return <PipelineFunnel counts={counts} />
+}
+
+export default function PipelinePage() {
   return (
     <div className="space-y-4">
       <div>
@@ -18,7 +22,9 @@ export default async function PipelinePage() {
         </div>
         <p className="text-xs md:text-base text-gray-600 mt-1">Jobs across all stages</p>
       </div>
-      <PipelineFunnel counts={counts} />
+      <Suspense>
+        <PipelineContent />
+      </Suspense>
     </div>
   )
 }
