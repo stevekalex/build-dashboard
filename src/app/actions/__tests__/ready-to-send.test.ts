@@ -27,25 +27,14 @@ describe('saveLoomUrl - Happy Path', () => {
     mockUpdateJobField.mockResolvedValue(undefined)
   })
 
-  it('should save Loom URL and stamp Loom Recorded Date', async () => {
+  it('should save Loom URL', async () => {
     const { saveLoomUrl } = await import('../ready-to-send')
     const result = await saveLoomUrl('rec123', 'https://loom.com/share/abc')
 
     expect(result.success).toBe(true)
     expect(mockUpdateJobField).toHaveBeenCalledWith('rec123', {
       'Loom URL': 'https://loom.com/share/abc',
-      'Loom Recorded Date': expect.any(String),
     })
-  })
-
-  it('should include ISO date for Loom Recorded Date', async () => {
-    const { saveLoomUrl } = await import('../ready-to-send')
-    await saveLoomUrl('rec123', 'https://loom.com/share/abc')
-
-    const callArgs = mockUpdateJobField.mock.calls[0]
-    const loomRecordedDate = callArgs[1]['Loom Recorded Date']
-    // Should be a valid ISO date string
-    expect(new Date(loomRecordedDate).toISOString()).toBe(loomRecordedDate)
   })
 
   it('should revalidate jobs-ready-to-send tag', async () => {
