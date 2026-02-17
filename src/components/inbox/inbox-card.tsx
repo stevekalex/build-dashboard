@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Job } from '@/types/brief'
 import { LogResponseDialog } from './log-response-dialog'
 import { CloseDealDialog } from './close-deal-dialog'
+import { DueTimeBadge } from './due-time-badge'
 import { markFollowedUp, closeNoResponse, markCallDone } from '@/app/actions/inbox'
 
 type SectionType = 'hot-leads' | 'awaiting-response' | 'follow-ups-due'
@@ -86,6 +87,7 @@ export function InboxCard({ job, section, onAction }: InboxCardProps) {
                 <Badge variant="outline" className="text-xs shrink-0">
                   {job.stage}
                 </Badge>
+                <DueTimeBadge nextActionDate={job.nextActionDate} />
               </div>
               <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
                 {job.client && <span>{job.client}</span>}

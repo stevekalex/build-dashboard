@@ -4,6 +4,40 @@ import { Job } from '@/types/brief'
 import { cacheTag, cacheLife } from 'next/cache'
 
 /**
+ * Sort jobs by Next Action Date descending.
+ * Jobs without a Next Action Date are pushed to the end.
+ * Logs a warning for jobs missing this field so gaps are visible.
+ */
+function sortByNextActionDate(jobs: Job[], sectionLabel: string): Job[] {
+  const withDate: Job[] = []
+  const withoutDate: Job[] = []
+
+  for (const job of jobs) {
+    if (job.nextActionDate) {
+      withDate.push(job)
+    } else {
+      withoutDate.push(job)
+      console.warn({
+        warning: 'missing_next_action_date',
+        section: sectionLabel,
+        jobId: job.jobId,
+        title: job.title,
+        stage: job.stage,
+        timestamp: new Date().toISOString(),
+      })
+    }
+  }
+
+  withDate.sort((a, b) => {
+    const dateA = new Date(a.nextActionDate!).getTime()
+    const dateB = new Date(b.nextActionDate!).getTime()
+    return dateB - dateA // descending
+  })
+
+  return [...withDate, ...withoutDate]
+}
+
+/**
  * Map an Airtable record to a Job object.
  * Shared across all inbox query functions.
  * Uses safe field access — new fields that don't exist yet return undefined.
@@ -77,7 +111,7 @@ export async function getHotLeads(): Promise<Job[]> {
       })
       .all()
 
-    return records.map(mapRecordToJob)
+    return sortByNextActionDate(records.map(mapRecordToJob), 'Hot Leads')
   } catch (error) {
     console.error('getHotLeads failed:', error instanceof Error ? error.message : error)
     return []
@@ -114,7 +148,7 @@ export async function getAwaitingResponse(): Promise<Job[]> {
         })
         .all()
 
-      return records.map(mapRecordToJob)
+      return sortByNextActionDate(records.map(mapRecordToJob), 'Awaiting Response')
     } catch {
       // Response Date field doesn't exist yet — fall back to stage-only filter
       filterByFormula = `OR(${stageFilter})`
@@ -127,7 +161,7 @@ export async function getAwaitingResponse(): Promise<Job[]> {
         })
         .all()
 
-      return records.map(mapRecordToJob)
+      return sortByNextActionDate(records.map(mapRecordToJob), 'Awaiting Response')
     }
   } catch (error) {
     console.error('getAwaitingResponse failed:', error instanceof Error ? error.message : error)
@@ -167,7 +201,7 @@ export async function getFollowUpsDue(): Promise<Job[]> {
         })
         .all()
 
-      return records.map(mapRecordToJob)
+      return sortByNextActionDate(records.map(mapRecordToJob), 'Follow-ups Due')
     } catch {
       // Response Date field doesn't exist yet — drop that condition
       filterByFormula = `AND(OR(${stageFilter}), {${JOBS.NEXT_ACTION_DATE}} <= TODAY())`
@@ -180,7 +214,7 @@ export async function getFollowUpsDue(): Promise<Job[]> {
         })
         .all()
 
-      return records.map(mapRecordToJob)
+      return sortByNextActionDate(records.map(mapRecordToJob), 'Follow-ups Due')
     }
   } catch (error) {
     console.error('getFollowUpsDue failed:', error instanceof Error ? error.message : error)
