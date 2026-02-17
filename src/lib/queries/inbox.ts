@@ -78,8 +78,8 @@ export async function getHotLeads(): Promise<Job[]> {
       .all()
 
     return records.map(mapRecordToJob)
-  } catch {
-    // Response Type field likely doesn't exist yet — expected, return empty
+  } catch (error) {
+    console.error('getHotLeads failed:', error instanceof Error ? error.message : error)
     return []
   }
 }
@@ -129,8 +129,8 @@ export async function getAwaitingResponse(): Promise<Job[]> {
 
       return records.map(mapRecordToJob)
     }
-  } catch {
-    // Fields may not exist yet — expected, return empty
+  } catch (error) {
+    console.error('getAwaitingResponse failed:', error instanceof Error ? error.message : error)
     return []
   }
 }
@@ -182,8 +182,8 @@ export async function getFollowUpsDue(): Promise<Job[]> {
 
       return records.map(mapRecordToJob)
     }
-  } catch {
-    // Fields may not exist yet — expected, return empty
+  } catch (error) {
+    console.error('getFollowUpsDue failed:', error instanceof Error ? error.message : error)
     return []
   }
 }

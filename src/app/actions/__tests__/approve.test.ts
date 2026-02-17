@@ -13,13 +13,17 @@ vi.mock('next/headers', () => ({
   })),
 }))
 
-// Mock job-pulse
+// Mock job-pulse — pass through JobPulseError class for instanceof checks
 const mockTriggerBuild = vi.fn()
 const mockRejectBuild = vi.fn()
-vi.mock('@/lib/job-pulse', () => ({
-  triggerBuild: (...args: any[]) => mockTriggerBuild(...args),
-  rejectBuild: (...args: any[]) => mockRejectBuild(...args),
-}))
+vi.mock('@/lib/job-pulse', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/job-pulse')>()
+  return {
+    ...actual,
+    triggerBuild: (...args: any[]) => mockTriggerBuild(...args),
+    rejectBuild: (...args: any[]) => mockRejectBuild(...args),
+  }
+})
 
 // Mock airtable-mutations
 const mockUpdateJobField = vi.fn()
@@ -47,7 +51,7 @@ describe('approveBrief', () => {
     await approveBrief('job123')
 
     expect(mockUpdateJobField).toHaveBeenCalledWith('job123', {
-      'Approved Date': expect.any(String),
+      'Decision Date': expect.any(String),
     })
   })
 
@@ -76,6 +80,7 @@ describe('approveBrief', () => {
     expect(result).toEqual({
       success: false,
       error: 'Build trigger failed',
+      code: undefined,
     })
   })
 
@@ -137,6 +142,23 @@ describe('rejectBrief', () => {
     expect(result).toEqual({
       success: false,
       error: 'Rejection failed',
+      code: undefined,
+    })
+  })
+
+  it('should return error code from JobPulseError', async () => {
+    const { JobPulseError } = await import('@/lib/job-pulse')
+    mockTriggerBuild.mockRejectedValue(
+      new JobPulseError(409, 'WRONG_STAGE', 'Job is not in PENDING_APPROVAL stage')
+    )
+
+    const { approveBrief } = await import('../approve')
+    const result = await approveBrief('job123')
+
+    expect(result).toEqual({
+      success: false,
+      error: 'Job is not in PENDING_APPROVAL stage',
+      code: 'WRONG_STAGE',
     })
   })
 })

@@ -42,37 +42,31 @@ export function InboxCard({ job, section, onAction }: InboxCardProps) {
   async function handleMarkFollowedUp() {
     setLoadingAction('followup')
     onAction?.(job.id)
-    try {
-      await markFollowedUp(job.id)
-    } catch (error) {
-      console.error('Failed to mark as followed up:', error)
-    } finally {
-      setLoadingAction(null)
+    const result = await markFollowedUp(job.id)
+    if (!result.success) {
+      console.error('Failed to mark as followed up:', result.error)
     }
+    setLoadingAction(null)
   }
 
   async function handleCloseNoResponse() {
     setLoadingAction('close')
     onAction?.(job.id)
-    try {
-      await closeNoResponse(job.id)
-    } catch (error) {
-      console.error('Failed to close:', error)
-    } finally {
-      setLoadingAction(null)
+    const result = await closeNoResponse(job.id)
+    if (!result.success) {
+      console.error('Failed to close:', result.error)
     }
+    setLoadingAction(null)
   }
 
   async function handleMarkCallDone() {
     setLoadingAction('call')
     onAction?.(job.id)
-    try {
-      await markCallDone(job.id)
-    } catch (error) {
-      console.error('Failed to mark call done:', error)
-    } finally {
-      setLoadingAction(null)
+    const result = await markCallDone(job.id)
+    if (!result.success) {
+      console.error('Failed to mark call done:', result.error)
     }
+    setLoadingAction(null)
   }
 
   const budget = formatBudget(job.budgetAmount, job.budgetType)

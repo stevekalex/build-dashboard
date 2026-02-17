@@ -2,7 +2,7 @@
 
 import { revalidateTag } from 'next/cache'
 import { cookies } from 'next/headers'
-import { triggerBuild, rejectBuild } from '@/lib/job-pulse'
+import { triggerBuild, rejectBuild, JobPulseError } from '@/lib/job-pulse'
 import { updateJobField } from '@/lib/airtable-mutations'
 import { JOBS } from '@/lib/airtable-fields'
 
@@ -36,7 +36,7 @@ async function getUserName(): Promise<string> {
 export async function approveBrief(
   jobId: string,
   notes?: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{ success: boolean; error?: string; code?: string }> {
   try {
     const userName = await getUserName()
     await triggerBuild(jobId, userName, notes)
@@ -50,10 +50,9 @@ export async function approveBrief(
     return { success: true }
   } catch (error) {
     console.error('Failed to approve brief:', error)
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to approve brief',
-    }
+    const message = error instanceof Error ? error.message : 'Failed to approve brief'
+    const code = error instanceof JobPulseError ? error.code : undefined
+    return { success: false, error: message, code }
   }
 }
 
@@ -68,7 +67,7 @@ export async function rejectBrief(
   jobId: string,
   reason: string,
   notes?: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{ success: boolean; error?: string; code?: string }> {
   try {
     const userName = await getUserName()
     await rejectBuild(jobId, reason, userName, notes)
@@ -79,9 +78,8 @@ export async function rejectBrief(
     return { success: true }
   } catch (error) {
     console.error('Failed to reject brief:', error)
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Failed to reject brief',
-    }
+    const message = error instanceof Error ? error.message : 'Failed to reject brief'
+    const code = error instanceof JobPulseError ? error.code : undefined
+    return { success: false, error: message, code }
   }
 }

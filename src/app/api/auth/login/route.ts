@@ -33,6 +33,11 @@ export async function POST(request: NextRequest) {
 
     return response
   } catch (error) {
-    return NextResponse.json({ error: 'Invalid request' }, { status: 400 })
+    // JSON parse errors → 400 (malformed body). Everything else → 500.
+    if (error instanceof SyntaxError) {
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+    }
+    console.error('Login route error:', error)
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

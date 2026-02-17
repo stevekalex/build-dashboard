@@ -33,16 +33,15 @@ export function LogResponseDialog({ jobId, jobTitle, onAction }: LogResponseDial
     if (!responseType) return
     setLoading(true)
     onAction?.()
-    try {
-      await logResponse(jobId, responseType, notes || undefined)
+    const result = await logResponse(jobId, responseType, notes || undefined)
+    if (result.success) {
       setOpen(false)
       setResponseType('')
       setNotes('')
-    } catch (error) {
-      console.error('Failed to log response:', error)
-    } finally {
-      setLoading(false)
+    } else {
+      console.error('Failed to log response:', result.error)
     }
+    setLoading(false)
   }
 
   return (

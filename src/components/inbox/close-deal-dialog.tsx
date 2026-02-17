@@ -31,15 +31,14 @@ export function CloseDealDialog({ jobId, jobTitle, onAction }: CloseDealDialogPr
     if (isNaN(value) || value <= 0) return
     setLoading(true)
     onAction?.()
-    try {
-      await markContractSigned(jobId, value)
+    const result = await markContractSigned(jobId, value)
+    if (result.success) {
       setOpen(false)
       setDealValue('')
-    } catch (error) {
-      console.error('Failed to close deal:', error)
-    } finally {
-      setLoading(false)
+    } else {
+      console.error('Failed to close deal:', result.error)
     }
+    setLoading(false)
   }
 
   return (

@@ -22,20 +22,29 @@ export async function logResponse(
   jobId: string,
   responseType: string,
   notes?: string
-): Promise<void> {
-  const now = new Date().toISOString()
-  const fields: Record<string, any> = {
-    [JOBS.RESPONSE_DATE]: now,
-    [JOBS.RESPONSE_TYPE]: responseType,
-  }
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const now = new Date().toISOString()
+    const fields: Record<string, any> = {
+      [JOBS.RESPONSE_DATE]: now,
+      [JOBS.RESPONSE_TYPE]: responseType,
+    }
 
-  if (HOT_LEAD_TYPES.includes(responseType as ResponseType)) {
-    await updateJobStage(jobId, STAGES.LIGHT_ENGAGEMENT, fields)
-  } else {
-    await updateJobField(jobId, fields)
-  }
+    if (HOT_LEAD_TYPES.includes(responseType as ResponseType)) {
+      await updateJobStage(jobId, STAGES.LIGHT_ENGAGEMENT, fields)
+    } else {
+      await updateJobField(jobId, fields)
+    }
 
-  revalidateTag('jobs-inbox', 'dashboard')
+    revalidateTag('jobs-inbox', 'dashboard')
+    return { success: true }
+  } catch (error) {
+    console.error('logResponse failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to log response',
+    }
+  }
 }
 
 /**
@@ -43,54 +52,91 @@ export async function logResponse(
  * Stamps Last Follow Up Date. Sets Next Action Date to 3 days from now
  * (except when closing as lost).
  */
-export async function markFollowedUp(jobId: string): Promise<void> {
-  const base = getBase()
-  const record = await base(TABLES.JOBS_PIPELINE).find(jobId)
-  const currentStage = record.get(JOBS.STAGE) as string
+export async function markFollowedUp(
+  jobId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const base = getBase()
+    const record = await base(TABLES.JOBS_PIPELINE).find(jobId)
+    const currentStage = record.get(JOBS.STAGE) as string
 
-  const nextStage = TOUCHPOINT_PROGRESSION[currentStage]
-  if (!nextStage) {
-    throw new Error(`No progression defined for stage: ${currentStage}`)
+    const nextStage = TOUCHPOINT_PROGRESSION[currentStage]
+    if (!nextStage) {
+      return {
+        success: false,
+        error: `No progression defined for stage: ${currentStage}`,
+      }
+    }
+
+    const now = new Date().toISOString()
+    const additionalFields: Record<string, any> = {
+      [JOBS.LAST_FOLLOW_UP_DATE]: now,
+    }
+
+    // Only set Next Action Date if not closing as lost
+    if (nextStage !== STAGES.CLOSED_LOST) {
+      const threeDaysFromNow = new Date()
+      threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3)
+      additionalFields[JOBS.NEXT_ACTION_DATE] = threeDaysFromNow.toISOString()
+    }
+
+    await updateJobStage(jobId, nextStage, additionalFields)
+
+    revalidateTag('jobs-inbox', 'dashboard')
+    return { success: true }
+  } catch (error) {
+    console.error('markFollowedUp failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to mark as followed up',
+    }
   }
-
-  const now = new Date().toISOString()
-  const additionalFields: Record<string, any> = {
-    [JOBS.LAST_FOLLOW_UP_DATE]: now,
-  }
-
-  // Only set Next Action Date if not closing as lost
-  if (nextStage !== STAGES.CLOSED_LOST) {
-    const threeDaysFromNow = new Date()
-    threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3)
-    additionalFields[JOBS.NEXT_ACTION_DATE] = threeDaysFromNow.toISOString()
-  }
-
-  await updateJobStage(jobId, nextStage, additionalFields)
-
-  revalidateTag('jobs-inbox', 'dashboard')
 }
 
 /**
  * Close a job as lost due to no response.
  */
-export async function closeNoResponse(jobId: string): Promise<void> {
-  await updateJobStage(jobId, STAGES.CLOSED_LOST, {
-    [JOBS.LOST_REASON]: 'No response',
-  })
+export async function closeNoResponse(
+  jobId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await updateJobStage(jobId, STAGES.CLOSED_LOST, {
+      [JOBS.LOST_REASON]: 'No response',
+    })
 
-  revalidateTag('jobs-inbox', 'dashboard')
+    revalidateTag('jobs-inbox', 'dashboard')
+    return { success: true }
+  } catch (error) {
+    console.error('closeNoResponse failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to close job',
+    }
+  }
 }
 
 /**
  * Mark a call as completed for a job.
  */
-export async function markCallDone(jobId: string, notes?: string): Promise<void> {
-  const now = new Date().toISOString()
-  await updateJobField(jobId, {
-    [JOBS.CALL_COMPLETED_DATE]: now,
-  })
+export async function markCallDone(
+  jobId: string,
+  notes?: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const now = new Date().toISOString()
+    await updateJobField(jobId, {
+      [JOBS.CALL_COMPLETED_DATE]: now,
+    })
 
-  revalidateTag('jobs-inbox', 'dashboard')
+    revalidateTag('jobs-inbox', 'dashboard')
+    return { success: true }
+  } catch (error) {
+    console.error('markCallDone failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to mark call done',
+    }
+  }
 }
 
 /**
@@ -100,12 +146,21 @@ export async function markCallDone(jobId: string, notes?: string): Promise<void>
 export async function markContractSigned(
   jobId: string,
   dealValue: number
-): Promise<void> {
-  const now = new Date().toISOString()
-  await updateJobStage(jobId, STAGES.CLOSED_WON, {
-    [JOBS.CLOSE_DATE]: now,
-    [JOBS.DEAL_VALUE]: dealValue,
-  })
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const now = new Date().toISOString()
+    await updateJobStage(jobId, STAGES.CLOSED_WON, {
+      [JOBS.CLOSE_DATE]: now,
+      [JOBS.DEAL_VALUE]: dealValue,
+    })
 
-  revalidateTag('jobs-inbox', 'dashboard')
+    revalidateTag('jobs-inbox', 'dashboard')
+    return { success: true }
+  } catch (error) {
+    console.error('markContractSigned failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to mark contract signed',
+    }
+  }
 }

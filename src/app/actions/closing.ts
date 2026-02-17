@@ -21,7 +21,7 @@ export async function markContractSent(
     return { success: true }
   } catch (error) {
     console.error('markContractSent failed:', error)
-    return { success: false, error: (error as Error).message }
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
   }
 }
 
@@ -42,6 +42,6 @@ export async function markLost(
     return { success: true }
   } catch (error) {
     console.error('markLost failed:', error)
-    return { success: false, error: (error as Error).message }
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
   }
 }

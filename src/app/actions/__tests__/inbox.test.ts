@@ -37,8 +37,9 @@ describe('logResponse', () => {
 
   it('should stamp Response Date and set Response Type', async () => {
     const { logResponse } = await import('../inbox')
-    await logResponse('job123', 'Message')
+    const result = await logResponse('job123', 'Message')
 
+    expect(result).toEqual({ success: true })
     expect(mockUpdateJobField).toHaveBeenCalledWith('job123', expect.objectContaining({
       'Response Date': expect.any(String),
       'Response Type': 'Message',
@@ -47,8 +48,9 @@ describe('logResponse', () => {
 
   it('should set Light Engagement stage for hot lead types (Shortlist)', async () => {
     const { logResponse } = await import('../inbox')
-    await logResponse('job123', 'Shortlist')
+    const result = await logResponse('job123', 'Shortlist')
 
+    expect(result).toEqual({ success: true })
     expect(mockUpdateJobStage).toHaveBeenCalledWith(
       'job123',
       '🧐 Light Engagement',
@@ -109,6 +111,14 @@ describe('logResponse', () => {
 
     expect(revalidateTag).toHaveBeenCalledWith('jobs-inbox', 'dashboard')
   })
+
+  it('should return error on failure', async () => {
+    mockUpdateJobField.mockRejectedValue(new Error('Airtable error'))
+    const { logResponse } = await import('../inbox')
+    const result = await logResponse('job123', 'Message')
+
+    expect(result).toEqual({ success: false, error: 'Airtable error' })
+  })
 })
 
 describe('markFollowedUp', () => {
@@ -128,8 +138,9 @@ describe('markFollowedUp', () => {
     })
 
     const { markFollowedUp } = await import('../inbox')
-    await markFollowedUp('job123')
+    const result = await markFollowedUp('job123')
 
+    expect(result).toEqual({ success: true })
     expect(mockUpdateJobStage).toHaveBeenCalledWith(
       'job123',
       '📆 Touchpoint 1',
@@ -150,8 +161,9 @@ describe('markFollowedUp', () => {
     })
 
     const { markFollowedUp } = await import('../inbox')
-    await markFollowedUp('job123')
+    const result = await markFollowedUp('job123')
 
+    expect(result).toEqual({ success: true })
     expect(mockUpdateJobStage).toHaveBeenCalledWith(
       'job123',
       '📆 Touchpoint 2',
@@ -172,8 +184,9 @@ describe('markFollowedUp', () => {
     })
 
     const { markFollowedUp } = await import('../inbox')
-    await markFollowedUp('job123')
+    const result = await markFollowedUp('job123')
 
+    expect(result).toEqual({ success: true })
     expect(mockUpdateJobStage).toHaveBeenCalledWith(
       'job123',
       '📆 Touchpoint 3',
@@ -194,8 +207,9 @@ describe('markFollowedUp', () => {
     })
 
     const { markFollowedUp } = await import('../inbox')
-    await markFollowedUp('job123')
+    const result = await markFollowedUp('job123')
 
+    expect(result).toEqual({ success: true })
     expect(mockUpdateJobStage).toHaveBeenCalledWith(
       'job123',
       '➡️ Closed Lost',
@@ -258,6 +272,33 @@ describe('markFollowedUp', () => {
 
     expect(revalidateTag).toHaveBeenCalledWith('jobs-inbox', 'dashboard')
   })
+
+  it('should return error when no progression is defined for current stage', async () => {
+    mockFind.mockResolvedValue({
+      id: 'job123',
+      get: (field: string) => {
+        if (field === 'Stage') return '🏁 Closed Won'
+        return null
+      },
+    })
+
+    const { markFollowedUp } = await import('../inbox')
+    const result = await markFollowedUp('job123')
+
+    expect(result).toEqual({
+      success: false,
+      error: 'No progression defined for stage: 🏁 Closed Won',
+    })
+    expect(mockUpdateJobStage).not.toHaveBeenCalled()
+  })
+
+  it('should return error on Airtable failure', async () => {
+    mockFind.mockRejectedValue(new Error('Record not found'))
+    const { markFollowedUp } = await import('../inbox')
+    const result = await markFollowedUp('job123')
+
+    expect(result).toEqual({ success: false, error: 'Record not found' })
+  })
 })
 
 describe('closeNoResponse', () => {
@@ -268,8 +309,9 @@ describe('closeNoResponse', () => {
 
   it('should set stage to Closed Lost and lost reason to No response', async () => {
     const { closeNoResponse } = await import('../inbox')
-    await closeNoResponse('job123')
+    const result = await closeNoResponse('job123')
 
+    expect(result).toEqual({ success: true })
     expect(mockUpdateJobStage).toHaveBeenCalledWith(
       'job123',
       '➡️ Closed Lost',
@@ -284,6 +326,14 @@ describe('closeNoResponse', () => {
 
     expect(revalidateTag).toHaveBeenCalledWith('jobs-inbox', 'dashboard')
   })
+
+  it('should return error on failure', async () => {
+    mockUpdateJobStage.mockRejectedValue(new Error('Airtable error'))
+    const { closeNoResponse } = await import('../inbox')
+    const result = await closeNoResponse('job123')
+
+    expect(result).toEqual({ success: false, error: 'Airtable error' })
+  })
 })
 
 describe('markCallDone', () => {
@@ -294,8 +344,9 @@ describe('markCallDone', () => {
 
   it('should stamp Call Completed Date', async () => {
     const { markCallDone } = await import('../inbox')
-    await markCallDone('job123')
+    const result = await markCallDone('job123')
 
+    expect(result).toEqual({ success: true })
     expect(mockUpdateJobField).toHaveBeenCalledWith('job123', expect.objectContaining({
       'Call Completed Date': expect.any(String),
     }))
@@ -308,6 +359,14 @@ describe('markCallDone', () => {
 
     expect(revalidateTag).toHaveBeenCalledWith('jobs-inbox', 'dashboard')
   })
+
+  it('should return error on failure', async () => {
+    mockUpdateJobField.mockRejectedValue(new Error('Airtable error'))
+    const { markCallDone } = await import('../inbox')
+    const result = await markCallDone('job123')
+
+    expect(result).toEqual({ success: false, error: 'Airtable error' })
+  })
 })
 
 describe('markContractSigned', () => {
@@ -318,8 +377,9 @@ describe('markContractSigned', () => {
 
   it('should stamp Close Date, Deal Value, and set stage to Closed Won', async () => {
     const { markContractSigned } = await import('../inbox')
-    await markContractSigned('job123', 5000)
+    const result = await markContractSigned('job123', 5000)
 
+    expect(result).toEqual({ success: true })
     expect(mockUpdateJobStage).toHaveBeenCalledWith(
       'job123',
       '🏁 Closed Won',
@@ -336,5 +396,13 @@ describe('markContractSigned', () => {
     await markContractSigned('job123', 5000)
 
     expect(revalidateTag).toHaveBeenCalledWith('jobs-inbox', 'dashboard')
+  })
+
+  it('should return error on failure', async () => {
+    mockUpdateJobStage.mockRejectedValue(new Error('Airtable error'))
+    const { markContractSigned } = await import('../inbox')
+    const result = await markContractSigned('job123', 5000)
+
+    expect(result).toEqual({ success: false, error: 'Airtable error' })
   })
 })
