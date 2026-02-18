@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import { Job } from '@/types/brief'
 import { Badge } from '@/components/ui/badge'
@@ -85,6 +85,22 @@ function KanbanGrid({
 export function FollowUpsBoard({ overdue, upcoming }: FollowUpsBoardProps) {
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set())
   const [upcomingExpanded, setUpcomingExpanded] = useState(false)
+
+  // Build a fingerprint of all job IDs from server props.
+  // When this changes (server revalidated), clear dismissed IDs so
+  // cards that moved columns reappear in their new position.
+  const allIds = [
+    ...overdue.followUp1, ...overdue.followUp2, ...overdue.followUp3, ...overdue.closeOut,
+    ...upcoming.followUp1, ...upcoming.followUp2, ...upcoming.followUp3, ...upcoming.closeOut,
+  ].map((j) => j.id).sort().join(',')
+
+  const prevIds = useRef(allIds)
+  useEffect(() => {
+    if (prevIds.current !== allIds) {
+      setDismissedIds(new Set())
+      prevIds.current = allIds
+    }
+  }, [allIds])
 
   const filteredOverdue = filterDismissed(overdue, dismissedIds)
   const filteredUpcoming = filterDismissed(upcoming, dismissedIds)

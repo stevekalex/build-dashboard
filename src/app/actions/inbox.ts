@@ -80,7 +80,17 @@ export async function markFollowedUp(
       additionalFields[JOBS.NEXT_ACTION_DATE] = tomorrow.toISOString()
     }
 
-    await updateJobStage(jobId, nextStage, additionalFields)
+    try {
+      await updateJobStage(jobId, nextStage, additionalFields)
+    } catch (error: any) {
+      // If Last Follow Up Date field doesn't exist yet, retry without it
+      if (error?.message?.includes('UNKNOWN_FIELD_NAME') && error?.message?.includes('Last Follow Up Date')) {
+        const { [JOBS.LAST_FOLLOW_UP_DATE]: _, ...fieldsWithoutFollowUp } = additionalFields
+        await updateJobStage(jobId, nextStage, Object.keys(fieldsWithoutFollowUp).length > 0 ? fieldsWithoutFollowUp : undefined)
+      } else {
+        throw error
+      }
+    }
 
     revalidateTag('jobs-inbox', 'dashboard')
     return { success: true }
