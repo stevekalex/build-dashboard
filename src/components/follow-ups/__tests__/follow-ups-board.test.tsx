@@ -5,6 +5,14 @@ import { FollowUpsBoard } from '../follow-ups-board'
 import { Job } from '@/types/brief'
 import { FollowUpColumns } from '@/lib/queries/inbox'
 
+// Mock next/navigation
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    refresh: vi.fn(),
+  }),
+}))
+
 // Mock server actions
 vi.mock('@/app/actions/inbox', () => ({
   markFollowedUp: vi.fn(),

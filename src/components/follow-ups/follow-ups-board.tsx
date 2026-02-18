@@ -30,8 +30,8 @@ function buildColumns(columns: FollowUpColumns): ColumnConfig[] {
   return [
     { key: 'followUp1', title: 'Follow-up 1', emoji: '📆', tooltip: 'Stage = "📆 Touchpoint 1"', jobs: columns.followUp1 },
     { key: 'followUp2', title: 'Follow-up 2', emoji: '📆', tooltip: 'Stage = "📆 Touchpoint 2"', jobs: columns.followUp2 },
-    { key: 'followUp3', title: 'Follow-up 3', emoji: '📆', tooltip: 'Stage = "📆 Touchpoint 3" + Last Follow Up Date is empty', jobs: columns.followUp3 },
-    { key: 'closeOut', title: 'Close Out', emoji: '🚪', tooltip: 'Stage = "📆 Touchpoint 3" + Last Follow Up Date is set', jobs: columns.closeOut },
+    { key: 'followUp3', title: 'Follow-up 3', emoji: '📆', tooltip: 'Stage = "📆 Touchpoint 3"', jobs: columns.followUp3 },
+    { key: 'closeOut', title: 'Close Out', emoji: '🚪', tooltip: 'Stage = "📆 Touchpoint 3" (currently empty — no split logic)', jobs: columns.closeOut },
   ]
 }
 
@@ -97,15 +97,10 @@ export function FollowUpsBoard({ overdue, upcoming }: FollowUpsBoardProps) {
   // which column a job lands in. Without this, moving TP1→TP2 wouldn't
   // be detected (same IDs) and the dismissed card would stay hidden.
   const allIds = [
-<<<<<<< Updated upstream
     ...overdue.followUp1, ...overdue.followUp2, ...overdue.followUp3, ...overdue.closeOut,
     ...upcoming.followUp1, ...upcoming.followUp2, ...upcoming.followUp3, ...upcoming.closeOut,
-  ].map((j) => j.id).sort().join(',')
-=======
-    ...overdue.followUp1, ...overdue.followUp2, ...overdue.followUp3,
-    ...upcoming.followUp1, ...upcoming.followUp2, ...upcoming.followUp3,
   ].map((j) => `${j.id}:${j.stage}:${j.lastFollowUpDate || ''}`).sort().join(',')
->>>>>>> Stashed changes
+
 
   const startPolling = useActionPolling(allIds)
 
