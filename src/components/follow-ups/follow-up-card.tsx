@@ -43,7 +43,15 @@ export function FollowUpCard({ job, column, onDismiss }: FollowUpCardProps) {
   }
 
   async function handleMarkSent() {
-    await markFollowedUp(job.id)
+    setLoadingAction('sent')
+    onDismiss(job.id)
+    try {
+      await markFollowedUp(job.id)
+    } catch (error) {
+      console.error('Failed to mark as sent:', error)
+    } finally {
+      setLoadingAction(null)
+    }
   }
 
   return (
@@ -88,12 +96,23 @@ export function FollowUpCard({ job, column, onDismiss }: FollowUpCardProps) {
           {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
           <div className="flex items-center gap-2 flex-wrap" onClick={(e) => e.stopPropagation()}>
             {column !== 'closeOut' && (
-              <GenerateMessageDialog
-                jobId={job.id}
-                stage={job.stage}
-                onSent={() => onDismiss(job.id)}
-                onMarkSent={handleMarkSent}
-              />
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="min-h-[44px]"
+                  onClick={handleMarkSent}
+                  disabled={loadingAction === 'sent'}
+                >
+                  {loadingAction === 'sent' ? 'Saving...' : 'Mark Sent'}
+                </Button>
+                <GenerateMessageDialog
+                  jobId={job.id}
+                  stage={job.stage}
+                  onSent={() => onDismiss(job.id)}
+                  onMarkSent={handleMarkSent}
+                />
+              </>
             )}
             <Button
               variant="ghost"

@@ -12,6 +12,7 @@ import { getAirtableRecordUrl } from '@/lib/utils'
 
 interface ApproveListProps {
   jobs: Job[]
+  onAction?: () => void
 }
 
 /**
@@ -58,7 +59,7 @@ function formatBudget(amount: number): string {
   return `$${amount.toLocaleString()}`
 }
 
-export function ApproveList({ jobs }: ApproveListProps) {
+export function ApproveList({ jobs, onAction }: ApproveListProps) {
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set())
 
   const dismissJob = useCallback((jobId: string) => {
@@ -81,11 +82,13 @@ export function ApproveList({ jobs }: ApproveListProps) {
 
   async function handleApprove(briefId: string, notes: string) {
     dismissJob(briefId)
+    onAction?.()
     await approveBrief(briefId, notes)
   }
 
   async function handleReject(briefId: string, reason: string, notes: string) {
     dismissJob(briefId)
+    onAction?.()
     await rejectBrief(briefId, reason, notes)
   }
 
