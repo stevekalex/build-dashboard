@@ -20,15 +20,14 @@ interface ColumnConfig {
 }
 
 function totalCount(columns: FollowUpColumns): number {
-  return columns.followUp1.length + columns.followUp2.length + columns.followUp3.length + columns.closeOut.length
+  return columns.followUp1.length + columns.followUp2.length + columns.followUp3.length
 }
 
 function buildColumns(columns: FollowUpColumns): ColumnConfig[] {
   return [
-    { key: 'followUp1', title: 'Follow-up 1', emoji: '💌', jobs: columns.followUp1 },
+    { key: 'followUp1', title: 'Follow-up 1', emoji: '📆', jobs: columns.followUp1 },
     { key: 'followUp2', title: 'Follow-up 2', emoji: '📆', jobs: columns.followUp2 },
     { key: 'followUp3', title: 'Follow-up 3', emoji: '📆', jobs: columns.followUp3 },
-    { key: 'closeOut', title: 'Close Out', emoji: '🚪', jobs: columns.closeOut },
   ]
 }
 
@@ -38,7 +37,6 @@ function filterDismissed(columns: FollowUpColumns, dismissedIds: Set<string>): F
     followUp1: filter(columns.followUp1),
     followUp2: filter(columns.followUp2),
     followUp3: filter(columns.followUp3),
-    closeOut: filter(columns.closeOut),
   }
 }
 
@@ -90,8 +88,8 @@ export function FollowUpsBoard({ overdue, upcoming }: FollowUpsBoardProps) {
   // When this changes (server revalidated), clear dismissed IDs
   // synchronously so the empty-state check never sees stale dismissals.
   const allIds = [
-    ...overdue.followUp1, ...overdue.followUp2, ...overdue.followUp3, ...overdue.closeOut,
-    ...upcoming.followUp1, ...upcoming.followUp2, ...upcoming.followUp3, ...upcoming.closeOut,
+    ...overdue.followUp1, ...overdue.followUp2, ...overdue.followUp3,
+    ...upcoming.followUp1, ...upcoming.followUp2, ...upcoming.followUp3,
   ].map((j) => j.id).sort().join(',')
 
   const prevIds = useRef(allIds)

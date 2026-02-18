@@ -12,7 +12,7 @@ import { markFollowedUp, closeNoResponse } from '@/app/actions/inbox'
 import { STAGES } from '@/lib/airtable-fields'
 import { getAirtableRecordUrl } from '@/lib/utils'
 
-export type FollowUpColumn = 'followUp1' | 'followUp2' | 'followUp3' | 'closeOut'
+export type FollowUpColumn = 'followUp1' | 'followUp2' | 'followUp3'
 
 interface FollowUpCardProps {
   job: Job
@@ -31,7 +31,7 @@ export function FollowUpCard({ job, column, onDismiss }: FollowUpCardProps) {
   const [loadingAction, setLoadingAction] = useState<string | null>(null)
   const budget = formatBudget(job.budgetAmount, job.budgetType)
   const airtableUrl = getAirtableRecordUrl(job.id)
-  const isCloseOutColumn = column === 'closeOut'
+  const isLastColumn = column === 'followUp3'
 
   async function handleCloseNoResponse() {
     setLoadingAction('close')
@@ -90,7 +90,7 @@ export function FollowUpCard({ job, column, onDismiss }: FollowUpCardProps) {
           {/* Action buttons */}
           {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
           <div className="flex items-center gap-2 flex-wrap" onClick={(e) => e.stopPropagation()}>
-            {!isCloseOutColumn && (
+            {!isLastColumn && (
               <GenerateMessageDialog
                 jobId={job.id}
                 stage={job.stage}

@@ -54,7 +54,7 @@ export async function saveLoomUrl(
 
 /**
  * Server Action: Mark a job as applied.
- * Stamps Applied At with current datetime and advances stage to "Initial message sent".
+ * Stamps Applied At with current datetime and advances stage to "Touchpoint 1".
  */
 export async function markApplied(
   jobId: string
@@ -72,7 +72,7 @@ export async function markApplied(
     const now = new Date()
     const nextActionDate = new Date(now.getTime() + 24 * 60 * 60 * 1000)
 
-    await updateJobStage(jobId, STAGES.INITIAL_MESSAGE_SENT, {
+    await updateJobStage(jobId, STAGES.TOUCHPOINT_1, {
       [JOBS.APPLIED_AT]: now.toISOString(),
       [JOBS.NEXT_ACTION_DATE]: nextActionDate.toISOString(),
       [JOBS.LOOM_RECORDED_DATE]: now.toISOString(),

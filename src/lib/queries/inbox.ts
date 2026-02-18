@@ -146,7 +146,6 @@ export interface FollowUpColumns {
   followUp1: Job[]
   followUp2: Job[]
   followUp3: Job[]
-  closeOut: Job[]
 }
 
 /**
@@ -157,10 +156,10 @@ export interface FollowUpColumns {
  * - upcoming: nextActionDate is in the future
  *
  * Column mapping within each board:
- * - followUp1: Initial Message Sent → needs 2nd message
- * - followUp2: Touchpoint 1 → needs 3rd message
- * - followUp3: Touchpoint 2 → needs 4th message
- * - closeOut: Touchpoint 3 → close as lost
+ * - followUp1: Touchpoint 1 → re-surface Loom with different hook
+ * - followUp2: Touchpoint 2 → bridge to full project + call
+ * - followUp3: Touchpoint 3 → offer to adjust prototype
+ * - closeOut: (unused — Touchpoint 3 is the final message, then close as lost)
  */
 export function groupFollowUpsByStage(jobs: Job[]): {
   overdue: FollowUpColumns
@@ -170,7 +169,6 @@ export function groupFollowUpsByStage(jobs: Job[]): {
     followUp1: [],
     followUp2: [],
     followUp3: [],
-    closeOut: [],
   })
 
   const overdue = emptyColumns()
@@ -182,17 +180,14 @@ export function groupFollowUpsByStage(jobs: Job[]): {
     const target = isOverdue ? overdue : upcoming
 
     switch (job.stage) {
-      case STAGES.INITIAL_MESSAGE_SENT:
+      case STAGES.TOUCHPOINT_1:
         target.followUp1.push(job)
         break
-      case STAGES.TOUCHPOINT_1:
+      case STAGES.TOUCHPOINT_2:
         target.followUp2.push(job)
         break
-      case STAGES.TOUCHPOINT_2:
-        target.followUp3.push(job)
-        break
       case STAGES.TOUCHPOINT_3:
-        target.closeOut.push(job)
+        target.followUp3.push(job)
         break
     }
   }

@@ -6,9 +6,9 @@ import { generateText } from '@/lib/ai'
 import { buildPromptForStage } from '@/lib/follow-up-prompts'
 
 const VALID_STAGES = [
-  STAGES.INITIAL_MESSAGE_SENT,
   STAGES.TOUCHPOINT_1,
   STAGES.TOUCHPOINT_2,
+  STAGES.TOUCHPOINT_3,
 ] as const
 
 /**

@@ -56,9 +56,6 @@ export async function getPipelineCounts(): Promise<PipelineCounts> {
       case STAGES.SEND_LOOM:
         counts.deployed++
         break
-      case STAGES.INITIAL_MESSAGE_SENT:
-        counts.applied++
-        break
       case STAGES.TOUCHPOINT_1:
       case STAGES.TOUCHPOINT_2:
       case STAGES.TOUCHPOINT_3:

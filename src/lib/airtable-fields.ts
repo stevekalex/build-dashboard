@@ -103,7 +103,6 @@ export const STAGES = {
 
 // Stages where follow-ups happen
 export const FOLLOW_UP_STAGES = [
-  STAGES.INITIAL_MESSAGE_SENT,
   STAGES.TOUCHPOINT_1,
   STAGES.TOUCHPOINT_2,
   STAGES.TOUCHPOINT_3,
@@ -129,7 +128,6 @@ export const ENGAGEMENT_STAGES = [
 
 // Follow-up stage progression (for advancing to next touchpoint)
 export const TOUCHPOINT_PROGRESSION: Record<string, string> = {
-  [STAGES.INITIAL_MESSAGE_SENT]: STAGES.TOUCHPOINT_1,
   [STAGES.TOUCHPOINT_1]: STAGES.TOUCHPOINT_2,
   [STAGES.TOUCHPOINT_2]: STAGES.TOUCHPOINT_3,
   [STAGES.TOUCHPOINT_3]: STAGES.CLOSED_LOST, // after 3rd touchpoint, close as lost
