@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { markApplied } from '@/app/actions/ready-to-send'
 import { LoomInput } from './loom-input'
+import { Textarea } from '@/components/ui/textarea'
 import {
   ExternalLink,
   Copy,
@@ -18,6 +19,7 @@ import {
   CheckCircle2,
   Globe,
   DollarSign,
+  FileText,
 } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { getAirtableRecordUrl } from '@/lib/utils'
@@ -26,25 +28,55 @@ interface SendCardProps {
   job: Job
 }
 
+function StepRow({
+  step,
+  label,
+  icon,
+  children,
+}: {
+  step: number
+  label: string
+  icon: React.ReactNode
+  children: React.ReactNode
+}) {
+  return (
+    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 py-2 border-b border-gray-100 last:border-0">
+      <div className="flex items-center gap-3">
+        <div className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-gray-600 text-xs font-bold shrink-0">
+          {step}
+        </div>
+        <div className="flex items-center gap-1.5 text-sm text-gray-500 sm:w-36 sm:shrink-0">
+          {icon}
+          <span>{label}</span>
+        </div>
+      </div>
+      <div className="flex-1 pl-9 sm:pl-0">{children}</div>
+    </div>
+  )
+}
+
 export function SendCard({ job }: SendCardProps) {
   const [copied, setCopied] = useState(false)
   const [applying, setApplying] = useState(false)
   const [applied, setApplied] = useState(false)
+  const [coverLetterText, setCoverLetterText] = useState(job.coverLetter || '')
+  const [markAppliedError, setMarkAppliedError] = useState<string | null>(null)
 
   async function handleCopyCoverLetter() {
-    if (!job.coverLetter) return
-    await navigator.clipboard.writeText(job.coverLetter)
+    if (!coverLetterText) return
+    await navigator.clipboard.writeText(coverLetterText)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
   }
 
   async function handleMarkApplied() {
     setApplying(true)
+    setMarkAppliedError(null)
     const result = await markApplied(job.id)
     if (result.success) {
       setApplied(true)
     } else {
-      alert(`Failed to mark applied: ${result.error}`)
+      setMarkAppliedError(result.error || 'Failed to mark as applied')
     }
     setApplying(false)
   }
@@ -125,36 +157,67 @@ export function SendCard({ job }: SendCardProps) {
             )}
           </StepRow>
 
-          {/* Step 2: Record Loom */}
-          <StepRow step={2} label="Record Loom" icon={<Video className="w-4 h-4" />}>
-            <LoomInput jobId={job.id} existingUrl={job.loomUrl} />
+          {/* Step 2: Review Script */}
+          <StepRow step={2} label="Review Script" icon={<FileText className="w-4 h-4" />}>
+            {job.aiLoomOutline ? (
+              <p className="text-sm text-gray-700 whitespace-pre-wrap">{job.aiLoomOutline}</p>
+            ) : (
+              <span className="text-sm text-gray-400 italic">No script available</span>
+            )}
           </StepRow>
 
-          {/* Step 3: Copy Cover Letter */}
-          <StepRow step={3} label="Copy Cover Letter" icon={<Copy className="w-4 h-4" />}>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleCopyCoverLetter}
-              disabled={!job.coverLetter}
-              aria-label="Copy Cover Letter"
-            >
-              {copied ? (
-                <>
-                  <Check className="w-3.5 h-3.5 mr-1.5 text-green-600" />
-                  Copied!
-                </>
-              ) : (
-                <>
-                  <Copy className="w-3.5 h-3.5 mr-1.5" />
-                  Copy Cover Letter
-                </>
-              )}
-            </Button>
+          {/* Step 3: Record Loom */}
+          <StepRow step={3} label="Record Loom" icon={<Video className="w-4 h-4" />}>
+            <div className="flex items-center gap-3">
+              <a
+                href="https://www.loom.com/looms/videos"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Open Loom"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-purple-600 hover:text-purple-800 transition-colors"
+              >
+                Open Loom
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+              <LoomInput jobId={job.id} existingUrl={job.loomUrl} />
+            </div>
           </StepRow>
 
-          {/* Step 4: Open Upwork */}
-          <StepRow step={4} label="Open Upwork" icon={<Briefcase className="w-4 h-4" />}>
+          {/* Step 4: Copy Cover Letter */}
+          <StepRow step={4} label="Copy Cover Letter" icon={<Copy className="w-4 h-4" />}>
+            <div className="space-y-2 w-full">
+              <Textarea
+                value={coverLetterText}
+                onChange={(e) => setCoverLetterText(e.target.value)}
+                rows={4}
+                className="text-sm"
+                placeholder="No cover letter available"
+                aria-label="Cover Letter"
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCopyCoverLetter}
+                disabled={!coverLetterText}
+                aria-label="Copy Cover Letter"
+              >
+                {copied ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 mr-1.5 text-green-600" />
+                    Copied!
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3.5 h-3.5 mr-1.5" />
+                    Copy Cover Letter
+                  </>
+                )}
+              </Button>
+            </div>
+          </StepRow>
+
+          {/* Step 5: Open Upwork */}
+          <StepRow step={5} label="Open Upwork" icon={<Briefcase className="w-4 h-4" />}>
             {job.jobUrl ? (
               <a
                 href={job.jobUrl}
@@ -174,55 +237,35 @@ export function SendCard({ job }: SendCardProps) {
             )}
           </StepRow>
 
-          {/* Step 5: Mark Applied */}
-          <StepRow step={5} label="Mark Applied" icon={<Send className="w-4 h-4" />}>
-            <Button
-              size="sm"
-              onClick={handleMarkApplied}
-              disabled={applying}
-              aria-label="Mark Applied"
-              className="bg-gray-900 hover:bg-gray-800 text-white"
-            >
-              {applying ? (
-                <>
-                  <Clock className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-                  Marking...
-                </>
-              ) : (
-                <>
-                  <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
-                  Mark Applied
-                </>
+          {/* Step 6: Mark Applied */}
+          <StepRow step={6} label="Mark Applied" icon={<Send className="w-4 h-4" />}>
+            <div className="flex flex-col gap-1">
+              <Button
+                size="sm"
+                onClick={handleMarkApplied}
+                disabled={applying}
+                aria-label="Mark Applied"
+                className="bg-gray-900 hover:bg-gray-800 text-white"
+              >
+                {applying ? (
+                  <>
+                    <Clock className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                    Marking...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-3.5 h-3.5 mr-1.5" />
+                    Mark Applied
+                  </>
+                )}
+              </Button>
+              {markAppliedError && (
+                <span className="text-xs text-red-500">{markAppliedError}</span>
               )}
-            </Button>
+            </div>
           </StepRow>
         </div>
       </CardContent>
     </Card>
-  )
-}
-
-function StepRow({
-  step,
-  label,
-  icon,
-  children,
-}: {
-  step: number
-  label: string
-  icon: React.ReactNode
-  children: React.ReactNode
-}) {
-  return (
-    <div className="flex items-center gap-3 py-2 border-b border-gray-100 last:border-0">
-      <div className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-gray-600 text-xs font-bold shrink-0">
-        {step}
-      </div>
-      <div className="flex items-center gap-1.5 text-sm text-gray-500 w-36 shrink-0">
-        {icon}
-        <span>{label}</span>
-      </div>
-      <div className="flex-1">{children}</div>
-    </div>
   )
 }

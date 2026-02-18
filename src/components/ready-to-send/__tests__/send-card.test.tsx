@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { SendCard } from '../send-card'
 import { Job } from '@/types/brief'
+import { markApplied } from '@/app/actions/ready-to-send'
 
 // Mock server actions
 vi.mock('@/app/actions/ready-to-send', () => ({
@@ -49,6 +50,29 @@ describe('SendCard - Happy Path', () => {
     expect(protoLink).toHaveAttribute('target', '_blank')
   })
 
+  it('should render Review Script step with loom outline text', () => {
+    render(<SendCard job={mockJob} />)
+
+    expect(screen.getByText('Review Script')).toBeInTheDocument()
+    expect(screen.getByText('Walk through the dashboard features...')).toBeInTheDocument()
+  })
+
+  it('should render Record Loom step with Open Loom link', () => {
+    render(<SendCard job={mockJob} />)
+
+    const loomLink = screen.getByRole('link', { name: /open loom/i })
+    expect(loomLink).toHaveAttribute('href', 'https://www.loom.com/looms/videos')
+    expect(loomLink).toHaveAttribute('target', '_blank')
+  })
+
+  it('should render editable cover letter textarea', () => {
+    render(<SendCard job={mockJob} />)
+
+    const textarea = screen.getByRole('textbox', { name: /cover letter/i })
+    expect(textarea).toBeInTheDocument()
+    expect(textarea).toHaveValue('Dear hiring manager, I have built a prototype...')
+  })
+
   it('should render Copy Cover Letter button', () => {
     render(<SendCard job={mockJob} />)
 
@@ -76,18 +100,20 @@ describe('SendCard - Happy Path', () => {
     expect(screen.getByText(/TypeScript/)).toBeInTheDocument()
   })
 
-  it('should show step indicators', () => {
+  it('should show all 6 step indicators', () => {
     render(<SendCard job={mockJob} />)
 
-    // All 5 step numbers should be present
+    // All 6 step numbers should be present
     expect(screen.getByText('1')).toBeInTheDocument()
     expect(screen.getByText('2')).toBeInTheDocument()
     expect(screen.getByText('3')).toBeInTheDocument()
     expect(screen.getByText('4')).toBeInTheDocument()
     expect(screen.getByText('5')).toBeInTheDocument()
+    expect(screen.getByText('6')).toBeInTheDocument()
 
     // Step labels should be present (using getAllByText since action buttons share label text)
     expect(screen.getAllByText(/open prototype/i).length).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByText(/review script/i).length).toBeGreaterThanOrEqual(1)
     expect(screen.getAllByText(/record loom/i).length).toBeGreaterThanOrEqual(1)
     expect(screen.getAllByText(/copy cover letter/i).length).toBeGreaterThanOrEqual(1)
     expect(screen.getAllByText(/open upwork/i).length).toBeGreaterThanOrEqual(1)
@@ -111,7 +137,14 @@ describe('SendCard - Edge Cases', () => {
     expect(screen.getByText(/loom.com/i)).toBeInTheDocument()
   })
 
-  it('should handle missing cover letter', () => {
+  it('should show "No script available" when aiLoomOutline is missing', () => {
+    const jobWithoutScript = { ...mockJob, aiLoomOutline: undefined }
+    render(<SendCard job={jobWithoutScript} />)
+
+    expect(screen.getByText('No script available')).toBeInTheDocument()
+  })
+
+  it('should disable copy button when cover letter textarea is empty', () => {
     const jobWithoutCover = { ...mockJob, coverLetter: undefined }
     render(<SendCard job={jobWithoutCover} />)
 
@@ -132,6 +165,30 @@ describe('SendCard - Edge Cases', () => {
     render(<SendCard job={jobWithoutBudget} />)
 
     // Should still render without crashing
+    expect(screen.getByText('Build CRM Dashboard')).toBeInTheDocument()
+  })
+
+  it('should allow editing the cover letter text', async () => {
+    const user = userEvent.setup()
+    render(<SendCard job={mockJob} />)
+
+    const textarea = screen.getByRole('textbox', { name: /cover letter/i })
+    await user.clear(textarea)
+    await user.type(textarea, 'Updated cover letter')
+
+    expect(textarea).toHaveValue('Updated cover letter')
+  })
+
+  it('should show inline error when markApplied fails', async () => {
+    const user = userEvent.setup()
+    vi.mocked(markApplied).mockResolvedValueOnce({ success: false, error: 'Network error' })
+
+    render(<SendCard job={mockJob} />)
+
+    await user.click(screen.getByRole('button', { name: /mark applied/i }))
+
+    expect(screen.getByText('Network error')).toBeInTheDocument()
+    // Card should still be visible — not removed on failure
     expect(screen.getByText('Build CRM Dashboard')).toBeInTheDocument()
   })
 })

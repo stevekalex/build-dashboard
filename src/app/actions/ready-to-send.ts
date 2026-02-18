@@ -26,7 +26,6 @@ async function getUserName(): Promise<string> {
 
 /**
  * Server Action: Save a Loom URL to a job record.
- * Also stamps Loom Recorded Date with current datetime.
  */
 export async function saveLoomUrl(
   jobId: string,
@@ -76,6 +75,7 @@ export async function markApplied(
     await updateJobStage(jobId, STAGES.INITIAL_MESSAGE_SENT, {
       [JOBS.APPLIED_AT]: now.toISOString(),
       [JOBS.NEXT_ACTION_DATE]: nextActionDate.toISOString(),
+      [JOBS.LOOM_RECORDED_DATE]: now.toISOString(),
     })
 
     revalidateTag('jobs-ready-to-send', 'dashboard')

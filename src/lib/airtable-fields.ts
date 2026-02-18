@@ -30,6 +30,7 @@ export const JOBS = {
   AI_LOOM_OUTLINE: 'AI Loom Outline',
   PROTOTYPE_URL: 'Prototype URL',
   LOOM_URL: 'Loom URL',
+  LOOM_RECORDED_DATE: 'Loom Recorded Date',
   PROTOTYPE_STATUS: 'Prototype Status',
   // Application fields (exist)
   APPLIED_AT: 'Applied At',

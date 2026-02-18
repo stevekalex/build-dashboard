@@ -106,6 +106,25 @@ describe('markApplied - Happy Path', () => {
     expect(new Date(appliedAt).toISOString()).toBe(appliedAt)
   })
 
+  it('should stamp Loom Recorded Date with current ISO datetime', async () => {
+    const { markApplied } = await import('../ready-to-send')
+    const result = await markApplied('rec123')
+
+    expect(result.success).toBe(true)
+    expect(mockUpdateJobStage).toHaveBeenCalledWith(
+      'rec123',
+      '💌 Initial message sent',
+      expect.objectContaining({
+        'Loom Recorded Date': expect.any(String),
+      })
+    )
+
+    // Verify the Loom Recorded Date is a valid ISO date
+    const callArgs = mockUpdateJobStage.mock.calls[0]
+    const loomRecordedDate = callArgs[2]['Loom Recorded Date']
+    expect(new Date(loomRecordedDate).toISOString()).toBe(loomRecordedDate)
+  })
+
   it('should update stage to Initial message sent', async () => {
     const { markApplied } = await import('../ready-to-send')
     await markApplied('rec123')
