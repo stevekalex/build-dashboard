@@ -52,9 +52,9 @@ export function HotLeadsBoard({ columns }: HotLeadsBoardProps) {
   }
 
   const columnConfigs: ColumnConfig[] = [
-    { key: 'shortlist', title: 'Shortlist', emoji: '📋', tooltip: 'Client shortlisted your proposal', jobs: columns.shortlist },
-    { key: 'interview', title: 'Interview', emoji: '🎙️', tooltip: 'Client invited you to interview', jobs: columns.interview },
-    { key: 'hire', title: 'Hire', emoji: '🤝', tooltip: 'Client sent a hire offer', jobs: columns.hire },
+    { key: 'shortlist', title: 'Shortlist', emoji: '📋', tooltip: 'Response Type = "Shortlist"', jobs: columns.shortlist },
+    { key: 'interview', title: 'Interview', emoji: '🎙️', tooltip: 'Response Type = "Interview"', jobs: columns.interview },
+    { key: 'hire', title: 'Hire', emoji: '🤝', tooltip: 'Response Type = "Hire"', jobs: columns.hire },
   ]
 
   return (

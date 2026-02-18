@@ -26,7 +26,7 @@ export function ApproveBoard({ pendingJobs, buildingJobs }: ApproveBoardProps) {
           <Badge variant="secondary" className="text-xs">
             {pendingJobs.length}
           </Badge>
-          <ColumnTooltip content="Stage is Pending Approval and brief is marked buildable." />
+          <ColumnTooltip content='Stage = "⏸️ Pending Approval" + Buildable = true' />
         </div>
         <ApproveList jobs={pendingJobs} onAction={startPolling} />
       </div>
@@ -39,7 +39,7 @@ export function ApproveBoard({ pendingJobs, buildingJobs }: ApproveBoardProps) {
           <Badge variant="secondary" className="text-xs">
             {buildingJobs.length}
           </Badge>
-          <ColumnTooltip content="Stage is Prototype Building. Build in progress." />
+          <ColumnTooltip content='Stage = "🔨 Prototype Building"' />
         </div>
         <BuildingList jobs={buildingJobs} />
       </div>

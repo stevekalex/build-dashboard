@@ -28,10 +28,10 @@ function totalCount(columns: FollowUpColumns): number {
 
 function buildColumns(columns: FollowUpColumns): ColumnConfig[] {
   return [
-    { key: 'followUp1', title: 'Follow-up 1', emoji: '📆', tooltip: 'Stage is Touchpoint 1. First follow-up \u2014 re-surface Loom with a different hook.', jobs: columns.followUp1 },
-    { key: 'followUp2', title: 'Follow-up 2', emoji: '📆', tooltip: 'Stage is Touchpoint 2. Bridge to full project scope and a call.', jobs: columns.followUp2 },
-    { key: 'followUp3', title: 'Follow-up 3', emoji: '📆', tooltip: 'Stage is Touchpoint 3, final message not yet sent.', jobs: columns.followUp3 },
-    { key: 'closeOut', title: 'Close Out', emoji: '🚪', tooltip: 'Stage is Touchpoint 3, final message already sent. Close as lost if no response.', jobs: columns.closeOut },
+    { key: 'followUp1', title: 'Follow-up 1', emoji: '📆', tooltip: 'Stage = "📆 Touchpoint 1"', jobs: columns.followUp1 },
+    { key: 'followUp2', title: 'Follow-up 2', emoji: '📆', tooltip: 'Stage = "📆 Touchpoint 2"', jobs: columns.followUp2 },
+    { key: 'followUp3', title: 'Follow-up 3', emoji: '📆', tooltip: 'Stage = "📆 Touchpoint 3" + Last Follow Up Date is empty', jobs: columns.followUp3 },
+    { key: 'closeOut', title: 'Close Out', emoji: '🚪', tooltip: 'Stage = "📆 Touchpoint 3" + Last Follow Up Date is set', jobs: columns.closeOut },
   ]
 }
 

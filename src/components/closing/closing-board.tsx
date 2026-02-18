@@ -54,10 +54,10 @@ export function ClosingBoard({
   }
 
   const columns: ColumnConfig[] = [
-    { key: 'engaged', title: 'Engaged', emoji: '🤝', tooltip: 'Client showed engagement (Light or Prototype). No call done yet.', jobs: engaged },
-    { key: 'callDone', title: 'Call Done', emoji: '📞', tooltip: 'Call completed. No contract sent yet.', jobs: callDone },
-    { key: 'contractSent', title: 'Contract Sent', emoji: '📄', tooltip: 'Contract sent. Awaiting signature.', jobs: contractSent },
-    { key: 'won', title: 'Won', emoji: '🏆', tooltip: 'Deal closed as won.', jobs: won },
+    { key: 'engaged', title: 'Engaged', emoji: '🤝', tooltip: 'Stage = "🧐 Light Engagement" or "🕺 Engagement with prototype", no Call Completed Date or Contract Sent Date', jobs: engaged },
+    { key: 'callDone', title: 'Call Done', emoji: '📞', tooltip: 'Call Completed Date is set, Contract Sent Date is empty', jobs: callDone },
+    { key: 'contractSent', title: 'Contract Sent', emoji: '📄', tooltip: 'Contract Sent Date is set', jobs: contractSent },
+    { key: 'won', title: 'Won', emoji: '🏆', tooltip: 'Stage = "🏁 Closed Won"', jobs: won },
   ]
 
   return (
