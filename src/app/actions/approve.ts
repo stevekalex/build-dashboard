@@ -3,6 +3,8 @@
 import { revalidateTag } from 'next/cache'
 import { cookies } from 'next/headers'
 import { triggerBuild, rejectBuild, JobPulseError } from '@/lib/job-pulse'
+import { updateJobStage } from '@/lib/airtable-mutations'
+import { STAGES } from '@/lib/airtable-fields'
 
 /**
  * Get the current user's name from session cookie
@@ -75,5 +77,28 @@ export async function rejectBrief(
     const message = error instanceof Error ? error.message : 'Failed to reject brief'
     const code = error instanceof JobPulseError ? error.code : undefined
     return { success: false, error: message, code }
+  }
+}
+
+/**
+ * Server Action: Mark a build as failed
+ *
+ * Moves the job from "🔨 Prototype Building" to "⚠️ Build Failed".
+ * Used when a build is stuck or has errored out.
+ */
+export async function markBuildFailed(
+  jobId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await updateJobStage(jobId, STAGES.BUILD_FAILED)
+
+    revalidateTag('jobs-approve', 'dashboard')
+    revalidateTag('jobs-building', 'dashboard')
+
+    return { success: true }
+  } catch (error) {
+    console.error('Failed to mark build as failed:', error)
+    const message = error instanceof Error ? error.message : 'Failed to mark build as failed'
+    return { success: false, error: message }
   }
 }

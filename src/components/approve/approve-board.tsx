@@ -41,7 +41,7 @@ export function ApproveBoard({ pendingJobs, buildingJobs }: ApproveBoardProps) {
           </Badge>
           <ColumnTooltip content='Stage = "🔨 Prototype Building"' />
         </div>
-        <BuildingList jobs={buildingJobs} />
+        <BuildingList jobs={buildingJobs} onAction={startPolling} />
       </div>
     </div>
   )
