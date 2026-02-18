@@ -159,8 +159,8 @@ export interface FollowUpColumns {
  * Column mapping within each board:
  * - followUp1: Touchpoint 1 → re-surface Loom with different hook
  * - followUp2: Touchpoint 2 → bridge to full project + call
- * - followUp3: Touchpoint 3 → offer to adjust prototype
- * - closeOut: Touchpoint 3 → currently unused (placeholder for future split logic)
+ * - followUp3: Touchpoint 3, Last Follow Up Date is empty (message not yet sent)
+ * - closeOut: Touchpoint 3, Last Follow Up Date is set (message sent, awaiting response)
  */
 export function groupFollowUpsByStage(jobs: Job[]): {
   overdue: FollowUpColumns
@@ -189,7 +189,13 @@ export function groupFollowUpsByStage(jobs: Job[]): {
         target.followUp2.push(job)
         break
       case STAGES.TOUCHPOINT_3:
-        target.followUp3.push(job)
+        // Last Follow Up Date is cleared when advancing to TP3, and only
+        // stamped when the user clicks "Mark Sent" at TP3.
+        if (job.lastFollowUpDate) {
+          target.closeOut.push(job)
+        } else {
+          target.followUp3.push(job)
+        }
         break
     }
   }

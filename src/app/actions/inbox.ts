@@ -85,10 +85,19 @@ export async function markFollowedUp(
     }
 
     const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000)
-    await updateJobStage(jobId, nextStage, {
+    const fields: Record<string, string | null> = {
       [JOBS.NEXT_ACTION_DATE]: tomorrow.toISOString(),
       [JOBS.LAST_FOLLOW_UP_DATE]: now.toISOString(),
-    })
+    }
+
+    // Clear Last Follow Up Date when advancing to TP3 so it only gets
+    // stamped when the TP3 "Mark Sent" action fires. This lets the
+    // grouping logic split TP3 jobs into Follow-up 3 vs Close Out.
+    if (nextStage === STAGES.TOUCHPOINT_3) {
+      fields[JOBS.LAST_FOLLOW_UP_DATE] = null
+    }
+
+    await updateJobStage(jobId, nextStage, fields)
 
     revalidateTag('jobs-inbox', 'dashboard')
     return { success: true }

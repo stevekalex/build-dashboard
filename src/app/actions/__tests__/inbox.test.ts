@@ -150,7 +150,7 @@ describe('markFollowedUp', () => {
     )
   })
 
-  it('should advance from Touchpoint 2 to Touchpoint 3', async () => {
+  it('should advance from Touchpoint 2 to Touchpoint 3 and clear Last Follow Up Date', async () => {
     mockFind.mockResolvedValue({
       id: 'job123',
       get: (field: string) => {
@@ -168,6 +168,7 @@ describe('markFollowedUp', () => {
       '📆 Touchpoint 3',
       expect.objectContaining({
         'Next Action Date': expect.any(String),
+        'Last Follow Up Date': null,
       })
     )
   })

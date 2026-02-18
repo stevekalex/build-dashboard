@@ -30,8 +30,8 @@ function buildColumns(columns: FollowUpColumns): ColumnConfig[] {
   return [
     { key: 'followUp1', title: 'Follow-up 1', emoji: '📆', tooltip: 'Stage = "📆 Touchpoint 1"', jobs: columns.followUp1 },
     { key: 'followUp2', title: 'Follow-up 2', emoji: '📆', tooltip: 'Stage = "📆 Touchpoint 2"', jobs: columns.followUp2 },
-    { key: 'followUp3', title: 'Follow-up 3', emoji: '📆', tooltip: 'Stage = "📆 Touchpoint 3"', jobs: columns.followUp3 },
-    { key: 'closeOut', title: 'Close Out', emoji: '🚪', tooltip: 'Stage = "📆 Touchpoint 3" (currently empty — no split logic)', jobs: columns.closeOut },
+    { key: 'followUp3', title: 'Follow-up 3', emoji: '📆', tooltip: 'Stage = "📆 Touchpoint 3", Last Follow Up Date is empty', jobs: columns.followUp3 },
+    { key: 'closeOut', title: 'Close Out', emoji: '🚪', tooltip: 'Stage = "📆 Touchpoint 3", Last Follow Up Date is set', jobs: columns.closeOut },
   ]
 }
 
