@@ -2,6 +2,8 @@ import { Suspense } from 'react'
 import { cacheTag, cacheLife } from 'next/cache'
 import { getActiveDeals, groupDealsByStatus } from '@/lib/queries/closing'
 import { ClosingBoard } from '@/components/closing/closing-board'
+import { ClosingTabs } from '@/components/closing/closing-tabs'
+import { ClosingHelpers } from '@/components/closing/closing-helpers'
 import { PageInfoTooltip } from '@/components/ui/page-info-tooltip'
 
 async function ClosingContent() {
@@ -26,9 +28,14 @@ export default function ClosingPage() {
         </div>
         <p className="text-xs md:text-base text-gray-600 mt-1">Active deals in progress</p>
       </div>
-      <Suspense>
-        <ClosingContent />
-      </Suspense>
+      <ClosingTabs
+        board={
+          <Suspense>
+            <ClosingContent />
+          </Suspense>
+        }
+        helpers={<ClosingHelpers />}
+      />
     </div>
   )
 }
