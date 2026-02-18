@@ -87,23 +87,28 @@ export function FollowUpsBoard({ overdue, upcoming }: FollowUpsBoardProps) {
   const [upcomingExpanded, setUpcomingExpanded] = useState(false)
 
   // Build a fingerprint of all job IDs from server props.
-  // When this changes (server revalidated), clear dismissed IDs so
-  // cards that moved columns reappear in their new position.
+  // When this changes (server revalidated), clear dismissed IDs
+  // synchronously so the empty-state check never sees stale dismissals.
   const allIds = [
     ...overdue.followUp1, ...overdue.followUp2, ...overdue.followUp3, ...overdue.closeOut,
     ...upcoming.followUp1, ...upcoming.followUp2, ...upcoming.followUp3, ...upcoming.closeOut,
   ].map((j) => j.id).sort().join(',')
 
   const prevIds = useRef(allIds)
-  useEffect(() => {
-    if (prevIds.current !== allIds) {
-      setDismissedIds(new Set())
-      prevIds.current = allIds
-    }
-  }, [allIds])
+  let activeDismissedIds = dismissedIds
+  if (prevIds.current !== allIds) {
+    activeDismissedIds = new Set()
+    prevIds.current = allIds
+  }
 
-  const filteredOverdue = filterDismissed(overdue, dismissedIds)
-  const filteredUpcoming = filterDismissed(upcoming, dismissedIds)
+  useEffect(() => {
+    if (activeDismissedIds !== dismissedIds) {
+      setDismissedIds(activeDismissedIds)
+    }
+  }, [activeDismissedIds, dismissedIds])
+
+  const filteredOverdue = filterDismissed(overdue, activeDismissedIds)
+  const filteredUpcoming = filterDismissed(upcoming, activeDismissedIds)
 
   const overdueCount = totalCount(filteredOverdue)
   const upcomingCount = totalCount(filteredUpcoming)
@@ -139,7 +144,7 @@ export function FollowUpsBoard({ overdue, upcoming }: FollowUpsBoardProps) {
           <div className="space-y-2">
             {overdueColumns.flatMap((col) =>
               col.jobs
-                .filter((j) => !dismissedIds.has(j.id))
+                .filter((j) => !activeDismissedIds.has(j.id))
                 .map((job) => (
                   <FollowUpCard key={job.id} job={job} column={col.key} onDismiss={handleDismiss} />
                 ))
@@ -166,7 +171,7 @@ export function FollowUpsBoard({ overdue, upcoming }: FollowUpsBoardProps) {
             </Badge>
           </button>
           {upcomingExpanded && (
-            <KanbanGrid columns={upcomingColumns} dismissedIds={dismissedIds} onDismiss={handleDismiss} />
+            <KanbanGrid columns={upcomingColumns} dismissedIds={activeDismissedIds} onDismiss={handleDismiss} />
           )}
         </div>
       )}
