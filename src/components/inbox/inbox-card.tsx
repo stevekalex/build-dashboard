@@ -70,7 +70,6 @@ export function InboxCard({ job, section, hotLeadColumn, onAction }: InboxCardPr
 
   async function handleMarkCallDone() {
     setLoadingAction('call')
-    onAction?.(job.id)
     const result = await markCallDone(job.id)
     if (!result.success) {
       console.error('Failed to mark call done:', result.error)
