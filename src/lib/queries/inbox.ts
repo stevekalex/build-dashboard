@@ -1,4 +1,4 @@
-import { TABLES, JOBS, STAGES, CLOSED_STAGES, FOLLOW_UP_STAGES } from '@/lib/airtable-fields'
+import { TABLES, JOBS, STAGES, CLOSED_STAGES, FOLLOW_UP_STAGES, TOUCHPOINT_PROGRESSION } from '@/lib/airtable-fields'
 import { getBase } from '@/lib/airtable'
 import { Job } from '@/types/brief'
 import { cacheTag, cacheLife } from 'next/cache'
@@ -173,6 +173,64 @@ export async function getAwaitingResponse(): Promise<Job[]> {
     console.error('getAwaitingResponse failed:', error instanceof Error ? error.message : error)
     return []
   }
+}
+
+export interface FollowUpColumns {
+  followUp1: Job[]
+  followUp2: Job[]
+  followUp3: Job[]
+  closeOut: Job[]
+}
+
+/**
+ * Group follow-up jobs by urgency (overdue vs upcoming) and stage for the kanban boards.
+ *
+ * Two boards:
+ * - overdue: nextActionDate is in the past (or missing)
+ * - upcoming: nextActionDate is in the future
+ *
+ * Column mapping within each board:
+ * - followUp1: Initial Message Sent → needs 2nd message
+ * - followUp2: Touchpoint 1 → needs 3rd message
+ * - followUp3: Touchpoint 2 → needs 4th message
+ * - closeOut: Touchpoint 3 → close as lost
+ */
+export function groupFollowUpsByStage(jobs: Job[]): {
+  overdue: FollowUpColumns
+  upcoming: FollowUpColumns
+} {
+  const emptyColumns = (): FollowUpColumns => ({
+    followUp1: [],
+    followUp2: [],
+    followUp3: [],
+    closeOut: [],
+  })
+
+  const overdue = emptyColumns()
+  const upcoming = emptyColumns()
+  const now = Date.now()
+
+  for (const job of jobs) {
+    const isOverdue = !job.nextActionDate || new Date(job.nextActionDate).getTime() <= now
+    const target = isOverdue ? overdue : upcoming
+
+    switch (job.stage) {
+      case STAGES.INITIAL_MESSAGE_SENT:
+        target.followUp1.push(job)
+        break
+      case STAGES.TOUCHPOINT_1:
+        target.followUp2.push(job)
+        break
+      case STAGES.TOUCHPOINT_2:
+        target.followUp3.push(job)
+        break
+      case STAGES.TOUCHPOINT_3:
+        target.closeOut.push(job)
+        break
+    }
+  }
+
+  return { overdue, upcoming }
 }
 
 /**
