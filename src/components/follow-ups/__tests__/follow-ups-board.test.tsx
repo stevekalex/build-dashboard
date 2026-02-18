@@ -149,31 +149,11 @@ describe('FollowUpsBoard', () => {
 
   // --- Empty / edge cases ---
 
-  it('should show empty state when both boards are empty', () => {
+  it('should always show both sections even when empty', () => {
     render(<FollowUpsBoard overdue={emptyColumns} upcoming={emptyColumns} />)
 
-    expect(screen.getByText(/No follow-ups/i)).toBeInTheDocument()
-  })
-
-  it('should not render Upcoming section when there are no upcoming jobs', () => {
-    const overdue: FollowUpColumns = {
-      ...emptyColumns,
-      followUp1: [makeJob({ id: 'rec1', title: 'Overdue Job', stage: '💌 Initial message sent' })],
-    }
-
-    render(<FollowUpsBoard overdue={overdue} upcoming={emptyColumns} />)
-
-    expect(screen.queryByText('Upcoming')).not.toBeInTheDocument()
-  })
-
-  it('should not render Outstanding section when there are no overdue jobs', () => {
-    const upcoming: FollowUpColumns = {
-      ...emptyColumns,
-      followUp1: [makeJob({ id: 'rec1', title: 'Upcoming Job', stage: '💌 Initial message sent' })],
-    }
-
-    render(<FollowUpsBoard overdue={emptyColumns} upcoming={upcoming} />)
-
-    expect(screen.queryByText('Outstanding')).not.toBeInTheDocument()
+    expect(screen.getByText('Outstanding')).toBeInTheDocument()
+    expect(screen.getByText('Upcoming')).toBeInTheDocument()
+    expect(screen.getByText(/No outstanding follow-ups/i)).toBeInTheDocument()
   })
 })

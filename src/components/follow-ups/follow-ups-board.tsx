@@ -113,21 +113,8 @@ export function FollowUpsBoard({ overdue, upcoming }: FollowUpsBoardProps) {
   const overdueCount = totalCount(filteredOverdue)
   const upcomingCount = totalCount(filteredUpcoming)
 
-  // Use raw (server) counts for empty-state so optimistic dismissals
-  // never flash the "No follow-ups" message before revalidation.
-  const rawTotal = totalCount(overdue) + totalCount(upcoming)
-
   function handleDismiss(id: string) {
     setDismissedIds((prev) => new Set(prev).add(id))
-  }
-
-  if (rawTotal === 0) {
-    return (
-      <div className="text-center py-12 text-gray-500">
-        <p className="text-lg font-medium">No follow-ups</p>
-        <p className="text-sm mt-1">Jobs needing follow-up messages will appear here</p>
-      </div>
-    )
   }
 
   const overdueColumns = buildColumns(filteredOverdue)
@@ -136,14 +123,14 @@ export function FollowUpsBoard({ overdue, upcoming }: FollowUpsBoardProps) {
   return (
     <div className="space-y-8">
       {/* Outstanding - flat vertical list of all overdue jobs */}
-      {overdueCount > 0 && (
-        <div>
-          <div className="flex items-center gap-2 mb-4">
-            <h2 className="font-semibold text-base text-gray-900">Outstanding</h2>
-            <Badge variant="destructive" className="text-xs">
-              {overdueCount}
-            </Badge>
-          </div>
+      <div>
+        <div className="flex items-center gap-2 mb-4">
+          <h2 className="font-semibold text-base text-gray-900">Outstanding</h2>
+          <Badge variant="destructive" className="text-xs">
+            {overdueCount}
+          </Badge>
+        </div>
+        {overdueCount > 0 ? (
           <div className="space-y-2">
             {overdueColumns.flatMap((col) =>
               col.jobs
@@ -153,31 +140,33 @@ export function FollowUpsBoard({ overdue, upcoming }: FollowUpsBoardProps) {
                 ))
             )}
           </div>
-        </div>
-      )}
+        ) : (
+          <div className="text-center py-6 text-xs text-gray-400 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+            No outstanding follow-ups
+          </div>
+        )}
+      </div>
 
       {/* Upcoming board - collapsible, collapsed by default */}
-      {upcomingCount > 0 && (
-        <div data-section="upcoming">
-          <button
-            onClick={() => setUpcomingExpanded(!upcomingExpanded)}
-            className="flex items-center gap-2 mb-4 hover:text-gray-700 transition-colors"
-          >
-            {upcomingExpanded ? (
-              <ChevronDown className="w-4 h-4 text-gray-500" />
-            ) : (
-              <ChevronRight className="w-4 h-4 text-gray-500" />
-            )}
-            <h2 className="font-semibold text-base text-gray-900">Upcoming</h2>
-            <Badge variant="secondary" className="text-xs">
-              {upcomingCount}
-            </Badge>
-          </button>
-          {upcomingExpanded && (
-            <KanbanGrid columns={upcomingColumns} dismissedIds={activeDismissedIds} onDismiss={handleDismiss} />
+      <div data-section="upcoming">
+        <button
+          onClick={() => setUpcomingExpanded(!upcomingExpanded)}
+          className="flex items-center gap-2 mb-4 hover:text-gray-700 transition-colors"
+        >
+          {upcomingExpanded ? (
+            <ChevronDown className="w-4 h-4 text-gray-500" />
+          ) : (
+            <ChevronRight className="w-4 h-4 text-gray-500" />
           )}
-        </div>
-      )}
+          <h2 className="font-semibold text-base text-gray-900">Upcoming</h2>
+          <Badge variant="secondary" className="text-xs">
+            {upcomingCount}
+          </Badge>
+        </button>
+        {upcomingExpanded && (
+          <KanbanGrid columns={upcomingColumns} dismissedIds={activeDismissedIds} onDismiss={handleDismiss} />
+        )}
+      </div>
     </div>
   )
 }
