@@ -97,9 +97,7 @@ export async function closeNoResponse(
   jobId: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    await updateJobStage(jobId, STAGES.CLOSED_LOST, {
-      [JOBS.LOST_REASON]: 'No response',
-    })
+    await updateJobStage(jobId, STAGES.CLOSED_LOST)
 
     revalidateTag('jobs-inbox', 'dashboard')
     return { success: true }

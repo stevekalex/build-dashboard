@@ -302,7 +302,7 @@ describe('closeNoResponse', () => {
     mockUpdateJobStage.mockResolvedValue(undefined)
   })
 
-  it('should set stage to Closed Lost and lost reason to No response', async () => {
+  it('should set stage to Closed Lost', async () => {
     const { closeNoResponse } = await import('../inbox')
     const result = await closeNoResponse('job123')
 
@@ -310,7 +310,6 @@ describe('closeNoResponse', () => {
     expect(mockUpdateJobStage).toHaveBeenCalledWith(
       'job123',
       '➡️ Closed Lost',
-      { 'Lost Reason': 'No response' }
     )
   })
 
