@@ -1,30 +1,30 @@
-import Anthropic from '@anthropic-ai/sdk'
+import OpenAI from 'openai'
 
-let _client: Anthropic | null = null
+let _client: OpenAI | null = null
 
-function getClient(): Anthropic {
+function getClient(): OpenAI {
   if (!_client) {
-    _client = new Anthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY!,
+    _client = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY!,
     })
   }
   return _client
 }
 
 /**
- * Generate text using Claude Haiku 4.5 (fast + cheap for short structured messages).
+ * Generate text using GPT-4o-mini (fast + cheap for short structured messages).
  */
 export async function generateText(prompt: string): Promise<string> {
   const client = getClient()
-  const response = await client.messages.create({
-    model: 'claude-haiku-4-5-20251001',
+  const response = await client.chat.completions.create({
+    model: 'gpt-4o-mini',
     max_tokens: 1024,
     messages: [{ role: 'user', content: prompt }],
   })
 
-  const block = response.content[0]
-  if (block.type === 'text') {
-    return block.text
+  const content = response.choices[0]?.message?.content
+  if (content) {
+    return content
   }
-  throw new Error('Unexpected response type from Anthropic API')
+  throw new Error('No content in OpenAI response')
 }

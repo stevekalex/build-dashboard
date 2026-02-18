@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
-// Mock the Anthropic SDK
+// Mock the OpenAI SDK
 const mockCreate = vi.fn()
-vi.mock('@anthropic-ai/sdk', () => {
+vi.mock('openai', () => {
   return {
     default: class {
-      messages = { create: mockCreate }
+      chat = { completions: { create: mockCreate } }
     },
   }
 })
@@ -13,16 +13,16 @@ vi.mock('@anthropic-ai/sdk', () => {
 describe('generateText', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    vi.stubEnv('ANTHROPIC_API_KEY', 'test-api-key')
+    vi.stubEnv('OPENAI_API_KEY', 'test-api-key')
   })
 
   afterEach(() => {
     vi.unstubAllEnvs()
   })
 
-  it('should call Anthropic with correct model and prompt', async () => {
+  it('should call OpenAI with correct model and prompt', async () => {
     mockCreate.mockResolvedValue({
-      content: [{ type: 'text', text: 'Generated message' }],
+      choices: [{ message: { content: 'Generated message' } }],
     })
 
     const { generateText } = await import('../ai')
@@ -30,7 +30,7 @@ describe('generateText', () => {
 
     expect(mockCreate).toHaveBeenCalledWith(
       expect.objectContaining({
-        model: 'claude-haiku-4-5-20251001',
+        model: 'gpt-4o-mini',
         messages: [{ role: 'user', content: 'Write a follow-up message' }],
       })
     )
@@ -38,7 +38,7 @@ describe('generateText', () => {
 
   it('should return the generated text', async () => {
     mockCreate.mockResolvedValue({
-      content: [{ type: 'text', text: 'Hello from AI' }],
+      choices: [{ message: { content: 'Hello from AI' } }],
     })
 
     const { generateText } = await import('../ai')
@@ -49,7 +49,7 @@ describe('generateText', () => {
 
   it('should set max_tokens to 1024', async () => {
     mockCreate.mockResolvedValue({
-      content: [{ type: 'text', text: 'Response' }],
+      choices: [{ message: { content: 'Response' } }],
     })
 
     const { generateText } = await import('../ai')
