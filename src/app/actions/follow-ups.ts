@@ -40,11 +40,12 @@ export async function generateFollowUpMessage(
       scrapedAt: (record.get(JOBS.SCRAPED_AT) as string) || '',
       loomUrl: (record.get(JOBS.LOOM_URL) as string) || undefined,
       client: (record.get(JOBS.CLIENT) as string) || undefined,
+      aiLoomOutline: (record.get(JOBS.AI_LOOM_OUTLINE) as string) || undefined,
     }
 
     const neetoCalLink = process.env.NEETO_CAL_LINK || ''
-    const prompt = buildPromptForStage(job, stage, neetoCalLink)
-    const message = await generateText(prompt)
+    const { system, user } = buildPromptForStage(job, stage, neetoCalLink)
+    const message = await generateText(user, system)
 
     return { success: true, message }
   } catch (error) {
