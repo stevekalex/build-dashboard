@@ -172,7 +172,7 @@ describe('markFollowedUp', () => {
     )
   })
 
-  it('should advance from Touchpoint 3 to Closed Lost', async () => {
+  it('should stamp Last Follow Up Date at Touchpoint 3 without advancing stage', async () => {
     mockFind.mockResolvedValue({
       id: 'job123',
       get: (field: string) => {
@@ -185,28 +185,12 @@ describe('markFollowedUp', () => {
     const result = await markFollowedUp('job123')
 
     expect(result).toEqual({ success: true })
-    expect(mockUpdateJobStage).toHaveBeenCalledWith(
-      'job123',
-      '➡️ Closed Lost',
-      undefined
-    )
-  })
-
-  it('should NOT set Next Action Date when closing as lost', async () => {
-    mockFind.mockResolvedValue({
-      id: 'job123',
-      get: (field: string) => {
-        if (field === 'Stage') return '📆 Touchpoint 3'
-        return null
-      },
-    })
-
-    const { markFollowedUp } = await import('../inbox')
-    await markFollowedUp('job123')
-
-    const updateCall = mockUpdateJobStage.mock.calls[0]
-    const additionalFields = updateCall[2]
-    expect(additionalFields).toBeUndefined()
+    // Should NOT advance stage — job stays at TP3 and moves to Close Out column
+    expect(mockUpdateJobStage).not.toHaveBeenCalled()
+    // Should stamp Last Follow Up Date
+    expect(mockUpdateJobField).toHaveBeenCalledWith('job123', expect.objectContaining({
+      'Last Follow Up Date': expect.any(String),
+    }))
   })
 
   it('should set Next Action Date to 24 hours from now for non-closing progressions', async () => {

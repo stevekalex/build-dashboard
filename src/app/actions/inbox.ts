@@ -49,8 +49,11 @@ export async function logResponse(
 
 /**
  * Mark a job as followed up. Advances the stage to the next touchpoint.
- * Stamps Last Follow Up Date. Sets Next Action Date to 3 days from now
- * (except when closing as lost).
+ * Stamps Last Follow Up Date. Sets Next Action Date to 24 hours from now.
+ *
+ * Special case: Touchpoint 3 is the final follow-up. After sending the message,
+ * the job stays at TP3 but moves to the Close Out column (based on lastFollowUpDate).
+ * The user manually closes as lost via "Close No Response".
  */
 export async function markFollowedUp(
   jobId: string
@@ -60,6 +63,19 @@ export async function markFollowedUp(
     const record = await base(TABLES.JOBS_PIPELINE).find(jobId)
     const currentStage = record.get(JOBS.STAGE) as string
 
+    const now = new Date()
+
+    // TP3: final follow-up sent — stamp Last Follow Up Date but don't advance stage.
+    // Job stays at TP3 and moves to Close Out column for manual closing.
+    if (currentStage === STAGES.TOUCHPOINT_3) {
+      await updateJobField(jobId, {
+        [JOBS.LAST_FOLLOW_UP_DATE]: now.toISOString(),
+      })
+
+      revalidateTag('jobs-inbox', 'dashboard')
+      return { success: true }
+    }
+
     const nextStage = TOUCHPOINT_PROGRESSION[currentStage]
     if (!nextStage) {
       return {
@@ -68,16 +84,11 @@ export async function markFollowedUp(
       }
     }
 
-    const additionalFields: Record<string, any> = {}
-
-    // Only set Next Action Date if not closing as lost
-    if (nextStage !== STAGES.CLOSED_LOST) {
-      const tomorrow = new Date()
-      tomorrow.setDate(tomorrow.getDate() + 1)
-      additionalFields[JOBS.NEXT_ACTION_DATE] = tomorrow.toISOString()
-    }
-
-    await updateJobStage(jobId, nextStage, Object.keys(additionalFields).length > 0 ? additionalFields : undefined)
+    const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000)
+    await updateJobStage(jobId, nextStage, {
+      [JOBS.NEXT_ACTION_DATE]: tomorrow.toISOString(),
+      [JOBS.LAST_FOLLOW_UP_DATE]: now.toISOString(),
+    })
 
     revalidateTag('jobs-inbox', 'dashboard')
     return { success: true }

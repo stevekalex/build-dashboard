@@ -26,6 +26,7 @@ const makeJob = (overrides: Partial<Job> & { id: string; title: string }): Job =
 const emptyColumns: FollowUpColumns = {
   followUp1: [],
   followUp2: [],
+  followUp3: [],
   closeOut: [],
 }
 
@@ -36,6 +37,7 @@ describe('FollowUpsBoard', () => {
     const overdue: FollowUpColumns = {
       followUp1: [makeJob({ id: 'rec1', title: 'Overdue Job A', stage: '📆 Touchpoint 1' })],
       followUp2: [makeJob({ id: 'rec2', title: 'Overdue Job B', stage: '📆 Touchpoint 2' })],
+      followUp3: [],
       closeOut: [],
     }
 
@@ -53,6 +55,7 @@ describe('FollowUpsBoard', () => {
         makeJob({ id: 'rec2', title: 'Job B', stage: '📆 Touchpoint 1' }),
       ],
       followUp2: [makeJob({ id: 'rec3', title: 'Job C', stage: '📆 Touchpoint 2' })],
+      followUp3: [],
       closeOut: [],
     }
 
@@ -78,6 +81,7 @@ describe('FollowUpsBoard', () => {
     const overdue: FollowUpColumns = {
       followUp1: [makeJob({ id: 'rec1', title: 'FU1 Job', stage: '📆 Touchpoint 1' })],
       followUp2: [makeJob({ id: 'rec2', title: 'FU2 Job', stage: '📆 Touchpoint 2' })],
+      followUp3: [],
       closeOut: [makeJob({ id: 'rec3', title: 'Close Job', stage: '📆 Touchpoint 3' })],
     }
 
@@ -112,6 +116,7 @@ describe('FollowUpsBoard', () => {
     const upcoming: FollowUpColumns = {
       followUp1: [makeJob({ id: 'rec1', title: 'Upcoming Job', stage: '📆 Touchpoint 1' })],
       followUp2: [],
+      followUp3: [],
       closeOut: [],
     }
 
@@ -123,6 +128,7 @@ describe('FollowUpsBoard', () => {
     // Kanban column headers should appear
     expect(screen.getByText('Follow-up 1')).toBeInTheDocument()
     expect(screen.getByText('Follow-up 2')).toBeInTheDocument()
+    expect(screen.getByText('Follow-up 3')).toBeInTheDocument()
     expect(screen.getByText('Close Out')).toBeInTheDocument()
   })
 
@@ -130,6 +136,7 @@ describe('FollowUpsBoard', () => {
     const upcoming: FollowUpColumns = {
       followUp1: [makeJob({ id: 'rec1', title: 'Job A', stage: '📆 Touchpoint 1' })],
       followUp2: [makeJob({ id: 'rec2', title: 'Job B', stage: '📆 Touchpoint 2' })],
+      followUp3: [],
       closeOut: [],
     }
 

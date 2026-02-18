@@ -127,10 +127,12 @@ export const ENGAGEMENT_STAGES = [
 ] as const
 
 // Follow-up stage progression (for advancing to next touchpoint)
+// TP3 is NOT included — after the 3rd follow-up message is sent,
+// the job stays at TP3 and moves to the Close Out column.
+// The user manually closes as lost via "Close No Response".
 export const TOUCHPOINT_PROGRESSION: Record<string, string> = {
   [STAGES.TOUCHPOINT_1]: STAGES.TOUCHPOINT_2,
   [STAGES.TOUCHPOINT_2]: STAGES.TOUCHPOINT_3,
-  [STAGES.TOUCHPOINT_3]: STAGES.CLOSED_LOST, // after 3rd touchpoint, close as lost
 }
 
 // ─── Response Types ───

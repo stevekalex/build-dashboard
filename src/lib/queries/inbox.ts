@@ -145,6 +145,7 @@ export function groupHotLeadsByResponseType(jobs: Job[]): HotLeadColumns {
 export interface FollowUpColumns {
   followUp1: Job[]
   followUp2: Job[]
+  followUp3: Job[]
   closeOut: Job[]
 }
 
@@ -158,7 +159,8 @@ export interface FollowUpColumns {
  * Column mapping within each board:
  * - followUp1: Touchpoint 1 → re-surface Loom with different hook
  * - followUp2: Touchpoint 2 → bridge to full project + call
- * - closeOut: Touchpoint 3 → offer to adjust prototype, then close as lost
+ * - followUp3: Touchpoint 3 (no lastFollowUpDate) → offer to adjust prototype
+ * - closeOut: Touchpoint 3 (has lastFollowUpDate) → final message sent, close as lost
  */
 export function groupFollowUpsByStage(jobs: Job[]): {
   overdue: FollowUpColumns
@@ -167,6 +169,7 @@ export function groupFollowUpsByStage(jobs: Job[]): {
   const emptyColumns = (): FollowUpColumns => ({
     followUp1: [],
     followUp2: [],
+    followUp3: [],
     closeOut: [],
   })
 
@@ -186,7 +189,14 @@ export function groupFollowUpsByStage(jobs: Job[]): {
         target.followUp2.push(job)
         break
       case STAGES.TOUCHPOINT_3:
-        target.closeOut.push(job)
+        // TP3 splits into two columns:
+        // - followUp3: message not yet sent (no lastFollowUpDate)
+        // - closeOut: message already sent (has lastFollowUpDate)
+        if (job.lastFollowUpDate) {
+          target.closeOut.push(job)
+        } else {
+          target.followUp3.push(job)
+        }
         break
     }
   }
