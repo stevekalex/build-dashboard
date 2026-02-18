@@ -43,9 +43,14 @@ export async function generateFollowUpMessage(
       aiLoomOutline: (record.get(JOBS.AI_LOOM_OUTLINE) as string) || undefined,
     }
 
+    const { system, user } = buildPromptForStage(job, stage)
+    const raw = await generateText(user, system)
+
+    // Deterministic URL replacement — model outputs placeholders, we inject real URLs
     const neetoCalLink = process.env.NEETO_CAL_LINK || ''
-    const { system, user } = buildPromptForStage(job, stage, neetoCalLink)
-    const message = await generateText(user, system)
+    const message = raw
+      .replace(/\{\{LOOM_URL\}\}/g, job.loomUrl || '')
+      .replace(/\{\{NEETOCAL_LINK\}\}/g, neetoCalLink)
 
     return { success: true, message }
   } catch (error) {

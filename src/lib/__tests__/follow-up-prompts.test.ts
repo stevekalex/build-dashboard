@@ -14,50 +14,58 @@ const mockJob: Job = {
   client: 'John Smith',
 }
 
-const neetoCalLink = 'https://cal.neeto.com/steve/30min'
-
 describe('buildPromptForStage', () => {
   it('should build a prompt for Initial Message Sent (message 2 - Loom re-surface)', () => {
-    const prompt = buildPromptForStage(mockJob, STAGES.INITIAL_MESSAGE_SENT, neetoCalLink)
+    const { system, user } = buildPromptForStage(mockJob, STAGES.INITIAL_MESSAGE_SENT)
 
-    expect(prompt).toContain('Build a CRM Dashboard')
-    expect(prompt).toContain('https://www.loom.com/share/abc123')
-    expect(prompt).toContain('2') // should mention short/2 lines
+    expect(system).toContain('ProofStack')
+    expect(user).toContain('Build a CRM Dashboard')
+    expect(user).toContain('2 lines')
+    expect(user).toContain('journey')
   })
 
   it('should build a prompt for Touchpoint 1 (message 3 - bridge to full project)', () => {
-    const prompt = buildPromptForStage(mockJob, STAGES.TOUCHPOINT_1, neetoCalLink)
+    const { system, user } = buildPromptForStage(mockJob, STAGES.TOUCHPOINT_1)
 
-    expect(prompt).toContain('Build a CRM Dashboard')
-    expect(prompt).toContain(neetoCalLink)
+    expect(user).toContain('Build a CRM Dashboard')
+    expect(user).toContain('{{NEETOCAL_LINK}}')
+    expect(user).toContain('prototype')
   })
 
   it('should build a prompt for Touchpoint 2 (message 4 - offer to adjust)', () => {
-    const prompt = buildPromptForStage(mockJob, STAGES.TOUCHPOINT_2, neetoCalLink)
+    const { user } = buildPromptForStage(mockJob, STAGES.TOUCHPOINT_2)
 
-    expect(prompt).toContain('Build a CRM Dashboard')
+    expect(user).toContain('Build a CRM Dashboard')
+    expect(user).toContain('30 minutes')
   })
 
   it('should include job description in all prompts', () => {
     for (const stage of [STAGES.INITIAL_MESSAGE_SENT, STAGES.TOUCHPOINT_1, STAGES.TOUCHPOINT_2]) {
-      const prompt = buildPromptForStage(mockJob, stage, neetoCalLink)
-      expect(prompt).toContain('React dashboard with analytics')
+      const { user } = buildPromptForStage(mockJob, stage)
+      expect(user).toContain('React dashboard with analytics')
     }
   })
 
   it('should throw for Touchpoint 3 (no AI message needed)', () => {
-    expect(() => buildPromptForStage(mockJob, STAGES.TOUCHPOINT_3, neetoCalLink)).toThrow()
+    expect(() => buildPromptForStage(mockJob, STAGES.TOUCHPOINT_3)).toThrow()
   })
 
   it('should throw for unknown stages', () => {
-    expect(() => buildPromptForStage(mockJob, '🧐 Light Engagement', neetoCalLink)).toThrow()
+    expect(() => buildPromptForStage(mockJob, '🧐 Light Engagement')).toThrow()
   })
 
   it('should handle job without loom URL gracefully', () => {
     const jobNoLoom = { ...mockJob, loomUrl: undefined }
-    const prompt = buildPromptForStage(jobNoLoom, STAGES.INITIAL_MESSAGE_SENT, neetoCalLink)
+    const { user } = buildPromptForStage(jobNoLoom, STAGES.INITIAL_MESSAGE_SENT)
 
-    // Should still produce a valid prompt
-    expect(prompt).toContain('Build a CRM Dashboard')
+    expect(user).toContain('Build a CRM Dashboard')
+  })
+
+  it('should not include aiLoomOutline in job context', () => {
+    const jobWithOutline = { ...mockJob, aiLoomOutline: 'Shows dashboard with charts' }
+    const { user } = buildPromptForStage(jobWithOutline, STAGES.INITIAL_MESSAGE_SENT)
+
+    expect(user).not.toContain('Loom outline')
+    expect(user).not.toContain('Shows dashboard with charts')
   })
 })
