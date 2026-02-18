@@ -26,6 +26,7 @@ import { getAirtableRecordUrl } from '@/lib/utils'
 
 interface SendCardProps {
   job: Job
+  onDismiss?: (id: string) => void
 }
 
 function StepRow({
@@ -55,10 +56,9 @@ function StepRow({
   )
 }
 
-export function SendCard({ job }: SendCardProps) {
+export function SendCard({ job, onDismiss }: SendCardProps) {
   const [copied, setCopied] = useState(false)
   const [applying, setApplying] = useState(false)
-  const [applied, setApplied] = useState(false)
   const [coverLetterText, setCoverLetterText] = useState(job.coverLetter || '')
   const [markAppliedError, setMarkAppliedError] = useState<string | null>(null)
 
@@ -72,17 +72,12 @@ export function SendCard({ job }: SendCardProps) {
   async function handleMarkApplied() {
     setApplying(true)
     setMarkAppliedError(null)
+    onDismiss?.(job.id)
     const result = await markApplied(job.id)
-    if (result.success) {
-      setApplied(true)
-    } else {
+    if (!result.success) {
       setMarkAppliedError(result.error || 'Failed to mark as applied')
     }
     setApplying(false)
-  }
-
-  if (applied) {
-    return null
   }
 
   const age = job.scrapedAt
