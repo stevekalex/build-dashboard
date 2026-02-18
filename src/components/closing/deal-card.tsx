@@ -17,6 +17,7 @@ export type DealColumn = 'engaged' | 'callDone' | 'contractSent' | 'won'
 interface DealCardProps {
   job: Job
   column: DealColumn
+  onAction?: (jobId: string) => void
 }
 
 function formatAge(dateStr: string | undefined): string {
@@ -42,11 +43,12 @@ function formatDealValue(value?: number): string {
   return `$${value.toLocaleString()}`
 }
 
-export function DealCard({ job, column }: DealCardProps) {
+export function DealCard({ job, column, onAction }: DealCardProps) {
   const [loadingAction, setLoadingAction] = useState<string | null>(null)
 
   async function handleMarkCallDone() {
     setLoadingAction('call')
+    onAction?.(job.id)
     try {
       await markCallDone(job.id)
     } catch (error) {
@@ -58,6 +60,7 @@ export function DealCard({ job, column }: DealCardProps) {
 
   async function handleSendContract() {
     setLoadingAction('contract')
+    onAction?.(job.id)
     try {
       await markContractSent(job.id)
     } catch (error) {
@@ -129,7 +132,7 @@ export function DealCard({ job, column }: DealCardProps) {
                   >
                     {loadingAction === 'call' ? 'Saving...' : 'Mark Call Done'}
                   </Button>
-                  <MarkLostDialog jobId={job.id} jobTitle={job.title} />
+                  <MarkLostDialog jobId={job.id} jobTitle={job.title} onAction={() => onAction?.(job.id)} />
                 </>
               )}
 
@@ -144,14 +147,14 @@ export function DealCard({ job, column }: DealCardProps) {
                   >
                     {loadingAction === 'contract' ? 'Saving...' : 'Send Contract'}
                   </Button>
-                  <MarkLostDialog jobId={job.id} jobTitle={job.title} />
+                  <MarkLostDialog jobId={job.id} jobTitle={job.title} onAction={() => onAction?.(job.id)} />
                 </>
               )}
 
               {column === 'contractSent' && (
                 <>
-                  <CloseWonDialog jobId={job.id} jobTitle={job.title} />
-                  <MarkLostDialog jobId={job.id} jobTitle={job.title} />
+                  <CloseWonDialog jobId={job.id} jobTitle={job.title} onAction={() => onAction?.(job.id)} />
+                  <MarkLostDialog jobId={job.id} jobTitle={job.title} onAction={() => onAction?.(job.id)} />
                 </>
               )}
             </div>

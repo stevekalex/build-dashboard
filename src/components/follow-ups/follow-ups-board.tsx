@@ -6,6 +6,7 @@ import { Job } from '@/types/brief'
 import { Badge } from '@/components/ui/badge'
 import { FollowUpCard, FollowUpColumn } from './follow-up-card'
 import { ColumnTooltip } from '@/components/ui/column-tooltip'
+import { useActionPolling } from '@/hooks/use-action-polling'
 import { FollowUpColumns } from '@/lib/queries/inbox'
 
 interface FollowUpsBoardProps {
@@ -97,6 +98,8 @@ export function FollowUpsBoard({ overdue, upcoming }: FollowUpsBoardProps) {
     ...upcoming.followUp1, ...upcoming.followUp2, ...upcoming.followUp3, ...upcoming.closeOut,
   ].map((j) => j.id).sort().join(',')
 
+  const startPolling = useActionPolling(allIds)
+
   const prevIds = useRef(allIds)
   let activeDismissedIds = dismissedIds
   if (prevIds.current !== allIds) {
@@ -118,6 +121,7 @@ export function FollowUpsBoard({ overdue, upcoming }: FollowUpsBoardProps) {
 
   function handleDismiss(id: string) {
     setDismissedIds((prev) => new Set(prev).add(id))
+    startPolling()
   }
 
   const overdueColumns = buildColumns(filteredOverdue)

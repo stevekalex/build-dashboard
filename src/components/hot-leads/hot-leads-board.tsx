@@ -1,15 +1,12 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, useRef } from 'react'
 import { Job } from '@/types/brief'
 import { Badge } from '@/components/ui/badge'
 import { InboxCard, type HotLeadColumn } from '@/components/inbox/inbox-card'
 import { ColumnTooltip } from '@/components/ui/column-tooltip'
+import { useActionPolling } from '@/hooks/use-action-polling'
 import { HotLeadColumns } from '@/lib/queries/inbox'
-
-const POLL_INTERVAL_MS = 3000
-const MAX_POLLS = 10
 
 interface HotLeadsBoardProps {
   columns: HotLeadColumns
@@ -24,9 +21,7 @@ interface ColumnConfig {
 }
 
 export function HotLeadsBoard({ columns }: HotLeadsBoardProps) {
-  const router = useRouter()
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set())
-  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   // Build a fingerprint of all job IDs from server props.
   // When this changes (server revalidated), clear dismissed IDs.
@@ -35,6 +30,8 @@ export function HotLeadsBoard({ columns }: HotLeadsBoardProps) {
     ...columns.interview,
     ...columns.hire,
   ].map((j) => j.id).sort().join(',')
+
+  const startPolling = useActionPolling(allIds)
 
   const prevIds = useRef(allIds)
   let activeDismissedIds = dismissedIds
@@ -48,37 +45,6 @@ export function HotLeadsBoard({ columns }: HotLeadsBoardProps) {
       setDismissedIds(activeDismissedIds)
     }
   }, [activeDismissedIds, dismissedIds])
-
-  const stopPolling = useCallback(() => {
-    if (pollingRef.current) {
-      clearInterval(pollingRef.current)
-      pollingRef.current = null
-    }
-  }, [])
-
-  const startPolling = useCallback(() => {
-    stopPolling()
-    let count = 0
-    pollingRef.current = setInterval(() => {
-      count++
-      router.refresh()
-      if (count >= MAX_POLLS) stopPolling()
-    }, POLL_INTERVAL_MS)
-  }, [router, stopPolling])
-
-  // Stop polling when data changes (job moved between columns or removed)
-  const prevAllIdsRef = useRef(allIds)
-  useEffect(() => {
-    if (allIds !== prevAllIdsRef.current && pollingRef.current) {
-      stopPolling()
-    }
-    prevAllIdsRef.current = allIds
-  }, [allIds, stopPolling])
-
-  // Clean up on unmount
-  useEffect(() => {
-    return () => stopPolling()
-  }, [stopPolling])
 
   function handleDismiss(id: string) {
     setDismissedIds((prev) => new Set(prev).add(id))

@@ -18,9 +18,10 @@ import { markLost } from '@/app/actions/closing'
 interface MarkLostDialogProps {
   jobId: string
   jobTitle: string
+  onAction?: () => void
 }
 
-export function MarkLostDialog({ jobId, jobTitle }: MarkLostDialogProps) {
+export function MarkLostDialog({ jobId, jobTitle, onAction }: MarkLostDialogProps) {
   const [open, setOpen] = useState(false)
   const [reason, setReason] = useState('')
   const [loading, setLoading] = useState(false)
@@ -29,6 +30,7 @@ export function MarkLostDialog({ jobId, jobTitle }: MarkLostDialogProps) {
     if (!reason.trim()) return
     setLoading(true)
     try {
+      onAction?.()
       await markLost(jobId, reason.trim())
       setOpen(false)
       setReason('')
