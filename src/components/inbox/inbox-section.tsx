@@ -53,7 +53,7 @@ export function InboxSection({
                 <Info className="w-3.5 h-3.5 text-gray-400 hover:text-gray-600 transition-colors" />
               </span>
             </TooltipTrigger>
-            <TooltipContent side="right" sideOffset={8} className="max-w-xs">
+            <TooltipContent side="bottom" sideOffset={8} className="max-w-xs">
               <p className="text-sm">{description}</p>
               {filter && (
                 <p className="text-xs text-muted-foreground mt-1.5 border-t pt-1.5">

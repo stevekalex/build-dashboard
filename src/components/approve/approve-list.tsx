@@ -103,7 +103,7 @@ export function ApproveList({ jobs }: ApproveListProps) {
             <Card key={job.id} className="p-4 space-y-3 cursor-pointer hover:bg-gray-50/50 transition-colors" onClick={() => airtableUrl && window.open(airtableUrl, '_blank')}>
               {/* Title and Age */}
               <div className="flex items-start justify-between gap-2">
-                <h3 className="font-semibold text-gray-900 text-base leading-tight">
+                <h3 className="font-semibold text-gray-900 text-base leading-tight min-w-0 break-words">
                   {job.title}
                 </h3>
                 <div className="flex items-center gap-1 text-xs text-gray-500 whitespace-nowrap flex-shrink-0">

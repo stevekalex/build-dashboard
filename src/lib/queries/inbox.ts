@@ -124,55 +124,22 @@ export async function getHotLeads(): Promise<Job[]> {
   }
 }
 
-/**
- * Fetch jobs awaiting response: applied but no response yet.
- * Filter: Stage IN follow-up stages AND Response Date = BLANK().
- * Sort by Applied At ASC.
- *
- * Falls back to stage-only filter if Response Date field doesn't exist.
- */
-export async function getAwaitingResponse(): Promise<Job[]> {
-  'use cache'
-  cacheTag('jobs-inbox')
-  cacheLife('dashboard')
-  try {
-    const base = getBase()
+export interface HotLeadColumns {
+  shortlist: Job[]
+  interview: Job[]
+  hire: Job[]
+}
 
-    const stageFilter = FOLLOW_UP_STAGES
-      .map((stage) => `{${JOBS.STAGE}} = "${stage}"`)
-      .join(', ')
-
-    // Try with Response Date filter first
-    let filterByFormula = `AND(OR(${stageFilter}), {${JOBS.RESPONSE_DATE}} = BLANK())`
-
-    try {
-      const records = await base(TABLES.JOBS_PIPELINE)
-        .select({
-          filterByFormula,
-          sort: [{ field: JOBS.APPLIED_AT, direction: 'asc' }],
-          maxRecords: 100,
-        })
-        .all()
-
-      return sortByNextActionDate(records.map(mapRecordToJob), 'Awaiting Response')
-    } catch {
-      // Response Date field doesn't exist yet — fall back to stage-only filter
-      filterByFormula = `OR(${stageFilter})`
-
-      const records = await base(TABLES.JOBS_PIPELINE)
-        .select({
-          filterByFormula,
-          sort: [{ field: JOBS.APPLIED_AT, direction: 'asc' }],
-          maxRecords: 100,
-        })
-        .all()
-
-      return sortByNextActionDate(records.map(mapRecordToJob), 'Awaiting Response')
+export function groupHotLeadsByResponseType(jobs: Job[]): HotLeadColumns {
+  const columns: HotLeadColumns = { shortlist: [], interview: [], hire: [] }
+  for (const job of jobs) {
+    switch (job.responseType) {
+      case 'Shortlist': columns.shortlist.push(job); break
+      case 'Interview': columns.interview.push(job); break
+      case 'Hire': columns.hire.push(job); break
     }
-  } catch (error) {
-    console.error('getAwaitingResponse failed:', error instanceof Error ? error.message : error)
-    return []
   }
+  return columns
 }
 
 export interface FollowUpColumns {

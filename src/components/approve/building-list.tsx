@@ -52,7 +52,7 @@ export function BuildingList({ jobs }: BuildingListProps) {
           >
             {/* Title and Timer */}
             <div className="flex items-start justify-between gap-2">
-              <h3 className="font-semibold text-gray-900 text-base leading-tight">
+              <h3 className="font-semibold text-gray-900 text-base leading-tight min-w-0 break-words">
                 {job.title}
               </h3>
               <div className="flex items-center gap-1.5 flex-shrink-0">

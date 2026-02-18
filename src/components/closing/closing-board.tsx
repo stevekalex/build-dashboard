@@ -43,9 +43,9 @@ export function ClosingBoard({
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 overflow-x-auto">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       {columns.map((col) => (
-        <div key={col.key} className="min-w-[280px]">
+        <div key={col.key} className="min-w-0">
           {/* Column header */}
           <div className="flex items-center gap-2 mb-3 px-1">
             <span>{col.emoji}</span>

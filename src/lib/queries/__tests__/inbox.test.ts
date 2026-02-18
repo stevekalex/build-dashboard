@@ -142,107 +142,41 @@ describe('getHotLeads', () => {
   })
 })
 
-describe('getAwaitingResponse', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    vi.stubEnv('AIRTABLE_API_KEY', 'test-key')
-    vi.stubEnv('AIRTABLE_BASE_ID', 'test-base')
-  })
-
-  afterEach(() => {
-    vi.unstubAllEnvs()
-  })
-
-  it('should filter by follow-up stages AND no response date', async () => {
-    mockAll.mockResolvedValue([])
-
-    const { getAwaitingResponse } = await import('../inbox')
-    await getAwaitingResponse()
-
-    expect(mockSelect).toHaveBeenCalledWith(
-      expect.objectContaining({
-        filterByFormula: expect.stringContaining('Initial message sent'),
-      })
-    )
-    expect(mockSelect).toHaveBeenCalledWith(
-      expect.objectContaining({
-        filterByFormula: expect.stringContaining('Touchpoint 1'),
-      })
-    )
-    expect(mockSelect).toHaveBeenCalledWith(
-      expect.objectContaining({
-        filterByFormula: expect.stringContaining('Response Date'),
-      })
-    )
-  })
-
-  it('should sort by Applied At ascending', async () => {
-    mockAll.mockResolvedValue([])
-
-    const { getAwaitingResponse } = await import('../inbox')
-    await getAwaitingResponse()
-
-    expect(mockSelect).toHaveBeenCalledWith(
-      expect.objectContaining({
-        sort: [{ field: 'Applied At', direction: 'asc' }],
-      })
-    )
-  })
-
-  it('should return empty array when no matches', async () => {
-    mockAll.mockResolvedValue([])
-
-    const { getAwaitingResponse } = await import('../inbox')
-    const jobs = await getAwaitingResponse()
-
-    expect(jobs).toEqual([])
-  })
-
-  it('should map records to Job type correctly', async () => {
-    const mockRecords = [
-      {
-        id: 'rec2',
-        get: (field: string) => {
-          const data: Record<string, any> = {
-            'Job ID': 'job2',
-            'Job Title': 'Awaiting Job',
-            'Job Description': 'Waiting for response',
-            'Stage': '💌 Initial message sent',
-            'Scraped At': '2026-02-10T10:00:00Z',
-            'Applied At': '2026-02-09T10:00:00Z',
-            'Response Date': null,
-            'Response Type': null,
-            'Next Action Date': '2026-02-13T10:00:00Z',
-            'Last Follow Up Date': null,
-            'Prototype URL': null,
-            'Job URL': 'https://upwork.com/job/2',
-            'Budget Amount': 300,
-            'Budget Type': 'Hourly',
-            'Skills': 'Python',
-            'Client': 'Another Client',
-            'Loom URL': null,
-            'Deal Value': null,
-          }
-          return data[field]
-        },
-      },
+describe('groupHotLeadsByResponseType', () => {
+  it('should group jobs by response type', async () => {
+    const { groupHotLeadsByResponseType } = await import('../inbox')
+    const jobs = [
+      { id: 'r1', jobId: 'j1', title: 'A', description: '', stage: '', scrapedAt: '', responseType: 'Shortlist' },
+      { id: 'r2', jobId: 'j2', title: 'B', description: '', stage: '', scrapedAt: '', responseType: 'Interview' },
+      { id: 'r3', jobId: 'j3', title: 'C', description: '', stage: '', scrapedAt: '', responseType: 'Hire' },
+      { id: 'r4', jobId: 'j4', title: 'D', description: '', stage: '', scrapedAt: '', responseType: 'Shortlist' },
     ]
+    const columns = groupHotLeadsByResponseType(jobs)
 
-    mockAll.mockResolvedValue(mockRecords)
+    expect(columns.shortlist).toHaveLength(2)
+    expect(columns.interview).toHaveLength(1)
+    expect(columns.hire).toHaveLength(1)
+  })
 
-    const { getAwaitingResponse } = await import('../inbox')
-    const jobs = await getAwaitingResponse()
+  it('should return empty columns for empty input', async () => {
+    const { groupHotLeadsByResponseType } = await import('../inbox')
+    const columns = groupHotLeadsByResponseType([])
 
-    expect(jobs).toHaveLength(1)
-    expect(jobs[0]).toMatchObject({
-      id: 'rec2',
-      jobId: 'job2',
-      title: 'Awaiting Job',
-      stage: '💌 Initial message sent',
-      appliedAt: '2026-02-09T10:00:00Z',
-      budgetAmount: 300,
-      client: 'Another Client',
-    })
+    expect(columns.shortlist).toHaveLength(0)
+    expect(columns.interview).toHaveLength(0)
+    expect(columns.hire).toHaveLength(0)
+  })
+
+  it('should ignore jobs with unknown response types', async () => {
+    const { groupHotLeadsByResponseType } = await import('../inbox')
+    const jobs = [
+      { id: 'r1', jobId: 'j1', title: 'A', description: '', stage: '', scrapedAt: '', responseType: 'Other' },
+    ]
+    const columns = groupHotLeadsByResponseType(jobs)
+
+    expect(columns.shortlist).toHaveLength(0)
+    expect(columns.interview).toHaveLength(0)
+    expect(columns.hire).toHaveLength(0)
   })
 })
 

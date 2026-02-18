@@ -1,26 +1,17 @@
 import { Suspense } from 'react'
 import { cacheTag, cacheLife } from 'next/cache'
-import { getHotLeads } from '@/lib/queries/inbox'
+import { getHotLeads, groupHotLeadsByResponseType } from '@/lib/queries/inbox'
 import { PageInfoTooltip } from '@/components/ui/page-info-tooltip'
-import { InboxSectionPage } from '@/components/inbox/inbox-section-page'
+import { HotLeadsBoard } from '@/components/hot-leads/hot-leads-board'
 
 async function HotLeadsContent() {
   'use cache'
   cacheTag('jobs-inbox')
   cacheLife('dashboard')
   const hotLeads = await getHotLeads()
+  const columns = groupHotLeadsByResponseType(hotLeads)
 
-  return (
-    <InboxSectionPage
-      jobs={hotLeads}
-      section="hot-leads"
-      emoji="🔥"
-      title="Hot Leads"
-      description="Clients who responded positively. These are warm leads — act fast."
-      filter="Response Type is Shortlist, Interview, or Hire, and deal is not closed."
-      emptyMessage="No hot leads right now"
-    />
-  )
+  return <HotLeadsBoard columns={columns} />
 }
 
 export default function HotLeadsPage() {

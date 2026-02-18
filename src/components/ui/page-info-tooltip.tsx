@@ -22,7 +22,7 @@ export function PageInfoTooltip({ content, filter }: PageInfoTooltipProps) {
             <Info className="w-4 h-4 text-gray-400 hover:text-gray-600 transition-colors" />
           </button>
         </TooltipTrigger>
-        <TooltipContent side="right" sideOffset={8} className="max-w-xs">
+        <TooltipContent side="bottom" sideOffset={8} className="max-w-xs">
           <p className="text-sm">{content}</p>
           {filter && (
             <p className="text-xs text-muted-foreground mt-1.5 border-t pt-1.5">

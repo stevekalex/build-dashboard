@@ -2,48 +2,8 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import {
-  Send,
-  CheckCircle,
-  Flame,
-  CalendarClock,
-  MailQuestion,
-  Handshake,
-  Activity,
-  BarChart3,
-} from 'lucide-react'
 import { cn } from '@/lib/utils'
-
-const NAV_ITEMS = [
-  {
-    group: 'Inbox',
-    items: [
-      { href: '/approve', label: 'Approve', icon: CheckCircle },
-      { href: '/ready-to-send', label: 'Ready to Send', icon: Send },
-    ],
-  },
-  {
-    group: 'Outreach',
-    items: [
-      { href: '/hot-leads', label: 'Hot Leads', icon: Flame },
-      { href: '/follow-ups', label: 'Follow Ups', icon: CalendarClock },
-      { href: '/awaiting', label: 'Awaiting Response', icon: MailQuestion },
-    ],
-  },
-  {
-    group: 'Closing',
-    items: [
-      { href: '/closing', label: 'Closing', icon: Handshake },
-    ],
-  },
-  {
-    group: 'Reports',
-    items: [
-      { href: '/pulse', label: 'Daily Pulse', icon: Activity },
-      { href: '/pipeline', label: 'Pipeline', icon: BarChart3 },
-    ],
-  },
-]
+import { NAV_ITEMS } from '@/lib/nav-items'
 
 export function Sidebar() {
   const pathname = usePathname()

@@ -102,7 +102,7 @@ export function InboxCard({ job, section, onAction }: InboxCardProps) {
                 href={job.jobUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-400 hover:text-gray-600 shrink-0"
+                className="text-gray-400 hover:text-gray-600 shrink-0 p-2 -m-2 min-h-[44px] min-w-[44px] inline-flex items-center justify-center"
                 title="Open on Upwork"
                 onClick={(e) => e.stopPropagation()}
               >
@@ -119,6 +119,7 @@ export function InboxCard({ job, section, onAction }: InboxCardProps) {
                 <Button
                   variant="outline"
                   size="sm"
+                  className="min-h-[44px]"
                   onClick={handleMarkCallDone}
                   disabled={loadingAction === 'call'}
                 >
@@ -137,6 +138,7 @@ export function InboxCard({ job, section, onAction }: InboxCardProps) {
                 <Button
                   variant="outline"
                   size="sm"
+                  className="min-h-[44px]"
                   onClick={handleMarkFollowedUp}
                   disabled={loadingAction === 'followup'}
                 >
@@ -147,7 +149,7 @@ export function InboxCard({ job, section, onAction }: InboxCardProps) {
                   size="sm"
                   onClick={handleCloseNoResponse}
                   disabled={loadingAction === 'close'}
-                  className="text-gray-500"
+                  className="text-gray-500 min-h-[44px]"
                 >
                   {loadingAction === 'close' ? 'Closing...' : 'Close No Response'}
                 </Button>

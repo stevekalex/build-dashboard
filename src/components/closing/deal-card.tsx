@@ -105,7 +105,7 @@ export function DealCard({ job, column }: DealCardProps) {
                 href={job.jobUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-400 hover:text-gray-600 shrink-0"
+                className="text-gray-400 hover:text-gray-600 shrink-0 p-2 -m-2 min-h-[44px] min-w-[44px] inline-flex items-center justify-center"
                 title="Open on Upwork"
                 onClick={(e) => e.stopPropagation()}
               >
@@ -123,6 +123,7 @@ export function DealCard({ job, column }: DealCardProps) {
                   <Button
                     variant="outline"
                     size="sm"
+                    className="min-h-[44px]"
                     onClick={handleMarkCallDone}
                     disabled={loadingAction === 'call'}
                   >
@@ -137,6 +138,7 @@ export function DealCard({ job, column }: DealCardProps) {
                   <Button
                     variant="outline"
                     size="sm"
+                    className="min-h-[44px]"
                     onClick={handleSendContract}
                     disabled={loadingAction === 'contract'}
                   >
