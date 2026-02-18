@@ -33,7 +33,7 @@ const mockAwaitingResponse: Job = {
   jobId: 'job2',
   title: 'Awaiting: Inventory App',
   description: 'Build inventory tracking app',
-  stage: '💌 Initial message sent',
+  stage: '📆 Touchpoint 1',
   scrapedAt: '2026-02-10T10:00:00Z',
   appliedAt: '2026-02-09T10:00:00Z',
   jobUrl: 'https://upwork.com/job/2',

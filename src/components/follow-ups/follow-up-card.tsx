@@ -9,10 +9,9 @@ import { Job } from '@/types/brief'
 import { DueTimeBadge } from '@/components/inbox/due-time-badge'
 import { GenerateMessageDialog } from './generate-message-dialog'
 import { markFollowedUp, closeNoResponse } from '@/app/actions/inbox'
-import { STAGES } from '@/lib/airtable-fields'
 import { getAirtableRecordUrl } from '@/lib/utils'
 
-export type FollowUpColumn = 'followUp1' | 'followUp2' | 'followUp3'
+export type FollowUpColumn = 'followUp1' | 'followUp2' | 'closeOut'
 
 interface FollowUpCardProps {
   job: Job
@@ -31,8 +30,6 @@ export function FollowUpCard({ job, column, onDismiss }: FollowUpCardProps) {
   const [loadingAction, setLoadingAction] = useState<string | null>(null)
   const budget = formatBudget(job.budgetAmount, job.budgetType)
   const airtableUrl = getAirtableRecordUrl(job.id)
-  const isLastColumn = column === 'followUp3'
-
   async function handleCloseNoResponse() {
     setLoadingAction('close')
     onDismiss(job.id)
@@ -90,14 +87,12 @@ export function FollowUpCard({ job, column, onDismiss }: FollowUpCardProps) {
           {/* Action buttons */}
           {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
           <div className="flex items-center gap-2 flex-wrap" onClick={(e) => e.stopPropagation()}>
-            {!isLastColumn && (
-              <GenerateMessageDialog
-                jobId={job.id}
-                stage={job.stage}
-                onSent={() => onDismiss(job.id)}
-                onMarkSent={handleMarkSent}
-              />
-            )}
+            <GenerateMessageDialog
+              jobId={job.id}
+              stage={job.stage}
+              onSent={() => onDismiss(job.id)}
+              onMarkSent={handleMarkSent}
+            />
             <Button
               variant="ghost"
               size="sm"

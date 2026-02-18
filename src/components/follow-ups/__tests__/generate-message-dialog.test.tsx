@@ -21,7 +21,7 @@ describe('GenerateMessageDialog', () => {
     render(
       <GenerateMessageDialog
         jobId="rec1"
-        stage="💌 Initial message sent"
+        stage="📆 Touchpoint 1"
         onSent={mockOnSent}
         onMarkSent={mockOnMarkSent}
       />
@@ -35,7 +35,7 @@ describe('GenerateMessageDialog', () => {
     render(
       <GenerateMessageDialog
         jobId="rec1"
-        stage="💌 Initial message sent"
+        stage="📆 Touchpoint 1"
         onSent={mockOnSent}
         onMarkSent={mockOnMarkSent}
       />
@@ -59,7 +59,7 @@ describe('GenerateMessageDialog', () => {
     render(
       <GenerateMessageDialog
         jobId="rec1"
-        stage="💌 Initial message sent"
+        stage="📆 Touchpoint 1"
         onSent={mockOnSent}
         onMarkSent={mockOnMarkSent}
       />
@@ -92,7 +92,7 @@ describe('GenerateMessageDialog', () => {
     render(
       <GenerateMessageDialog
         jobId="rec1"
-        stage="💌 Initial message sent"
+        stage="📆 Touchpoint 1"
         onSent={mockOnSent}
         onMarkSent={mockOnMarkSent}
       />
@@ -117,7 +117,7 @@ describe('GenerateMessageDialog', () => {
     render(
       <GenerateMessageDialog
         jobId="rec1"
-        stage="💌 Initial message sent"
+        stage="📆 Touchpoint 1"
         onSent={mockOnSent}
         onMarkSent={mockOnMarkSent}
       />
@@ -148,7 +148,7 @@ describe('GenerateMessageDialog', () => {
     render(
       <GenerateMessageDialog
         jobId="rec1"
-        stage="💌 Initial message sent"
+        stage="📆 Touchpoint 1"
         onSent={mockOnSent}
         onMarkSent={mockOnMarkSent}
       />

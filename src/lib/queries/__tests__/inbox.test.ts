@@ -196,10 +196,10 @@ describe('groupFollowUpsByStage', () => {
     vi.unstubAllEnvs()
   })
 
-  it('should put overdue Initial Message Sent jobs into overdue.followUp1', async () => {
+  it('should put overdue Touchpoint 1 jobs into overdue.followUp1', async () => {
     const { groupFollowUpsByStage } = await import('../inbox')
     const jobs = [
-      { id: 'rec1', jobId: 'j1', title: 'Overdue FU1', description: '', stage: '💌 Initial message sent', scrapedAt: '', nextActionDate: pastDate },
+      { id: 'rec1', jobId: 'j1', title: 'Overdue FU1', description: '', stage: '📆 Touchpoint 1', scrapedAt: '', nextActionDate: pastDate },
     ]
     const grouped = groupFollowUpsByStage(jobs)
 
@@ -208,26 +208,15 @@ describe('groupFollowUpsByStage', () => {
     expect(grouped.upcoming.followUp1).toHaveLength(0)
   })
 
-  it('should put upcoming Touchpoint 1 jobs into upcoming.followUp2', async () => {
+  it('should put upcoming Touchpoint 2 jobs into upcoming.followUp2', async () => {
     const { groupFollowUpsByStage } = await import('../inbox')
     const jobs = [
-      { id: 'rec2', jobId: 'j2', title: 'Upcoming FU2', description: '', stage: '📆 Touchpoint 1', scrapedAt: '', nextActionDate: futureDate },
+      { id: 'rec2', jobId: 'j2', title: 'Upcoming FU2', description: '', stage: '📆 Touchpoint 2', scrapedAt: '', nextActionDate: futureDate },
     ]
     const grouped = groupFollowUpsByStage(jobs)
 
     expect(grouped.upcoming.followUp2).toHaveLength(1)
     expect(grouped.overdue.followUp2).toHaveLength(0)
-  })
-
-  it('should put overdue Touchpoint 2 jobs into overdue.followUp3', async () => {
-    const { groupFollowUpsByStage } = await import('../inbox')
-    const jobs = [
-      { id: 'rec3', jobId: 'j3', title: 'Overdue FU3', description: '', stage: '📆 Touchpoint 2', scrapedAt: '', nextActionDate: pastDate },
-    ]
-    const grouped = groupFollowUpsByStage(jobs)
-
-    expect(grouped.overdue.followUp3).toHaveLength(1)
-    expect(grouped.upcoming.followUp3).toHaveLength(0)
   })
 
   it('should put upcoming Touchpoint 3 jobs into upcoming.closeOut', async () => {
@@ -244,7 +233,7 @@ describe('groupFollowUpsByStage', () => {
   it('should treat jobs without nextActionDate as overdue', async () => {
     const { groupFollowUpsByStage } = await import('../inbox')
     const jobs = [
-      { id: 'rec5', jobId: 'j5', title: 'No Date', description: '', stage: '💌 Initial message sent', scrapedAt: '' },
+      { id: 'rec5', jobId: 'j5', title: 'No Date', description: '', stage: '📆 Touchpoint 1', scrapedAt: '' },
     ]
     const grouped = groupFollowUpsByStage(jobs)
 
@@ -258,27 +247,23 @@ describe('groupFollowUpsByStage', () => {
 
     expect(grouped.overdue.followUp1).toHaveLength(0)
     expect(grouped.overdue.followUp2).toHaveLength(0)
-    expect(grouped.overdue.followUp3).toHaveLength(0)
     expect(grouped.overdue.closeOut).toHaveLength(0)
     expect(grouped.upcoming.followUp1).toHaveLength(0)
     expect(grouped.upcoming.followUp2).toHaveLength(0)
-    expect(grouped.upcoming.followUp3).toHaveLength(0)
     expect(grouped.upcoming.closeOut).toHaveLength(0)
   })
 
   it('should correctly distribute jobs across overdue/upcoming and all columns', async () => {
     const { groupFollowUpsByStage } = await import('../inbox')
     const jobs = [
-      { id: 'r1', jobId: 'j1', title: 'A', description: '', stage: '💌 Initial message sent', scrapedAt: '', nextActionDate: pastDate },
-      { id: 'r2', jobId: 'j2', title: 'B', description: '', stage: '📆 Touchpoint 1', scrapedAt: '', nextActionDate: futureDate },
-      { id: 'r3', jobId: 'j3', title: 'C', description: '', stage: '📆 Touchpoint 2', scrapedAt: '', nextActionDate: pastDate },
-      { id: 'r4', jobId: 'j4', title: 'D', description: '', stage: '📆 Touchpoint 3', scrapedAt: '', nextActionDate: futureDate },
-      { id: 'r5', jobId: 'j5', title: 'E', description: '', stage: '💌 Initial message sent', scrapedAt: '', nextActionDate: futureDate },
+      { id: 'r1', jobId: 'j1', title: 'A', description: '', stage: '📆 Touchpoint 1', scrapedAt: '', nextActionDate: pastDate },
+      { id: 'r2', jobId: 'j2', title: 'B', description: '', stage: '📆 Touchpoint 2', scrapedAt: '', nextActionDate: futureDate },
+      { id: 'r3', jobId: 'j3', title: 'C', description: '', stage: '📆 Touchpoint 3', scrapedAt: '', nextActionDate: futureDate },
+      { id: 'r4', jobId: 'j4', title: 'D', description: '', stage: '📆 Touchpoint 1', scrapedAt: '', nextActionDate: futureDate },
     ]
     const grouped = groupFollowUpsByStage(jobs)
 
     expect(grouped.overdue.followUp1).toHaveLength(1)
-    expect(grouped.overdue.followUp3).toHaveLength(1)
     expect(grouped.upcoming.followUp1).toHaveLength(1)
     expect(grouped.upcoming.followUp2).toHaveLength(1)
     expect(grouped.upcoming.closeOut).toHaveLength(1)
@@ -293,7 +278,6 @@ describe('groupFollowUpsByStage', () => {
 
     expect(grouped.overdue.followUp1).toHaveLength(0)
     expect(grouped.overdue.followUp2).toHaveLength(0)
-    expect(grouped.overdue.followUp3).toHaveLength(0)
     expect(grouped.overdue.closeOut).toHaveLength(0)
   })
 })

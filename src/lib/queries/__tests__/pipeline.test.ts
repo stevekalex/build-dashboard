@@ -152,9 +152,8 @@ describe('getPipelineCounts', () => {
     expect(counts.engaging).toBe(2)
   })
 
-  it('should count Initial message sent as applied', async () => {
+  it('should not count Initial message sent (stage no longer used in pipeline)', async () => {
     const mockRecords = [
-      makeRecord('💌 Initial message sent'),
       makeRecord('💌 Initial message sent'),
     ]
 
@@ -163,7 +162,9 @@ describe('getPipelineCounts', () => {
     const { getPipelineCounts } = await import('../pipeline')
     const counts = await getPipelineCounts()
 
-    expect(counts.applied).toBe(2)
+    // Initial message sent is no longer mapped to any counter
+    const total = Object.values(counts).reduce((a, b) => a + b, 0)
+    expect(total).toBe(0)
   })
 
   it('should correctly count terminal stages', async () => {

@@ -128,28 +128,6 @@ describe('markFollowedUp', () => {
     mockUpdateJobStage.mockResolvedValue(undefined)
   })
 
-  it('should advance from Initial message sent to Touchpoint 1', async () => {
-    mockFind.mockResolvedValue({
-      id: 'job123',
-      get: (field: string) => {
-        if (field === 'Stage') return '💌 Initial message sent'
-        return null
-      },
-    })
-
-    const { markFollowedUp } = await import('../inbox')
-    const result = await markFollowedUp('job123')
-
-    expect(result).toEqual({ success: true })
-    expect(mockUpdateJobStage).toHaveBeenCalledWith(
-      'job123',
-      '📆 Touchpoint 1',
-      expect.objectContaining({
-        'Next Action Date': expect.any(String),
-      })
-    )
-  })
-
   it('should advance from Touchpoint 1 to Touchpoint 2', async () => {
     mockFind.mockResolvedValue({
       id: 'job123',
@@ -235,7 +213,7 @@ describe('markFollowedUp', () => {
     mockFind.mockResolvedValue({
       id: 'job123',
       get: (field: string) => {
-        if (field === 'Stage') return '💌 Initial message sent'
+        if (field === 'Stage') return '📆 Touchpoint 1'
         return null
       },
     })
@@ -256,7 +234,7 @@ describe('markFollowedUp', () => {
     mockFind.mockResolvedValue({
       id: 'job123',
       get: (field: string) => {
-        if (field === 'Stage') return '💌 Initial message sent'
+        if (field === 'Stage') return '📆 Touchpoint 1'
         return null
       },
     })

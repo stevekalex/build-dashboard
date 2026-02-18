@@ -35,11 +35,9 @@ Forbidden phrases (NEVER use):
  * Returns { system, user } to separate trusted brand instructions from
  * untrusted job data for prompt injection protection.
  *
- * Message 2 (Initial Message Sent → Touchpoint 1): Re-surface the Loom with a different hook
- * Message 3 (Touchpoint 1 → Touchpoint 2): Bridge prototype to full project + NeetoCal link
- * Message 4 (Touchpoint 2 → Touchpoint 3): Offer to adjust the prototype
- *
- * Touchpoint 3 does not need a message (just close as lost), so it throws.
+ * Follow-up 1 (Touchpoint 1 → Touchpoint 2): Re-surface the Loom with a different hook
+ * Follow-up 2 (Touchpoint 2 → Touchpoint 3): Bridge prototype to full project + NeetoCal link
+ * Follow-up 3 (Touchpoint 3 → Closed Lost): Offer to adjust the prototype
  */
 export function buildPromptForStage(
   job: Job,
@@ -62,10 +60,10 @@ export function buildPromptForStage(
   const jobContext = parts.join('\n')
 
   switch (stage) {
-    case STAGES.INITIAL_MESSAGE_SENT:
+    case STAGES.TOUCHPOINT_1:
       return {
         system: BRAND_CONTEXT,
-        user: `You are writing Message 2 in a 3-message follow-up sequence. The client received a proposal 24 hours ago containing a Loom walkthrough of their prototype. They haven't responded.
+        user: `You are writing Follow-up 1 in a 3-message follow-up sequence. The client received a proposal 24 hours ago containing a Loom walkthrough of their prototype. They haven't responded.
 
 ${jobContext}
 
@@ -106,10 +104,10 @@ BAD example (too generic — no connection to their project):
 Hi! Just wanted to share a quick video I made for your project. Let me know if you have any questions about it!`,
       }
 
-    case STAGES.TOUCHPOINT_1:
+    case STAGES.TOUCHPOINT_2:
       return {
         system: BRAND_CONTEXT,
-        user: `You are writing Message 3 in a 3-message follow-up sequence. The client received a proposal (with Loom) 48 hours ago and a follow-up at 24 hours. They haven't responded to either.
+        user: `You are writing Follow-up 2 in a 3-message follow-up sequence. The client received a proposal (with Loom) 48 hours ago and a follow-up at 24 hours. They haven't responded to either.
 
 ${jobContext}
 
@@ -139,10 +137,10 @@ BAD example:
 Hey there! I wanted to check in about the prototype I sent over. Would you be interested in hopping on a call to discuss the project further? Here's my calendar link if so!`,
       }
 
-    case STAGES.TOUCHPOINT_2:
+    case STAGES.TOUCHPOINT_3:
       return {
         system: BRAND_CONTEXT,
-        user: `You are writing Message 4 — the FINAL message in a 3-message follow-up sequence. The client has not responded to the proposal or two previous follow-ups over 72 hours.
+        user: `You are writing Follow-up 3 — the FINAL message in a 3-message follow-up sequence. The client has not responded to the proposal or two previous follow-ups over 72 hours.
 
 ${jobContext}
 
@@ -168,9 +166,6 @@ If the prototype wasn't quite the right direction for your dashboard, happy to a
 BAD example:
 Hi! Just wanted to follow up one last time. I noticed you haven't had a chance to respond yet. If there's anything I can adjust about the prototype, I'd be happy to help. Let me know!`,
       }
-
-    case STAGES.TOUCHPOINT_3:
-      throw new Error('Touchpoint 3 does not need an AI-generated message — just close as lost.')
 
     default:
       throw new Error(`No follow-up prompt defined for stage: ${stage}`)

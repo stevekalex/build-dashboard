@@ -94,7 +94,7 @@ describe('markApplied - Happy Path', () => {
     expect(result.success).toBe(true)
     expect(mockUpdateJobStage).toHaveBeenCalledWith(
       'rec123',
-      '💌 Initial message sent',
+      '📆 Touchpoint 1',
       expect.objectContaining({
         'Applied At': expect.any(String),
       })
@@ -113,7 +113,7 @@ describe('markApplied - Happy Path', () => {
     expect(result.success).toBe(true)
     expect(mockUpdateJobStage).toHaveBeenCalledWith(
       'rec123',
-      '💌 Initial message sent',
+      '📆 Touchpoint 1',
       expect.objectContaining({
         'Loom Recorded Date': expect.any(String),
       })
@@ -125,13 +125,13 @@ describe('markApplied - Happy Path', () => {
     expect(new Date(loomRecordedDate).toISOString()).toBe(loomRecordedDate)
   })
 
-  it('should update stage to Initial message sent', async () => {
+  it('should update stage to Touchpoint 1', async () => {
     const { markApplied } = await import('../ready-to-send')
     await markApplied('rec123')
 
     expect(mockUpdateJobStage).toHaveBeenCalledWith(
       'rec123',
-      '💌 Initial message sent',
+      '📆 Touchpoint 1',
       expect.any(Object)
     )
   })

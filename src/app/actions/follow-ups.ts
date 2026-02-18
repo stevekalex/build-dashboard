@@ -13,7 +13,7 @@ const VALID_STAGES = [
 
 /**
  * Generate an AI follow-up message for a job at a given stage.
- * Only valid for stages that need a message (not Touchpoint 3).
+ * Valid for all three touchpoint stages.
  */
 export async function generateFollowUpMessage(
   jobId: string,

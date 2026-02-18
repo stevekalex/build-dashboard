@@ -18,7 +18,7 @@ const mockJob: Job = {
   jobId: 'job1',
   title: 'CRM Dashboard Build',
   description: 'Build a CRM dashboard',
-  stage: '💌 Initial message sent',
+  stage: '📆 Touchpoint 1',
   scrapedAt: '2026-02-10T10:00:00Z',
   nextActionDate: '2026-02-12T10:00:00Z',
   budgetAmount: 500,
@@ -43,18 +43,18 @@ describe('FollowUpCard', () => {
 
   it('should render stage badge', () => {
     render(<FollowUpCard job={mockJob} column="followUp1" onDismiss={mockDismiss} />)
-    expect(screen.getByText('💌 Initial message sent')).toBeInTheDocument()
+    expect(screen.getByText('📆 Touchpoint 1')).toBeInTheDocument()
   })
 
-  it('should render Generate Message button for non-closeOut columns', () => {
+  it('should render Generate Message button for all columns', () => {
     render(<FollowUpCard job={mockJob} column="followUp1" onDismiss={mockDismiss} />)
     expect(screen.getByText('Generate Message')).toBeInTheDocument()
   })
 
-  it('should NOT render Generate Message button for closeOut column', () => {
+  it('should render Generate Message button for closeOut column too', () => {
     const closeOutJob = { ...mockJob, stage: '📆 Touchpoint 3' }
     render(<FollowUpCard job={closeOutJob} column="closeOut" onDismiss={mockDismiss} />)
-    expect(screen.queryByText('Generate Message')).not.toBeInTheDocument()
+    expect(screen.getByText('Generate Message')).toBeInTheDocument()
   })
 
   it('should render Close No Response button for all columns', () => {

@@ -29,7 +29,7 @@ describe('generateFollowUpMessage', () => {
     vi.stubEnv('NEETO_CAL_LINK', 'https://cal.neeto.com/steve/30min')
   })
 
-  it('should return generated message for valid stage (Initial Message Sent)', async () => {
+  it('should return generated message for valid stage (Touchpoint 1)', async () => {
     mockFind.mockResolvedValue({
       id: 'rec1',
       get: (field: string) => {
@@ -37,7 +37,7 @@ describe('generateFollowUpMessage', () => {
           'Job ID': 'job1',
           'Job Title': 'CRM Dashboard',
           'Job Description': 'Build a CRM',
-          'Stage': '💌 Initial message sent',
+          'Stage': '📆 Touchpoint 1',
           'Scraped At': '2026-02-10T10:00:00Z',
           'Loom URL': 'https://loom.com/share/abc',
         }
@@ -47,14 +47,14 @@ describe('generateFollowUpMessage', () => {
     mockGenerateText.mockResolvedValue('Hey, quick thought about that dashboard prototype...')
 
     const { generateFollowUpMessage } = await import('../follow-ups')
-    const result = await generateFollowUpMessage('rec1', '💌 Initial message sent')
+    const result = await generateFollowUpMessage('rec1', '📆 Touchpoint 1')
 
     expect(result.success).toBe(true)
     expect(result.message).toBe('Hey, quick thought about that dashboard prototype...')
     expect(mockGenerateText).toHaveBeenCalledOnce()
   })
 
-  it('should return generated message for Touchpoint 1', async () => {
+  it('should return generated message for Touchpoint 2', async () => {
     mockFind.mockResolvedValue({
       id: 'rec2',
       get: (field: string) => {
@@ -62,7 +62,7 @@ describe('generateFollowUpMessage', () => {
           'Job ID': 'job2',
           'Job Title': 'Analytics App',
           'Job Description': 'Build analytics',
-          'Stage': '📆 Touchpoint 1',
+          'Stage': '📆 Touchpoint 2',
           'Scraped At': '2026-02-10T10:00:00Z',
           'Loom URL': null,
         }
@@ -72,19 +72,34 @@ describe('generateFollowUpMessage', () => {
     mockGenerateText.mockResolvedValue('Would love to chat about turning this into a full project.')
 
     const { generateFollowUpMessage } = await import('../follow-ups')
-    const result = await generateFollowUpMessage('rec2', '📆 Touchpoint 1')
+    const result = await generateFollowUpMessage('rec2', '📆 Touchpoint 2')
 
     expect(result.success).toBe(true)
     expect(result.message).toContain('full project')
   })
 
-  it('should reject Touchpoint 3 stage (no message needed)', async () => {
-    const { generateFollowUpMessage } = await import('../follow-ups')
-    const result = await generateFollowUpMessage('rec1', '📆 Touchpoint 3')
+  it('should return generated message for Touchpoint 3', async () => {
+    mockFind.mockResolvedValue({
+      id: 'rec3',
+      get: (field: string) => {
+        const data: Record<string, any> = {
+          'Job ID': 'job3',
+          'Job Title': 'Dashboard App',
+          'Job Description': 'Build a dashboard',
+          'Stage': '📆 Touchpoint 3',
+          'Scraped At': '2026-02-10T10:00:00Z',
+          'Loom URL': null,
+        }
+        return data[field]
+      },
+    })
+    mockGenerateText.mockResolvedValue('If the prototype wasn\'t quite right, happy to adjust.')
 
-    expect(result.success).toBe(false)
-    expect(result.error).toBeDefined()
-    expect(mockGenerateText).not.toHaveBeenCalled()
+    const { generateFollowUpMessage } = await import('../follow-ups')
+    const result = await generateFollowUpMessage('rec3', '📆 Touchpoint 3')
+
+    expect(result.success).toBe(true)
+    expect(result.message).toContain('adjust')
   })
 
   it('should reject unknown stages', async () => {
@@ -104,7 +119,7 @@ describe('generateFollowUpMessage', () => {
           'Job ID': 'job1',
           'Job Title': 'Test Job',
           'Job Description': 'Test',
-          'Stage': '💌 Initial message sent',
+          'Stage': '📆 Touchpoint 1',
           'Scraped At': '2026-02-10T10:00:00Z',
           'Loom URL': null,
         }
@@ -114,7 +129,7 @@ describe('generateFollowUpMessage', () => {
     mockGenerateText.mockRejectedValue(new Error('API rate limit exceeded'))
 
     const { generateFollowUpMessage } = await import('../follow-ups')
-    const result = await generateFollowUpMessage('rec1', '💌 Initial message sent')
+    const result = await generateFollowUpMessage('rec1', '📆 Touchpoint 1')
 
     expect(result.success).toBe(false)
     expect(result.error).toContain('API rate limit')
@@ -124,7 +139,7 @@ describe('generateFollowUpMessage', () => {
     mockFind.mockRejectedValue(new Error('Record not found'))
 
     const { generateFollowUpMessage } = await import('../follow-ups')
-    const result = await generateFollowUpMessage('rec999', '💌 Initial message sent')
+    const result = await generateFollowUpMessage('rec999', '📆 Touchpoint 1')
 
     expect(result.success).toBe(false)
     expect(result.error).toContain('Record not found')
