@@ -2,6 +2,7 @@
 
 import { Job } from '@/types/brief'
 import { Badge } from '@/components/ui/badge'
+import { ColumnTooltip } from '@/components/ui/column-tooltip'
 import { DealCard, DealColumn } from './deal-card'
 
 interface ClosingBoardProps {
@@ -15,6 +16,7 @@ interface ColumnConfig {
   key: DealColumn
   title: string
   emoji: string
+  tooltip: string
   jobs: Job[]
 }
 
@@ -25,10 +27,10 @@ export function ClosingBoard({
   won,
 }: ClosingBoardProps) {
   const columns: ColumnConfig[] = [
-    { key: 'engaged', title: 'Engaged', emoji: '🤝', jobs: engaged },
-    { key: 'callDone', title: 'Call Done', emoji: '📞', jobs: callDone },
-    { key: 'contractSent', title: 'Contract Sent', emoji: '📄', jobs: contractSent },
-    { key: 'won', title: 'Won', emoji: '🏆', jobs: won },
+    { key: 'engaged', title: 'Engaged', emoji: '🤝', tooltip: 'Client showed engagement (Light or Prototype). No call done yet.', jobs: engaged },
+    { key: 'callDone', title: 'Call Done', emoji: '📞', tooltip: 'Call completed. No contract sent yet.', jobs: callDone },
+    { key: 'contractSent', title: 'Contract Sent', emoji: '📄', tooltip: 'Contract sent. Awaiting signature.', jobs: contractSent },
+    { key: 'won', title: 'Won', emoji: '🏆', tooltip: 'Deal closed as won.', jobs: won },
   ]
 
   return (
@@ -42,6 +44,7 @@ export function ClosingBoard({
             <Badge variant="secondary" className="text-xs">
               {col.jobs.length}
             </Badge>
+            <ColumnTooltip content={col.tooltip} />
           </div>
 
           {/* Column cards */}

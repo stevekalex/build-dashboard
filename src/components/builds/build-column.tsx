@@ -1,6 +1,7 @@
 'use client'
 
 import { Build } from '@/types/brief'
+import { ColumnTooltip } from '@/components/ui/column-tooltip'
 import { BuildCard } from './build-card'
 
 interface BuildColumnProps {
@@ -8,9 +9,10 @@ interface BuildColumnProps {
   emoji: string
   builds: Build[]
   accentColor: 'amber' | 'emerald' | 'red'
+  tooltip?: string
 }
 
-export function BuildColumn({ title, emoji, builds, accentColor }: BuildColumnProps) {
+export function BuildColumn({ title, emoji, builds, accentColor, tooltip }: BuildColumnProps) {
   const colorClasses = {
     amber: {
       header: 'bg-amber-50 border-amber-200',
@@ -38,6 +40,7 @@ export function BuildColumn({ title, emoji, builds, accentColor }: BuildColumnPr
         <div className="flex items-center gap-2">
           <span className="text-lg">{emoji}</span>
           <h3 className="font-semibold text-gray-800 text-sm">{title}</h3>
+          {tooltip && <ColumnTooltip content={tooltip} />}
         </div>
         <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${colors.count}`}>
           {builds.length}

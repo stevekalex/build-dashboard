@@ -17,17 +17,17 @@ export function BuildKanban({ builds }: BuildKanbanProps) {
     <div className="w-full">
       {/* Desktop: 3-column grid */}
       <div className="hidden md:grid md:grid-cols-3 gap-4">
-        <BuildColumn title="Building" emoji="🔨" builds={building} accentColor="amber" />
-        <BuildColumn title="Deployed" emoji="🚀" builds={deployed} accentColor="emerald" />
-        <BuildColumn title="Failed" emoji="💥" builds={failed} accentColor="red" />
+        <BuildColumn title="Building" emoji="🔨" builds={building} accentColor="amber" tooltip="Build approved and in progress." />
+        <BuildColumn title="Deployed" emoji="🚀" builds={deployed} accentColor="emerald" tooltip="Build completed and deployed." />
+        <BuildColumn title="Failed" emoji="💥" builds={failed} accentColor="red" tooltip="Build failed with errors." />
       </div>
 
       {/* Mobile: Horizontal scroll */}
       <div className="md:hidden overflow-x-auto pb-4 -mx-3 px-3">
         <div className="flex gap-3" style={{ width: 'max-content' }}>
-          <BuildColumn title="Building" emoji="🔨" builds={building} accentColor="amber" />
-          <BuildColumn title="Deployed" emoji="🚀" builds={deployed} accentColor="emerald" />
-          <BuildColumn title="Failed" emoji="💥" builds={failed} accentColor="red" />
+          <BuildColumn title="Building" emoji="🔨" builds={building} accentColor="amber" tooltip="Build approved and in progress." />
+          <BuildColumn title="Deployed" emoji="🚀" builds={deployed} accentColor="emerald" tooltip="Build completed and deployed." />
+          <BuildColumn title="Failed" emoji="💥" builds={failed} accentColor="red" tooltip="Build failed with errors." />
         </div>
       </div>
 

@@ -5,6 +5,7 @@ import { ChevronDown, ChevronRight } from 'lucide-react'
 import { Job } from '@/types/brief'
 import { Badge } from '@/components/ui/badge'
 import { FollowUpCard, FollowUpColumn } from './follow-up-card'
+import { ColumnTooltip } from '@/components/ui/column-tooltip'
 import { FollowUpColumns } from '@/lib/queries/inbox'
 
 interface FollowUpsBoardProps {
@@ -16,6 +17,7 @@ interface ColumnConfig {
   key: FollowUpColumn
   title: string
   emoji: string
+  tooltip: string
   jobs: Job[]
 }
 
@@ -25,10 +27,10 @@ function totalCount(columns: FollowUpColumns): number {
 
 function buildColumns(columns: FollowUpColumns): ColumnConfig[] {
   return [
-    { key: 'followUp1', title: 'Follow-up 1', emoji: '📆', jobs: columns.followUp1 },
-    { key: 'followUp2', title: 'Follow-up 2', emoji: '📆', jobs: columns.followUp2 },
-    { key: 'followUp3', title: 'Follow-up 3', emoji: '📆', jobs: columns.followUp3 },
-    { key: 'closeOut', title: 'Close Out', emoji: '🚪', jobs: columns.closeOut },
+    { key: 'followUp1', title: 'Follow-up 1', emoji: '📆', tooltip: 'Stage is Touchpoint 1. First follow-up \u2014 re-surface Loom with a different hook.', jobs: columns.followUp1 },
+    { key: 'followUp2', title: 'Follow-up 2', emoji: '📆', tooltip: 'Stage is Touchpoint 2. Bridge to full project scope and a call.', jobs: columns.followUp2 },
+    { key: 'followUp3', title: 'Follow-up 3', emoji: '📆', tooltip: 'Stage is Touchpoint 3, final message not yet sent.', jobs: columns.followUp3 },
+    { key: 'closeOut', title: 'Close Out', emoji: '🚪', tooltip: 'Stage is Touchpoint 3, final message already sent. Close as lost if no response.', jobs: columns.closeOut },
   ]
 }
 
@@ -63,6 +65,7 @@ function KanbanGrid({
               <Badge variant="secondary" className="text-xs">
                 {visibleJobs.length}
               </Badge>
+              <ColumnTooltip content={col.tooltip} />
             </div>
             <div className="space-y-2">
               {visibleJobs.length === 0 ? (
