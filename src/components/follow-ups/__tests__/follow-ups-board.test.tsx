@@ -5,6 +5,14 @@ import { FollowUpsBoard } from '../follow-ups-board'
 import { Job } from '@/types/brief'
 import { FollowUpColumns } from '@/lib/queries/inbox'
 
+// Mock next/navigation
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    refresh: vi.fn(),
+  }),
+}))
+
 // Mock server actions
 vi.mock('@/app/actions/inbox', () => ({
   markFollowedUp: vi.fn(),
@@ -27,7 +35,6 @@ const emptyColumns: FollowUpColumns = {
   followUp1: [],
   followUp2: [],
   followUp3: [],
-  closeOut: [],
 }
 
 describe('FollowUpsBoard', () => {
@@ -38,8 +45,7 @@ describe('FollowUpsBoard', () => {
       followUp1: [makeJob({ id: 'rec1', title: 'Overdue Job A', stage: '📆 Touchpoint 1' })],
       followUp2: [makeJob({ id: 'rec2', title: 'Overdue Job B', stage: '📆 Touchpoint 2' })],
       followUp3: [],
-      closeOut: [],
-    }
+        }
 
     render(<FollowUpsBoard overdue={overdue} upcoming={emptyColumns} />)
 
@@ -56,8 +62,7 @@ describe('FollowUpsBoard', () => {
       ],
       followUp2: [makeJob({ id: 'rec3', title: 'Job C', stage: '📆 Touchpoint 2' })],
       followUp3: [],
-      closeOut: [],
-    }
+        }
 
     render(<FollowUpsBoard overdue={overdue} upcoming={emptyColumns} />)
 
@@ -81,8 +86,7 @@ describe('FollowUpsBoard', () => {
     const overdue: FollowUpColumns = {
       followUp1: [makeJob({ id: 'rec1', title: 'FU1 Job', stage: '📆 Touchpoint 1' })],
       followUp2: [makeJob({ id: 'rec2', title: 'FU2 Job', stage: '📆 Touchpoint 2' })],
-      followUp3: [],
-      closeOut: [makeJob({ id: 'rec3', title: 'Close Job', stage: '📆 Touchpoint 3' })],
+      followUp3: [makeJob({ id: 'rec3', title: 'Close Job', stage: '📆 Touchpoint 3' })],
     }
 
     render(<FollowUpsBoard overdue={overdue} upcoming={emptyColumns} />)
@@ -117,8 +121,7 @@ describe('FollowUpsBoard', () => {
       followUp1: [makeJob({ id: 'rec1', title: 'Upcoming Job', stage: '📆 Touchpoint 1' })],
       followUp2: [],
       followUp3: [],
-      closeOut: [],
-    }
+        }
 
     render(<FollowUpsBoard overdue={emptyColumns} upcoming={upcoming} />)
 
@@ -129,7 +132,6 @@ describe('FollowUpsBoard', () => {
     expect(screen.getByText('Follow-up 1')).toBeInTheDocument()
     expect(screen.getByText('Follow-up 2')).toBeInTheDocument()
     expect(screen.getByText('Follow-up 3')).toBeInTheDocument()
-    expect(screen.getByText('Close Out')).toBeInTheDocument()
   })
 
   it('should show upcoming count in the collapsed header', () => {
@@ -137,8 +139,7 @@ describe('FollowUpsBoard', () => {
       followUp1: [makeJob({ id: 'rec1', title: 'Job A', stage: '📆 Touchpoint 1' })],
       followUp2: [makeJob({ id: 'rec2', title: 'Job B', stage: '📆 Touchpoint 2' })],
       followUp3: [],
-      closeOut: [],
-    }
+        }
 
     render(<FollowUpsBoard overdue={emptyColumns} upcoming={upcoming} />)
 

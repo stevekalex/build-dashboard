@@ -227,18 +227,16 @@ describe('groupFollowUpsByStage', () => {
     const grouped = groupFollowUpsByStage(jobs)
 
     expect(grouped.upcoming.followUp3).toHaveLength(1)
-    expect(grouped.upcoming.closeOut).toHaveLength(0)
   })
 
-  it('should put Touchpoint 3 jobs with lastFollowUpDate into closeOut', async () => {
+  it('should put Touchpoint 3 jobs with lastFollowUpDate into followUp3', async () => {
     const { groupFollowUpsByStage } = await import('../inbox')
     const jobs = [
       { id: 'rec4', jobId: 'j4', title: 'Close Out Job', description: '', stage: '📆 Touchpoint 3', scrapedAt: '', nextActionDate: futureDate, lastFollowUpDate: pastDate },
     ]
     const grouped = groupFollowUpsByStage(jobs)
 
-    expect(grouped.upcoming.closeOut).toHaveLength(1)
-    expect(grouped.upcoming.followUp3).toHaveLength(0)
+    expect(grouped.upcoming.followUp3).toHaveLength(1)
   })
 
   it('should treat jobs without nextActionDate as overdue', async () => {
@@ -259,11 +257,9 @@ describe('groupFollowUpsByStage', () => {
     expect(grouped.overdue.followUp1).toHaveLength(0)
     expect(grouped.overdue.followUp2).toHaveLength(0)
     expect(grouped.overdue.followUp3).toHaveLength(0)
-    expect(grouped.overdue.closeOut).toHaveLength(0)
     expect(grouped.upcoming.followUp1).toHaveLength(0)
     expect(grouped.upcoming.followUp2).toHaveLength(0)
     expect(grouped.upcoming.followUp3).toHaveLength(0)
-    expect(grouped.upcoming.closeOut).toHaveLength(0)
   })
 
   it('should correctly distribute jobs across overdue/upcoming and all columns', async () => {
@@ -280,8 +276,7 @@ describe('groupFollowUpsByStage', () => {
     expect(grouped.overdue.followUp1).toHaveLength(1)
     expect(grouped.upcoming.followUp1).toHaveLength(1)
     expect(grouped.upcoming.followUp2).toHaveLength(1)
-    expect(grouped.upcoming.followUp3).toHaveLength(1) // TP3 without lastFollowUpDate
-    expect(grouped.upcoming.closeOut).toHaveLength(1)  // TP3 with lastFollowUpDate
+    expect(grouped.upcoming.followUp3).toHaveLength(2) // Both TP3 jobs
   })
 
   it('should ignore jobs with unknown stages', async () => {
@@ -294,7 +289,6 @@ describe('groupFollowUpsByStage', () => {
     expect(grouped.overdue.followUp1).toHaveLength(0)
     expect(grouped.overdue.followUp2).toHaveLength(0)
     expect(grouped.overdue.followUp3).toHaveLength(0)
-    expect(grouped.overdue.closeOut).toHaveLength(0)
   })
 })
 

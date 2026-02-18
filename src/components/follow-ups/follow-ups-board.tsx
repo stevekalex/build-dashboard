@@ -23,15 +23,14 @@ interface ColumnConfig {
 }
 
 function totalCount(columns: FollowUpColumns): number {
-  return columns.followUp1.length + columns.followUp2.length + columns.followUp3.length + columns.closeOut.length
+  return columns.followUp1.length + columns.followUp2.length + columns.followUp3.length
 }
 
 function buildColumns(columns: FollowUpColumns): ColumnConfig[] {
   return [
     { key: 'followUp1', title: 'Follow-up 1', emoji: '📆', tooltip: 'Stage = "📆 Touchpoint 1"', jobs: columns.followUp1 },
     { key: 'followUp2', title: 'Follow-up 2', emoji: '📆', tooltip: 'Stage = "📆 Touchpoint 2"', jobs: columns.followUp2 },
-    { key: 'followUp3', title: 'Follow-up 3', emoji: '📆', tooltip: 'Stage = "📆 Touchpoint 3" + Last Follow Up Date is empty', jobs: columns.followUp3 },
-    { key: 'closeOut', title: 'Close Out', emoji: '🚪', tooltip: 'Stage = "📆 Touchpoint 3" + Last Follow Up Date is set', jobs: columns.closeOut },
+    { key: 'followUp3', title: 'Follow-up 3', emoji: '📆', tooltip: 'Stage = "📆 Touchpoint 3"', jobs: columns.followUp3 },
   ]
 }
 
@@ -41,7 +40,6 @@ function filterDismissed(columns: FollowUpColumns, dismissedIds: Set<string>): F
     followUp1: filter(columns.followUp1),
     followUp2: filter(columns.followUp2),
     followUp3: filter(columns.followUp3),
-    closeOut: filter(columns.closeOut),
   }
 }
 
@@ -55,7 +53,7 @@ function KanbanGrid({
   onDismiss: (id: string) => void
 }) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {columns.map((col) => {
         const visibleJobs = col.jobs.filter((j) => !dismissedIds.has(j.id))
         return (
@@ -94,8 +92,8 @@ export function FollowUpsBoard({ overdue, upcoming }: FollowUpsBoardProps) {
   // When this changes (server revalidated), clear dismissed IDs
   // synchronously so the empty-state check never sees stale dismissals.
   const allIds = [
-    ...overdue.followUp1, ...overdue.followUp2, ...overdue.followUp3, ...overdue.closeOut,
-    ...upcoming.followUp1, ...upcoming.followUp2, ...upcoming.followUp3, ...upcoming.closeOut,
+    ...overdue.followUp1, ...overdue.followUp2, ...overdue.followUp3,
+    ...upcoming.followUp1, ...upcoming.followUp2, ...upcoming.followUp3,
   ].map((j) => j.id).sort().join(',')
 
   const startPolling = useActionPolling(allIds)
