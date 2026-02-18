@@ -85,7 +85,7 @@ export async function markFollowedUp(
     }
 
     const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000)
-    const fields: Record<string, string | null> = {
+    const fields: Record<string, any> = {
       [JOBS.NEXT_ACTION_DATE]: tomorrow.toISOString(),
       [JOBS.LAST_FOLLOW_UP_DATE]: now.toISOString(),
     }
@@ -143,7 +143,8 @@ export async function markCallDone(
       [JOBS.CALL_COMPLETED_DATE]: now,
     })
 
-    revalidateTag('jobs-inbox', 'jobs-closing', 'dashboard')
+    revalidateTag('jobs-inbox', 'dashboard')
+    revalidateTag('jobs-closing', 'dashboard')
     return { success: true }
   } catch (error) {
     console.error('markCallDone failed:', error)
@@ -193,7 +194,8 @@ export async function markContractSigned(
       [JOBS.DEAL_VALUE]: dealValue,
     })
 
-    revalidateTag('jobs-inbox', 'jobs-closing', 'dashboard')
+    revalidateTag('jobs-inbox', 'dashboard')
+    revalidateTag('jobs-closing', 'dashboard')
     return { success: true }
   } catch (error) {
     console.error('markContractSigned failed:', error)
