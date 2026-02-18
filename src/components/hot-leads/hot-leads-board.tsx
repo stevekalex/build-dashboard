@@ -25,11 +25,14 @@ export function HotLeadsBoard({ columns }: HotLeadsBoardProps) {
 
   // Build a fingerprint of all job IDs from server props.
   // When this changes (server revalidated), clear dismissed IDs.
+  // Fingerprint includes responseType since that determines which column
+  // a job lands in. Without this, moving Shortlist→Interview wouldn't
+  // be detected (same IDs) and the dismissed card would stay hidden.
   const allIds = [
     ...columns.shortlist,
     ...columns.interview,
     ...columns.hire,
-  ].map((j) => j.id).sort().join(',')
+  ].map((j) => `${j.id}:${j.responseType || ''}`).sort().join(',')
 
   const startPolling = useActionPolling(allIds)
 

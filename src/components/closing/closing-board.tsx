@@ -30,8 +30,12 @@ export function ClosingBoard({
 }: ClosingBoardProps) {
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set())
 
+  // Fingerprint includes column-determining fields so that moving between
+  // columns (e.g. Engaged→Call Done) is detected and dismissed IDs are cleared.
   const allJobs = [...engaged, ...callDone, ...contractSent, ...won]
-  const fingerprint = allJobs.map((j) => j.id).sort().join(',')
+  const fingerprint = allJobs.map((j) =>
+    `${j.id}:${j.stage}:${j.callCompletedDate || ''}:${j.contractSentDate || ''}`
+  ).sort().join(',')
   const startPolling = useActionPolling(fingerprint)
 
   // Clear dismissed IDs when server data changes

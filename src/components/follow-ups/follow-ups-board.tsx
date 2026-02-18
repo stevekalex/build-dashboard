@@ -93,10 +93,19 @@ export function FollowUpsBoard({ overdue, upcoming }: FollowUpsBoardProps) {
   // Build a fingerprint of all job IDs from server props.
   // When this changes (server revalidated), clear dismissed IDs
   // synchronously so the empty-state check never sees stale dismissals.
+  // Fingerprint includes stage + lastFollowUpDate since those determine
+  // which column a job lands in. Without this, moving TP1→TP2 wouldn't
+  // be detected (same IDs) and the dismissed card would stay hidden.
   const allIds = [
+<<<<<<< Updated upstream
     ...overdue.followUp1, ...overdue.followUp2, ...overdue.followUp3, ...overdue.closeOut,
     ...upcoming.followUp1, ...upcoming.followUp2, ...upcoming.followUp3, ...upcoming.closeOut,
   ].map((j) => j.id).sort().join(',')
+=======
+    ...overdue.followUp1, ...overdue.followUp2, ...overdue.followUp3,
+    ...upcoming.followUp1, ...upcoming.followUp2, ...upcoming.followUp3,
+  ].map((j) => `${j.id}:${j.stage}:${j.lastFollowUpDate || ''}`).sort().join(',')
+>>>>>>> Stashed changes
 
   const startPolling = useActionPolling(allIds)
 
