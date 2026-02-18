@@ -187,9 +187,9 @@ export async function markContractSigned(
   dealValue: number
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    const now = new Date().toISOString()
+    const today = new Date().toISOString().split('T')[0]
     await updateJobStage(jobId, STAGES.CLOSED_WON, {
-      [JOBS.CLOSE_DATE]: now,
+      [JOBS.CLOSE_DATE]: today,
       [JOBS.DEAL_VALUE]: dealValue,
     })
 
