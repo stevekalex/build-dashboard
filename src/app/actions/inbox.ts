@@ -143,7 +143,7 @@ export async function markCallDone(
       [JOBS.CALL_COMPLETED_DATE]: now,
     })
 
-    revalidateTag('jobs-inbox', 'dashboard')
+    revalidateTag('jobs-inbox', 'jobs-closing', 'dashboard')
     return { success: true }
   } catch (error) {
     console.error('markCallDone failed:', error)
@@ -193,7 +193,7 @@ export async function markContractSigned(
       [JOBS.DEAL_VALUE]: dealValue,
     })
 
-    revalidateTag('jobs-inbox', 'dashboard')
+    revalidateTag('jobs-inbox', 'jobs-closing', 'dashboard')
     return { success: true }
   } catch (error) {
     console.error('markContractSigned failed:', error)

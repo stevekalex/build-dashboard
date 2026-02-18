@@ -309,12 +309,12 @@ describe('markCallDone', () => {
     }))
   })
 
-  it('should revalidate jobs-inbox tag', async () => {
+  it('should revalidate jobs-inbox and jobs-closing tags', async () => {
     const { revalidateTag } = await import('next/cache')
     const { markCallDone } = await import('../inbox')
     await markCallDone('job123')
 
-    expect(revalidateTag).toHaveBeenCalledWith('jobs-inbox', 'dashboard')
+    expect(revalidateTag).toHaveBeenCalledWith('jobs-inbox', 'jobs-closing', 'dashboard')
   })
 
   it('should return error on failure', async () => {
@@ -347,12 +347,12 @@ describe('markContractSigned', () => {
     )
   })
 
-  it('should revalidate jobs-inbox tag', async () => {
+  it('should revalidate jobs-inbox and jobs-closing tags', async () => {
     const { revalidateTag } = await import('next/cache')
     const { markContractSigned } = await import('../inbox')
     await markContractSigned('job123', 5000)
 
-    expect(revalidateTag).toHaveBeenCalledWith('jobs-inbox', 'dashboard')
+    expect(revalidateTag).toHaveBeenCalledWith('jobs-inbox', 'jobs-closing', 'dashboard')
   })
 
   it('should return error on failure', async () => {
