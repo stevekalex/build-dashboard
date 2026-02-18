@@ -7,16 +7,18 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Job } from '@/types/brief'
 import { LogResponseDialog } from './log-response-dialog'
-import { CloseDealDialog } from './close-deal-dialog'
+import { CloseDealDropdown } from './close-deal-dropdown'
 import { DueTimeBadge } from './due-time-badge'
-import { markFollowedUp, closeNoResponse, markCallDone } from '@/app/actions/inbox'
+import { markFollowedUp, closeNoResponse, markCallDone, advanceResponseType } from '@/app/actions/inbox'
 import { getAirtableRecordUrl } from '@/lib/utils'
 
+export type HotLeadColumn = 'shortlist' | 'interview' | 'hire'
 type SectionType = 'hot-leads' | 'awaiting-response' | 'follow-ups'
 
 interface InboxCardProps {
   job: Job
   section: SectionType
+  hotLeadColumn?: HotLeadColumn
   onAction?: (jobId: string) => void
 }
 
@@ -38,7 +40,12 @@ function formatBudget(amount?: number, type?: string): string {
   return formatted
 }
 
-export function InboxCard({ job, section, onAction }: InboxCardProps) {
+const ADVANCE_MAP: Partial<Record<HotLeadColumn, { label: string; target: 'Interview' | 'Hire' }>> = {
+  shortlist: { label: 'Move to Interview', target: 'Interview' },
+  interview: { label: 'Move to Hire', target: 'Hire' },
+}
+
+export function InboxCard({ job, section, hotLeadColumn, onAction }: InboxCardProps) {
   const [loadingAction, setLoadingAction] = useState<string | null>(null)
 
   async function handleMarkFollowedUp() {
@@ -67,6 +74,19 @@ export function InboxCard({ job, section, onAction }: InboxCardProps) {
     const result = await markCallDone(job.id)
     if (!result.success) {
       console.error('Failed to mark call done:', result.error)
+    }
+    setLoadingAction(null)
+  }
+
+  async function handleAdvance() {
+    if (!hotLeadColumn) return
+    const advance = ADVANCE_MAP[hotLeadColumn]
+    if (!advance) return
+    setLoadingAction('advance')
+    onAction?.(job.id)
+    const result = await advanceResponseType(job.id, advance.target)
+    if (!result.success) {
+      console.error('Failed to advance response type:', result.error)
     }
     setLoadingAction(null)
   }
@@ -116,16 +136,29 @@ export function InboxCard({ job, section, onAction }: InboxCardProps) {
           <div className="flex items-center gap-2 flex-wrap" onClick={(e) => e.stopPropagation()}>
             {section === 'hot-leads' && (
               <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="min-h-[44px]"
-                  onClick={handleMarkCallDone}
-                  disabled={loadingAction === 'call'}
-                >
-                  {loadingAction === 'call' ? 'Saving...' : 'Mark Call Done'}
-                </Button>
-                <CloseDealDialog jobId={job.id} jobTitle={job.title} onAction={() => onAction?.(job.id)} />
+                {hotLeadColumn && ADVANCE_MAP[hotLeadColumn] && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="min-h-[44px]"
+                    onClick={handleAdvance}
+                    disabled={loadingAction === 'advance'}
+                  >
+                    {loadingAction === 'advance' ? 'Moving...' : ADVANCE_MAP[hotLeadColumn]!.label}
+                  </Button>
+                )}
+                {(hotLeadColumn === 'interview' || hotLeadColumn === 'hire') && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="min-h-[44px]"
+                    onClick={handleMarkCallDone}
+                    disabled={loadingAction === 'call'}
+                  >
+                    {loadingAction === 'call' ? 'Saving...' : 'Mark Call Done'}
+                  </Button>
+                )}
+                <CloseDealDropdown jobId={job.id} jobTitle={job.title} onAction={() => onAction?.(job.id)} />
               </>
             )}
 

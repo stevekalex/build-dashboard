@@ -146,6 +146,30 @@ export async function markCallDone(
 }
 
 /**
+ * Advance a lead's Response Type (e.g. Shortlist → Interview → Hire).
+ * Used on Hot Leads board to move leads between columns.
+ */
+export async function advanceResponseType(
+  jobId: string,
+  newResponseType: ResponseType
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    await updateJobField(jobId, {
+      [JOBS.RESPONSE_TYPE]: newResponseType,
+    })
+
+    revalidateTag('jobs-inbox', 'dashboard')
+    return { success: true }
+  } catch (error) {
+    console.error('advanceResponseType failed:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to update response type',
+    }
+  }
+}
+
+/**
  * Mark a contract as signed (closed won).
  * Stamps Close Date, sets Deal Value, updates stage to Closed Won.
  */

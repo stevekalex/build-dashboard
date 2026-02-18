@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Job } from '@/types/brief'
 import { Badge } from '@/components/ui/badge'
-import { InboxCard } from '@/components/inbox/inbox-card'
+import { InboxCard, type HotLeadColumn } from '@/components/inbox/inbox-card'
 import { HotLeadColumns } from '@/lib/queries/inbox'
 
 interface HotLeadsBoardProps {
@@ -71,7 +71,7 @@ export function HotLeadsBoard({ columns }: HotLeadsBoardProps) {
                 </div>
               ) : (
                 visibleJobs.map((job) => (
-                  <InboxCard key={job.id} job={job} section="hot-leads" onAction={handleDismiss} />
+                  <InboxCard key={job.id} job={job} section="hot-leads" hotLeadColumn={col.key as HotLeadColumn} onAction={handleDismiss} />
                 ))
               )}
             </div>
