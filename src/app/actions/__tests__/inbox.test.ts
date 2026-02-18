@@ -145,7 +145,6 @@ describe('markFollowedUp', () => {
       'job123',
       '📆 Touchpoint 1',
       expect.objectContaining({
-        'Last Follow Up Date': expect.any(String),
         'Next Action Date': expect.any(String),
       })
     )
@@ -168,7 +167,6 @@ describe('markFollowedUp', () => {
       'job123',
       '📆 Touchpoint 2',
       expect.objectContaining({
-        'Last Follow Up Date': expect.any(String),
         'Next Action Date': expect.any(String),
       })
     )
@@ -191,7 +189,6 @@ describe('markFollowedUp', () => {
       'job123',
       '📆 Touchpoint 3',
       expect.objectContaining({
-        'Last Follow Up Date': expect.any(String),
         'Next Action Date': expect.any(String),
       })
     )
@@ -213,9 +210,7 @@ describe('markFollowedUp', () => {
     expect(mockUpdateJobStage).toHaveBeenCalledWith(
       'job123',
       '➡️ Closed Lost',
-      expect.objectContaining({
-        'Last Follow Up Date': expect.any(String),
-      })
+      undefined
     )
   })
 
@@ -233,7 +228,7 @@ describe('markFollowedUp', () => {
 
     const updateCall = mockUpdateJobStage.mock.calls[0]
     const additionalFields = updateCall[2]
-    expect(additionalFields).not.toHaveProperty('Next Action Date')
+    expect(additionalFields).toBeUndefined()
   })
 
   it('should set Next Action Date to 24 hours from now for non-closing progressions', async () => {

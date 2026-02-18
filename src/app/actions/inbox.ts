@@ -68,10 +68,7 @@ export async function markFollowedUp(
       }
     }
 
-    const now = new Date().toISOString()
-    const additionalFields: Record<string, any> = {
-      [JOBS.LAST_FOLLOW_UP_DATE]: now,
-    }
+    const additionalFields: Record<string, any> = {}
 
     // Only set Next Action Date if not closing as lost
     if (nextStage !== STAGES.CLOSED_LOST) {
@@ -80,17 +77,7 @@ export async function markFollowedUp(
       additionalFields[JOBS.NEXT_ACTION_DATE] = tomorrow.toISOString()
     }
 
-    try {
-      await updateJobStage(jobId, nextStage, additionalFields)
-    } catch (error: any) {
-      // If Last Follow Up Date field doesn't exist yet, retry without it
-      if (error?.message?.includes('UNKNOWN_FIELD_NAME') && error?.message?.includes('Last Follow Up Date')) {
-        const { [JOBS.LAST_FOLLOW_UP_DATE]: _, ...fieldsWithoutFollowUp } = additionalFields
-        await updateJobStage(jobId, nextStage, Object.keys(fieldsWithoutFollowUp).length > 0 ? fieldsWithoutFollowUp : undefined)
-      } else {
-        throw error
-      }
-    }
+    await updateJobStage(jobId, nextStage, Object.keys(additionalFields).length > 0 ? additionalFields : undefined)
 
     revalidateTag('jobs-inbox', 'dashboard')
     return { success: true }
