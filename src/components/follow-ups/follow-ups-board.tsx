@@ -127,16 +127,24 @@ export function FollowUpsBoard({ overdue, upcoming }: FollowUpsBoardProps) {
 
   return (
     <div className="space-y-8">
-      {/* Overdue board - always visible */}
+      {/* Outstanding - flat vertical list of all overdue jobs */}
       {overdueCount > 0 && (
         <div>
           <div className="flex items-center gap-2 mb-4">
-            <h2 className="font-semibold text-base text-gray-900">Overdue</h2>
+            <h2 className="font-semibold text-base text-gray-900">Outstanding</h2>
             <Badge variant="destructive" className="text-xs">
               {overdueCount}
             </Badge>
           </div>
-          <KanbanGrid columns={overdueColumns} dismissedIds={dismissedIds} onDismiss={handleDismiss} />
+          <div className="space-y-2">
+            {overdueColumns.flatMap((col) =>
+              col.jobs
+                .filter((j) => !dismissedIds.has(j.id))
+                .map((job) => (
+                  <FollowUpCard key={job.id} job={job} column={col.key} onDismiss={handleDismiss} />
+                ))
+            )}
+          </div>
         </div>
       )}
 
