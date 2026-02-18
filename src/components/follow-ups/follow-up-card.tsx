@@ -11,7 +11,7 @@ import { GenerateMessageDialog } from './generate-message-dialog'
 import { markFollowedUp, closeNoResponse } from '@/app/actions/inbox'
 import { getAirtableRecordUrl } from '@/lib/utils'
 
-export type FollowUpColumn = 'followUp1' | 'followUp2' | 'followUp3'
+export type FollowUpColumn = 'followUp1' | 'followUp2' | 'followUp3' | 'closeOut'
 
 interface FollowUpCardProps {
   job: Job
@@ -95,21 +95,25 @@ export function FollowUpCard({ job, column, onDismiss }: FollowUpCardProps) {
           {/* Action buttons */}
           {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
           <div className="flex items-center gap-2 flex-wrap" onClick={(e) => e.stopPropagation()}>
-            <Button
-              variant="outline"
-              size="sm"
-              className="min-h-[44px]"
-              onClick={handleMarkSent}
-              disabled={loadingAction === 'sent'}
-            >
-              {loadingAction === 'sent' ? 'Saving...' : 'Mark Sent'}
-            </Button>
-            <GenerateMessageDialog
-              jobId={job.id}
-              stage={job.stage}
-              onSent={() => onDismiss(job.id)}
-              onMarkSent={handleMarkSent}
-            />
+            {column !== 'closeOut' && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="min-h-[44px]"
+                  onClick={handleMarkSent}
+                  disabled={loadingAction === 'sent'}
+                >
+                  {loadingAction === 'sent' ? 'Saving...' : 'Mark Sent'}
+                </Button>
+                <GenerateMessageDialog
+                  jobId={job.id}
+                  stage={job.stage}
+                  onSent={() => onDismiss(job.id)}
+                  onMarkSent={handleMarkSent}
+                />
+              </>
+            )}
             <Button
               variant="ghost"
               size="sm"

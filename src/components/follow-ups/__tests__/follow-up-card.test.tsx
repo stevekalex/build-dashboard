@@ -57,8 +57,20 @@ describe('FollowUpCard', () => {
     expect(screen.getByText('Generate Message')).toBeInTheDocument()
   })
 
+  it('should NOT render Generate Message button for closeOut column', () => {
+    const closeOutJob = { ...mockJob, stage: '📆 Touchpoint 3', lastFollowUpDate: '2026-02-11T10:00:00Z' }
+    render(<FollowUpCard job={closeOutJob} column="closeOut" onDismiss={mockDismiss} />)
+    expect(screen.queryByText('Generate Message')).not.toBeInTheDocument()
+  })
+
   it('should render Close No Response button for all columns', () => {
     render(<FollowUpCard job={mockJob} column="followUp1" onDismiss={mockDismiss} />)
+    expect(screen.getByText('Close No Response')).toBeInTheDocument()
+  })
+
+  it('should render Close No Response button for closeOut column', () => {
+    const closeOutJob = { ...mockJob, stage: '📆 Touchpoint 3' }
+    render(<FollowUpCard job={closeOutJob} column="closeOut" onDismiss={mockDismiss} />)
     expect(screen.getByText('Close No Response')).toBeInTheDocument()
   })
 
