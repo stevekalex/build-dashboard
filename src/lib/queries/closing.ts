@@ -59,7 +59,7 @@ export async function getActiveDeals(): Promise<Job[]> {
   try {
     const base = getBase()
 
-    const stageFilter = ENGAGEMENT_STAGES
+    const stageFilter = [...ENGAGEMENT_STAGES, STAGES.CLOSED_WON]
       .map((stage) => `{${JOBS.STAGE}} = "${stage}"`)
       .join(', ')
 
@@ -87,7 +87,7 @@ export async function getActiveDeals(): Promise<Job[]> {
  * - engaged: Stage includes "Engagement" AND no Call Completed Date AND no Contract Sent Date
  * - callDone: Has Call Completed Date set AND no Contract Sent Date
  * - contractSent: Has Contract Sent Date set AND stage is NOT Closed Won
- * - won: Stage = Closed Won (last 7 days only)
+ * - won: Stage = Closed Won (sorted by appliedAt descending)
  */
 export function groupDealsByStatus(jobs: Job[]): {
   engaged: Job[]
@@ -95,20 +95,15 @@ export function groupDealsByStatus(jobs: Job[]): {
   contractSent: Job[]
   won: Job[]
 } {
-  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-
   const engaged: Job[] = []
   const callDone: Job[] = []
   const contractSent: Job[] = []
   const won: Job[] = []
 
   for (const job of jobs) {
-    // Closed Won goes to won column (if within last 7 days)
+    // Closed Won goes to won column
     if (job.stage === STAGES.CLOSED_WON) {
-      const closeDate = job.closeDate ? new Date(job.closeDate) : null
-      if (closeDate && closeDate >= sevenDaysAgo) {
-        won.push(job)
-      }
+      won.push(job)
       continue
     }
 
@@ -127,6 +122,13 @@ export function groupDealsByStatus(jobs: Job[]): {
     // Otherwise -> engaged column (includes any engagement stage job without call/contract)
     engaged.push(job)
   }
+
+  // Sort won by appliedAt descending (newest first)
+  won.sort((a, b) => {
+    const dateA = a.appliedAt ? new Date(a.appliedAt).getTime() : 0
+    const dateB = b.appliedAt ? new Date(b.appliedAt).getTime() : 0
+    return dateB - dateA
+  })
 
   return { engaged, callDone, contractSent, won }
 }

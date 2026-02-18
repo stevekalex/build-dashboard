@@ -31,17 +31,6 @@ export function ClosingBoard({
     { key: 'won', title: 'Won', emoji: '🏆', jobs: won },
   ]
 
-  const totalDeals = engaged.length + callDone.length + contractSent.length + won.length
-
-  if (totalDeals === 0) {
-    return (
-      <div className="text-center py-12 text-gray-500">
-        <p className="text-lg font-medium">No active deals</p>
-        <p className="text-sm mt-1">Deals in engagement stages will appear here</p>
-      </div>
-    )
-  }
-
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       {columns.map((col) => (
