@@ -112,13 +112,16 @@ export function FollowUpsBoard({ overdue, upcoming }: FollowUpsBoardProps) {
 
   const overdueCount = totalCount(filteredOverdue)
   const upcomingCount = totalCount(filteredUpcoming)
-  const total = overdueCount + upcomingCount
+
+  // Use raw (server) counts for empty-state so optimistic dismissals
+  // never flash the "No follow-ups" message before revalidation.
+  const rawTotal = totalCount(overdue) + totalCount(upcoming)
 
   function handleDismiss(id: string) {
     setDismissedIds((prev) => new Set(prev).add(id))
   }
 
-  if (total === 0) {
+  if (rawTotal === 0) {
     return (
       <div className="text-center py-12 text-gray-500">
         <p className="text-lg font-medium">No follow-ups</p>
