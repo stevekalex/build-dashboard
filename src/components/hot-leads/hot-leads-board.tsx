@@ -51,20 +51,6 @@ export function HotLeadsBoard({ columns }: HotLeadsBoardProps) {
     { key: 'hire', title: 'Hire', emoji: '🤝', jobs: columns.hire },
   ]
 
-  const totalDeals = columnConfigs.reduce(
-    (sum, col) => sum + col.jobs.filter((j) => !activeDismissedIds.has(j.id)).length,
-    0,
-  )
-
-  if (totalDeals === 0) {
-    return (
-      <div className="text-center py-12 text-gray-500">
-        <p className="text-lg font-medium">No hot leads right now</p>
-        <p className="text-sm mt-1">Clients who respond positively will appear here</p>
-      </div>
-    )
-  }
-
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {columnConfigs.map((col) => {
