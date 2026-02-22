@@ -152,8 +152,29 @@ export function SendCard({ job, onDismiss }: SendCardProps) {
             )}
           </StepRow>
 
-          {/* Step 2: Review Script */}
-          <StepRow step={2} label="Review Script" icon={<FileText className="w-4 h-4" />}>
+          {/* Step 2: Open Upwork */}
+          <StepRow step={2} label="Open Upwork" icon={<Briefcase className="w-4 h-4" />}>
+            {job.jobUrl ? (
+              <a
+                href={job.jobUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Open Upwork"
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-green-600 hover:text-green-800 transition-colors"
+              >
+                Open Upwork
+                <ExternalLink className="w-3.5 h-3.5" />
+              </a>
+            ) : (
+              <Button variant="outline" size="sm" disabled>
+                <Briefcase className="w-3.5 h-3.5 mr-1.5" />
+                Open Upwork
+              </Button>
+            )}
+          </StepRow>
+
+          {/* Step 3: Review Script */}
+          <StepRow step={3} label="Review Script" icon={<FileText className="w-4 h-4" />}>
             {job.aiLoomOutline ? (
               <p className="text-sm text-gray-700 whitespace-pre-wrap">{job.aiLoomOutline}</p>
             ) : (
@@ -161,8 +182,8 @@ export function SendCard({ job, onDismiss }: SendCardProps) {
             )}
           </StepRow>
 
-          {/* Step 3: Record Loom */}
-          <StepRow step={3} label="Record Loom" icon={<Video className="w-4 h-4" />}>
+          {/* Step 4: Record Loom */}
+          <StepRow step={4} label="Record Loom" icon={<Video className="w-4 h-4" />}>
             <div className="flex items-center gap-3">
               <a
                 href="https://www.loom.com/looms/videos"
@@ -178,8 +199,8 @@ export function SendCard({ job, onDismiss }: SendCardProps) {
             </div>
           </StepRow>
 
-          {/* Step 4: Copy Cover Letter */}
-          <StepRow step={4} label="Copy Cover Letter" icon={<Copy className="w-4 h-4" />}>
+          {/* Step 5: Copy Cover Letter */}
+          <StepRow step={5} label="Copy Cover Letter" icon={<Copy className="w-4 h-4" />}>
             <div className="space-y-2 w-full">
               <Textarea
                 value={coverLetterText}
@@ -209,27 +230,6 @@ export function SendCard({ job, onDismiss }: SendCardProps) {
                 )}
               </Button>
             </div>
-          </StepRow>
-
-          {/* Step 5: Open Upwork */}
-          <StepRow step={5} label="Open Upwork" icon={<Briefcase className="w-4 h-4" />}>
-            {job.jobUrl ? (
-              <a
-                href={job.jobUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Open Upwork"
-                className="inline-flex items-center gap-1.5 text-sm font-medium text-green-600 hover:text-green-800 transition-colors"
-              >
-                Open Upwork
-                <ExternalLink className="w-3.5 h-3.5" />
-              </a>
-            ) : (
-              <Button variant="outline" size="sm" disabled>
-                <Briefcase className="w-3.5 h-3.5 mr-1.5" />
-                Open Upwork
-              </Button>
-            )}
           </StepRow>
 
           {/* Step 6: Mark Applied */}
