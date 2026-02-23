@@ -35,18 +35,20 @@ export function CloseDealDropdown({ jobId, jobTitle, onAction }: CloseDealDropdo
   const [dealValue, setDealValue] = useState('')
   const [lostReason, setLostReason] = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   async function handleWon() {
     const value = parseFloat(dealValue)
     if (isNaN(value) || value <= 0) return
     setLoading(true)
-    onAction?.()
+    setError(null)
     const result = await markContractSigned(jobId, value)
     if (result.success) {
       setWonOpen(false)
       setDealValue('')
+      onAction?.()
     } else {
-      console.error('Failed to close deal as won:', result.error)
+      setError(result.error || 'Failed to close deal as won')
     }
     setLoading(false)
   }
@@ -54,13 +56,14 @@ export function CloseDealDropdown({ jobId, jobTitle, onAction }: CloseDealDropdo
   async function handleLost() {
     if (!lostReason.trim()) return
     setLoading(true)
-    onAction?.()
+    setError(null)
     const result = await markLost(jobId, lostReason.trim())
     if (result.success) {
       setLostOpen(false)
       setLostReason('')
+      onAction?.()
     } else {
-      console.error('Failed to close deal as lost:', result.error)
+      setError(result.error || 'Failed to close deal as lost')
     }
     setLoading(false)
   }
@@ -107,6 +110,11 @@ export function CloseDealDropdown({ jobId, jobTitle, onAction }: CloseDealDropdo
               />
             </div>
           </div>
+          {error && wonOpen && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
+              {error}
+            </div>
+          )}
           <DialogFooter>
             <Button
               onClick={handleWon}
@@ -139,6 +147,11 @@ export function CloseDealDropdown({ jobId, jobTitle, onAction }: CloseDealDropdo
               />
             </div>
           </div>
+          {error && lostOpen && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
+              {error}
+            </div>
+          )}
           <DialogFooter>
             <Button
               variant="destructive"

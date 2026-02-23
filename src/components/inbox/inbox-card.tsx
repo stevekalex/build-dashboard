@@ -47,32 +47,38 @@ const ADVANCE_MAP: Partial<Record<HotLeadColumn, { label: string; target: 'Inter
 
 export function InboxCard({ job, section, hotLeadColumn, onAction }: InboxCardProps) {
   const [loadingAction, setLoadingAction] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   async function handleMarkFollowedUp() {
     setLoadingAction('followup')
-    onAction?.(job.id)
+    setError(null)
     const result = await markFollowedUp(job.id)
     if (!result.success) {
-      console.error('Failed to mark as followed up:', result.error)
+      setError(result.error || 'Failed to mark as followed up')
+    } else {
+      onAction?.(job.id)
     }
     setLoadingAction(null)
   }
 
   async function handleCloseNoResponse() {
     setLoadingAction('close')
-    onAction?.(job.id)
+    setError(null)
     const result = await closeNoResponse(job.id)
     if (!result.success) {
-      console.error('Failed to close:', result.error)
+      setError(result.error || 'Failed to close')
+    } else {
+      onAction?.(job.id)
     }
     setLoadingAction(null)
   }
 
   async function handleMarkCallDone() {
     setLoadingAction('call')
+    setError(null)
     const result = await markCallDone(job.id)
     if (!result.success) {
-      console.error('Failed to mark call done:', result.error)
+      setError(result.error || 'Failed to mark call done')
     }
     setLoadingAction(null)
   }
@@ -82,10 +88,12 @@ export function InboxCard({ job, section, hotLeadColumn, onAction }: InboxCardPr
     const advance = ADVANCE_MAP[hotLeadColumn]
     if (!advance) return
     setLoadingAction('advance')
-    onAction?.(job.id)
+    setError(null)
     const result = await advanceResponseType(job.id, advance.target)
     if (!result.success) {
-      console.error('Failed to advance response type:', result.error)
+      setError(result.error || 'Failed to advance response type')
+    } else {
+      onAction?.(job.id)
     }
     setLoadingAction(null)
   }
@@ -188,6 +196,10 @@ export function InboxCard({ job, section, hotLeadColumn, onAction }: InboxCardPr
               </>
             )}
           </div>
+
+          {error && (
+            <p className="text-xs text-red-600">{error}</p>
+          )}
         </div>
       </CardContent>
     </Card>

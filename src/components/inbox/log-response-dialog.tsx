@@ -28,18 +28,20 @@ export function LogResponseDialog({ jobId, jobTitle, onAction }: LogResponseDial
   const [responseType, setResponseType] = useState<string>('')
   const [notes, setNotes] = useState('')
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   async function handleSubmit() {
     if (!responseType) return
     setLoading(true)
-    onAction?.()
+    setError(null)
     const result = await logResponse(jobId, responseType, notes || undefined)
     if (result.success) {
       setOpen(false)
       setResponseType('')
       setNotes('')
+      onAction?.()
     } else {
-      console.error('Failed to log response:', result.error)
+      setError(result.error || 'Failed to log response')
     }
     setLoading(false)
   }
@@ -82,6 +84,11 @@ export function LogResponseDialog({ jobId, jobTitle, onAction }: LogResponseDial
             />
           </div>
         </div>
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
         <DialogFooter>
           <Button
             onClick={handleSubmit}
