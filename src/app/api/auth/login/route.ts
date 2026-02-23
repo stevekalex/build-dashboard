@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { captureError } from '@/lib/sentry'
 
 export async function POST(request: NextRequest) {
   try {
@@ -37,6 +38,7 @@ export async function POST(request: NextRequest) {
     if (error instanceof SyntaxError) {
       return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
     }
+    captureError(error, { action: 'loginRoute' })
     console.error('Login route error:', error)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }

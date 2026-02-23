@@ -4,6 +4,7 @@ import { getBase } from '@/lib/airtable'
 import { TABLES, JOBS, STAGES } from '@/lib/airtable-fields'
 import { generateText } from '@/lib/ai'
 import { buildPromptForStage } from '@/lib/follow-up-prompts'
+import { captureError } from '@/lib/sentry'
 
 const VALID_STAGES = [
   STAGES.TOUCHPOINT_1,
@@ -54,6 +55,7 @@ export async function generateFollowUpMessage(
 
     return { success: true, message }
   } catch (error) {
+    captureError(error, { action: 'generateFollowUpMessage', jobId })
     console.error('generateFollowUpMessage failed:', error)
     return {
       success: false,

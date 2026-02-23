@@ -12,6 +12,7 @@ import {
   HOT_LEAD_TYPES,
   type ResponseType,
 } from '@/lib/airtable-fields'
+import { captureError } from '@/lib/sentry'
 
 /**
  * Log a client response on a job.
@@ -39,6 +40,7 @@ export async function logResponse(
     revalidateTag('jobs-inbox', 'dashboard')
     return { success: true }
   } catch (error) {
+    captureError(error, { action: 'logResponse', jobId })
     console.error('logResponse failed:', error)
     return {
       success: false,
@@ -102,6 +104,7 @@ export async function markFollowedUp(
     revalidateTag('jobs-inbox', 'dashboard')
     return { success: true }
   } catch (error) {
+    captureError(error, { action: 'markFollowedUp', jobId })
     console.error('markFollowedUp failed:', error)
     return {
       success: false,
@@ -122,6 +125,7 @@ export async function closeNoResponse(
     revalidateTag('jobs-inbox', 'dashboard')
     return { success: true }
   } catch (error) {
+    captureError(error, { action: 'closeNoResponse', jobId })
     console.error('closeNoResponse failed:', error)
     return {
       success: false,
@@ -147,6 +151,7 @@ export async function markCallDone(
     revalidateTag('jobs-closing', 'dashboard')
     return { success: true }
   } catch (error) {
+    captureError(error, { action: 'markCallDone', jobId })
     console.error('markCallDone failed:', error)
     return {
       success: false,
@@ -171,6 +176,7 @@ export async function advanceResponseType(
     revalidateTag('jobs-inbox', 'dashboard')
     return { success: true }
   } catch (error) {
+    captureError(error, { action: 'advanceResponseType', jobId })
     console.error('advanceResponseType failed:', error)
     return {
       success: false,
@@ -198,6 +204,7 @@ export async function markContractSigned(
     revalidateTag('jobs-closing', 'dashboard')
     return { success: true }
   } catch (error) {
+    captureError(error, { action: 'markContractSigned', jobId })
     console.error('markContractSigned failed:', error)
     return {
       success: false,

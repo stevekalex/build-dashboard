@@ -3,6 +3,7 @@
 import { revalidateTag } from 'next/cache'
 import { updateJobField, updateJobStage } from '@/lib/airtable-mutations'
 import { JOBS, STAGES } from '@/lib/airtable-fields'
+import { captureError } from '@/lib/sentry'
 
 /**
  * Mark a contract as sent for a deal.
@@ -20,6 +21,7 @@ export async function markContractSent(
     revalidateTag('jobs-closing', 'dashboard')
     return { success: true }
   } catch (error) {
+    captureError(error, { action: 'markContractSent', jobId })
     console.error('markContractSent failed:', error)
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
   }
@@ -41,6 +43,7 @@ export async function markLost(
     revalidateTag('jobs-closing', 'dashboard')
     return { success: true }
   } catch (error) {
+    captureError(error, { action: 'markLost', jobId })
     console.error('markLost failed:', error)
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
   }

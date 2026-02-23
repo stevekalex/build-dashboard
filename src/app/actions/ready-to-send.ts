@@ -4,6 +4,7 @@ import { revalidateTag } from 'next/cache'
 import { cookies } from 'next/headers'
 import { updateJobField, updateJobStage } from '@/lib/airtable-mutations'
 import { JOBS, STAGES } from '@/lib/airtable-fields'
+import { captureError } from '@/lib/sentry'
 
 /**
  * Get the current user's name from session cookie
@@ -44,6 +45,7 @@ export async function saveLoomUrl(
 
     return { success: true }
   } catch (error) {
+    captureError(error, { action: 'saveLoomUrl', jobId })
     console.error('Failed to save Loom URL:', error)
     return {
       success: false,
@@ -82,6 +84,7 @@ export async function markApplied(
 
     return { success: true }
   } catch (error) {
+    captureError(error, { action: 'markApplied', jobId })
     console.error('Failed to mark applied:', error)
     return {
       success: false,

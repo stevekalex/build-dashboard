@@ -1,6 +1,7 @@
 import type { FieldSet } from 'airtable'
 import { getBase } from './airtable'
 import { TABLES, JOBS } from './airtable-fields'
+import { captureError } from './sentry'
 
 /**
  * Update specific fields on a Jobs Pipeline record.
@@ -15,6 +16,7 @@ export async function updateJobField(
     const base = getBase()
     await base(TABLES.JOBS_PIPELINE).update(recordId, fields)
   } catch (error) {
+    captureError(error, { action: 'updateJobField', recordId })
     console.error('Airtable updateJobField failed:', {
       recordId,
       fields: Object.keys(fields),
@@ -40,6 +42,7 @@ export async function updateJobStage(
       ...additionalFields,
     })
   } catch (error) {
+    captureError(error, { action: 'updateJobStage', recordId, stage })
     console.error('Airtable updateJobStage failed:', {
       recordId,
       stage,

@@ -5,6 +5,7 @@ import { cookies } from 'next/headers'
 import { triggerBuild, rejectBuild, JobPulseError } from '@/lib/job-pulse'
 import { updateJobStage } from '@/lib/airtable-mutations'
 import { STAGES } from '@/lib/airtable-fields'
+import { captureError } from '@/lib/sentry'
 
 /**
  * Get the current user's name from session cookie
@@ -45,6 +46,7 @@ export async function approveBrief(
 
     return { success: true }
   } catch (error) {
+    captureError(error, { action: 'approveBrief', jobId })
     console.error('Failed to approve brief:', error)
     const message = error instanceof Error ? error.message : 'Failed to approve brief'
     const code = error instanceof JobPulseError ? error.code : undefined
@@ -73,6 +75,7 @@ export async function rejectBrief(
 
     return { success: true }
   } catch (error) {
+    captureError(error, { action: 'rejectBrief', jobId })
     console.error('Failed to reject brief:', error)
     const message = error instanceof Error ? error.message : 'Failed to reject brief'
     const code = error instanceof JobPulseError ? error.code : undefined
@@ -97,6 +100,7 @@ export async function markBuildFailed(
 
     return { success: true }
   } catch (error) {
+    captureError(error, { action: 'markBuildFailed', jobId })
     console.error('Failed to mark build as failed:', error)
     const message = error instanceof Error ? error.message : 'Failed to mark build as failed'
     return { success: false, error: message }
