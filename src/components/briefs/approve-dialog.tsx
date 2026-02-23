@@ -30,17 +30,20 @@ export function ApproveDialog({ brief, onApprove }: ApproveDialogProps) {
   const [open, setOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [notes, setNotes] = useState('')
+  const [error, setError] = useState<string | null>(null)
 
   const parsedBrief = parseBriefData(brief.brief)
 
   async function handleConfirm() {
     setIsLoading(true)
+    setError(null)
     try {
       await onApprove(brief.id, notes)
       setOpen(false)
       setNotes('')
-    } catch (error) {
-      console.error('Failed to approve brief:', error)
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to approve brief'
+      setError(message)
     } finally {
       setIsLoading(false)
     }
@@ -123,7 +126,14 @@ export function ApproveDialog({ brief, onApprove }: ApproveDialogProps) {
           </div>
         </div>
 
-        {/* 5. Confirm/Cancel Buttons */}
+        {/* 5. Error Message */}
+        {error && (
+          <div className="flex-shrink-0 bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
+
+        {/* 6. Confirm/Cancel Buttons */}
         <DialogFooter className="flex-shrink-0 gap-2">
           <Button
             variant="outline"

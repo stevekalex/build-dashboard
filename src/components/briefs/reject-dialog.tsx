@@ -34,6 +34,7 @@ export function RejectDialog({ brief, onReject }: RejectDialogProps) {
   const [selectedReason, setSelectedReason] = useState<string>('')
   const [customReason, setCustomReason] = useState<string>('')
   const [notes, setNotes] = useState<string>('')
+  const [error, setError] = useState<string | null>(null)
 
   function getReason(): string {
     if (selectedReason === 'other') {
@@ -54,6 +55,7 @@ export function RejectDialog({ brief, onReject }: RejectDialogProps) {
     if (!reason) return
 
     setIsLoading(true)
+    setError(null)
     try {
       await onReject(brief.id, reason, notes)
       setOpen(false)
@@ -61,6 +63,9 @@ export function RejectDialog({ brief, onReject }: RejectDialogProps) {
       setSelectedReason('')
       setCustomReason('')
       setNotes('')
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to reject brief'
+      setError(message)
     } finally {
       setIsLoading(false)
     }
@@ -125,6 +130,12 @@ export function RejectDialog({ brief, onReject }: RejectDialogProps) {
             />
           </div>
         </div>
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
 
         <DialogFooter>
           <Button variant="outline" onClick={handleCancel} disabled={isLoading}>

@@ -81,15 +81,21 @@ export function ApproveList({ jobs, onAction }: ApproveListProps) {
   }
 
   async function handleApprove(briefId: string, notes: string) {
+    const result = await approveBrief(briefId, notes)
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to approve brief')
+    }
     dismissJob(briefId)
     onAction?.()
-    await approveBrief(briefId, notes)
   }
 
   async function handleReject(briefId: string, reason: string, notes: string) {
+    const result = await rejectBrief(briefId, reason, notes)
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to reject brief')
+    }
     dismissJob(briefId)
     onAction?.()
-    await rejectBrief(briefId, reason, notes)
   }
 
   return (
