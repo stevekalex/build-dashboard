@@ -1,5 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { timingSafeEqual } from 'crypto'
+import bcrypt from 'bcryptjs'
 import { captureError } from '@/lib/sentry'
+
+function timingSafeCompare(a: string, b: string): boolean {
+  const bufA = Buffer.from(a)
+  const bufB = Buffer.from(b)
+  if (bufA.length !== bufB.length) {
+    // Compare against self to keep constant time, then return false
+    timingSafeEqual(bufA, bufA)
+    return false
+  }
+  return timingSafeEqual(bufA, bufB)
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,9 +30,18 @@ export async function POST(request: NextRequest) {
     // Trim whitespace from name
     const trimmedName = name.trim()
 
-    // Verify password
+    // Verify password (supports bcrypt hash or plaintext with timing-safe compare)
     const adminPassword = process.env.ADMIN_PASSWORD
-    if (password !== adminPassword) {
+    if (!adminPassword) {
+      return NextResponse.json({ error: 'Server configuration error' }, { status: 500 })
+    }
+
+    const isBcryptHash = adminPassword.startsWith('$2')
+    const isValid = isBcryptHash
+      ? await bcrypt.compare(password, adminPassword)
+      : timingSafeCompare(password, adminPassword)
+
+    if (!isValid) {
       return NextResponse.json({ error: 'Invalid password' }, { status: 401 })
     }
 
