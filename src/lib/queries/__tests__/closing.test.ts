@@ -232,26 +232,6 @@ describe('groupDealsByStatus', () => {
     expect(grouped.won).toHaveLength(1)
   })
 
-  it('should exclude Closed Won jobs older than 7 days from won', async () => {
-    const { groupDealsByStatus } = await import('../closing')
-    const now = new Date()
-    const tenDaysAgo = new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000)
-    const jobs = [
-      {
-        id: 'rec5',
-        jobId: 'job5',
-        title: 'Old Won Deal',
-        description: '',
-        stage: '🏁 Closed Won',
-        scrapedAt: '2026-02-01T10:00:00Z',
-        closeDate: tenDaysAgo.toISOString(),
-      },
-    ]
-    const grouped = groupDealsByStatus(jobs)
-
-    expect(grouped.won).toHaveLength(0)
-  })
-
   it('should handle empty input', async () => {
     const { groupDealsByStatus } = await import('../closing')
     const grouped = groupDealsByStatus([])

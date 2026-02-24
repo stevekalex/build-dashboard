@@ -3,6 +3,14 @@ import { render, screen } from '@testing-library/react'
 import { ClosingBoard } from '../closing-board'
 import { Job } from '@/types/brief'
 
+// Mock next/navigation (useActionPolling uses useRouter)
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    refresh: vi.fn(),
+  }),
+}))
+
 // Mock server actions
 vi.mock('@/app/actions/closing', () => ({
   markContractSent: vi.fn(),
@@ -124,7 +132,9 @@ describe('ClosingBoard', () => {
       />
     )
 
-    expect(screen.getByText(/No active deals/i)).toBeInTheDocument()
+    // Each empty column shows "No deals"
+    const emptyStates = screen.getAllByText('No deals')
+    expect(emptyStates).toHaveLength(4)
   })
 
   it('should render budget information on deal cards', () => {

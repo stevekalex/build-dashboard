@@ -57,7 +57,7 @@ describe('getDailyMetrics', () => {
     // Verify each formula uses IS_SAME with TODAY
     const expectedFields = [
       'Scraped At',
-      'Approved Date',
+      'Build Started (from Build Details)',
       'Deployed Date',
       'Applied At',
       'Response Date',
@@ -83,7 +83,7 @@ describe('getDailyMetrics', () => {
     // Each select call should include a fields array with just the one field
     const expectedFields = [
       'Scraped At',
-      'Approved Date',
+      'Build Started (from Build Details)',
       'Deployed Date',
       'Applied At',
       'Response Date',
