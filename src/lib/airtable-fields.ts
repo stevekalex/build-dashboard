@@ -1,8 +1,8 @@
-// ─── Table Names ───
+// ─── Table Names (env-driven: defaults to production, override for testing) ───
 
 export const TABLES = {
-  JOBS_PIPELINE: 'Jobs Pipeline',
-  BUILD_DETAILS: 'Build Details',
+  JOBS_PIPELINE: process.env.AIRTABLE_JOBS_TABLE_NAME || 'Jobs Pipeline',
+  BUILD_DETAILS: process.env.AIRTABLE_BUILD_DETAILS_TABLE_NAME || 'Build Details',
 } as const
 
 // ─── Jobs Pipeline Fields ───
